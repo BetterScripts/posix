@@ -1,0 +1,2529 @@
+#!/usr/bin/env false
+# SPDX-License-Identifier: MPL-2.0
+#################################### LICENSE ###################################
+#******************************************************************************#
+#*                                                                            *#
+#* BetterScripts 'libarray/success': Tests for 'libarray' success conditions. *#
+#*                                                                            *#
+#* Copyright (c) 2022 BetterScripts ( better.scripts@proton.me,               *#
+#*                                    https://github.com/BetterScripts )      *#
+#*                                                                            *#
+#* This file is part of the BetterScripts POSIX Suite.                        *#
+#*                                                                            *#
+#* This Source Code Form is subject to the terms of the Mozilla Public        *#
+#* License, v. 2.0. If a copy of the MPL was not distributed with this        *#
+#* file, You can obtain one at https://mozilla.org/MPL/2.0/.                  *#
+#*                                                                            *#
+#* -------------------------------------------------------------------------- *#
+#*                                                                            *#
+#* ADDENDUM:                                                                  *#
+#*                                                                            *#
+#* In addition to the Mozilla Public License a copy of LICENSE.MD should have *#
+#* been be provided alongside this file; LICENSE.MD clarifies how the Mozilla *#
+#* Public License v2.0 applies to this file and MAY confer additional rights. *#
+#*                                                                            *#
+#* Should there be any apparent ambiguity (implied or otherwise) the terms    *#
+#* and conditions from the Mozilla Public License v2.0 shall apply.           *#
+#*                                                                            *#
+#* If a copy of LICENSE.MD was not provided it can be obtained from           *#
+#* https://github.com/BetterScripts/posix/LICENSE.MD.                         *#
+#*                                                                            *#
+#* NOTE:                                                                      *#
+#*                                                                            *#
+#* The Mozilla Public License v2.0 is compatible with the GNU General Public  *#
+#* License v2.0.                                                              *#
+#*                                                                            *#
+#******************************************************************************#
+################################################################################
+
+############################### LIBARRAY/SUCCESS ###############################
+#
+# Documentation is written inline formatted as [`Markdown`][markdown], this is
+# in addition to the suite wide documentation which includes details common to
+# multiple suite libraries that may not be detailed here.
+#
+# The included `Makefile` can be used to generate standalone documentation in
+# various formats with various verbosity settings. The `Makefile` can also be
+# used to install scripts and documentation in appropriate locations.
+#
+# As far as possible, terminology and conventions follow those of the
+# [_POSIX.1-2008_ Standard][posix_2008].
+#===============================================================================
+## cSpell:Ignore libarray testrunner testwrapper LATS
+################################ DOCUMENTATION #################################
+#
+#% % libarray-success(7) BetterScripts | Tests for 'libarray' success conditions.
+#% % BetterScripts (better.scripts@proton.me)  
+#
+#: <!-- #################################################################### -->
+#: <!-- ########## THIS FILE WAS GENERATED FROM 'libarray/success' ######### -->
+#: <!-- #################################################################### -->
+#: <!-- ########################### DO NOT EDIT! ########################### -->
+#: <!-- #################################################################### -->
+#:
+#: # LIBARRAY/SUCCESS
+#:
+#:
+#
+#  LibArray Test Success (LATS)
+#  ============================
+#
+#  Tests for `libarray` checking successful executing from valid input.
+#
+################################################################################
+
+############################## SHELLCHECK: GLOBAL ##############################
+# shellcheck shell=sh                                                          #
+#                                                                              #
+# Enable some optional checks:                                                 #
+#                                                                              #
+# shellcheck enable=avoid-nullary-conditions                                   #
+# shellcheck enable=check-extra-masked-returns                                 #
+# shellcheck enable=deprecate-which                                            #
+# shellcheck enable=require-variable-braces                                    #
+#                                                                              #
+################################################################################
+
+#===============================================================================
+#===============================================================================
+#  COMMON VALUES
+#===============================================================================
+#===============================================================================
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+c_BS_LATS__newline='
+'
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Main test array values
+## cSpell:Ignore Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+## cSpell:Ignore sed do eiusmod tempor incididunt ut labore et dolore magna
+## cSpell:Ignore aliqua. Ut enim ad minim veniam,
+c_BS_LATS__ArrayValue_1='1 Lorem ipsum '
+c_BS_LATS__ArrayValue_2='"2 dolor sit amet,"'
+c_BS_LATS__ArrayValue_3='!3 consectetur adipiscing '
+c_BS_LATS__ArrayValue_4='4 "
+" elit,'
+c_BS_LATS__ArrayValue_5='[5]( sed do eiusmod tempor incididunt
+'
+c_BS_LATS__ArrayValue_6='*6* ut labore et dolore magna  '
+c_BS_LATS__ArrayValue_7='aliqua.
+'\''#Ut'\'' enim "ad" minim veniam,#'\''
+!'
+
+c_BS_LATS__ArraySize=7
+
+#===============================================================================
+#===============================================================================
+#  COMMON COMMANDS
+#===============================================================================
+#===============================================================================
+
+#_______________________________________________________________________________
+#  fn_bs_lats_create_array
+#  ----------------------------
+#
+#  Create the default test array and perform some simple checks.
+#_______________________________________________________________________________
+fn_bs_lats_create_array() { ## cSpell:Ignore BS_LATS_CA_
+    BS_LATS_CA_LINENO=${1?'[libarray::success::fn_bs_lats_create_array] Internal Error: a line number is required'}
+  BS_LATS_CA_refArray=${2:?'[libarray::success::fn_bs_lats_create_array] Internal Error: an output variable is required'}
+    BS_LATS_CA_LINENO="${BS_LATS_CA_LINENO#@}"
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  BS_LATS_CA_Array=; unset BS_LATS_CA_Array
+  test_run_expect_success                               \
+    ${BS_LATS_CA_LINENO:+"--line=${BS_LATS_CA_LINENO}"} \
+    array_new                                           \
+      'BS_LATS_CA_Array'                                \
+      "${c_BS_LATS__ArrayValue_1}"                      \
+      "${c_BS_LATS__ArrayValue_2}"                      \
+      "${c_BS_LATS__ArrayValue_3}"                      \
+      "${c_BS_LATS__ArrayValue_4}"                      \
+      "${c_BS_LATS__ArrayValue_5}"                      \
+      "${c_BS_LATS__ArrayValue_6}"                      \
+      "${c_BS_LATS__ArrayValue_7}"                      || return $?
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  eval "set 'BS_DUMMY_PARAM' ${BS_LATS_CA_Array-} && shift" || return $?
+  test_assert ${BS_LATS_CA_LINENO:+"@${BS_LATS_CA_LINENO}"} $# -eq "${c_BS_LATS__ArraySize}" || return $?
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  eval "${BS_LATS_CA_refArray}=\"\${BS_LATS_CA_Array}\""
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lats_verify_test_array
+#  ----------------------------
+#
+#  Check an array is equivalent to the default test array.
+#_______________________________________________________________________________
+fn_bs_lats_verify_test_array() { ## cSpell:Ignore BS_LATS_VTA_
+    BS_LATS_VTA_LINENO=${1?'[libarray::success::fn_bs_lats_verify_test_array] Internal Error: a line number is required'}
+  BS_LATS_VTA_refArray=${2:?'[libarray::success::fn_bs_lats_verify_test_array] Internal Error: an array variable is required'}
+    BS_LATS_VTA_LINENO="${BS_LATS_VTA_LINENO#@}"
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  BS_LATS_VTA_Array=;
+  eval "BS_LATS_VTA_Array=\"\${${BS_LATS_VTA_refArray}-}\"" || return $?
+  eval "set 'BS_DUMMY_PARAM' ${BS_LATS_VTA_Array-} && shift" || return $?
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  test_assert ${BS_LATS_VTA_LINENO:+"@${BS_LATS_VTA_LINENO}"} $# -eq "${c_BS_LATS__ArraySize}" || return $?
+  test_assert ${BS_LATS_VTA_LINENO:+"@${BS_LATS_VTA_LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_1}" || return $?
+  test_assert ${BS_LATS_VTA_LINENO:+"@${BS_LATS_VTA_LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_2}" || return $?
+  test_assert ${BS_LATS_VTA_LINENO:+"@${BS_LATS_VTA_LINENO}"} "_${3-}" = "_${c_BS_LATS__ArrayValue_3}" || return $?
+  test_assert ${BS_LATS_VTA_LINENO:+"@${BS_LATS_VTA_LINENO}"} "_${4-}" = "_${c_BS_LATS__ArrayValue_4}" || return $?
+  test_assert ${BS_LATS_VTA_LINENO:+"@${BS_LATS_VTA_LINENO}"} "_${5-}" = "_${c_BS_LATS__ArrayValue_5}" || return $?
+  test_assert ${BS_LATS_VTA_LINENO:+"@${BS_LATS_VTA_LINENO}"} "_${6-}" = "_${c_BS_LATS__ArrayValue_6}" || return $?
+  test_assert ${BS_LATS_VTA_LINENO:+"@${BS_LATS_VTA_LINENO}"} "_${7-}" = "_${c_BS_LATS__ArrayValue_7}" || return $?
+}
+
+#===============================================================================
+#===============================================================================
+#  TESTS
+#===============================================================================
+#===============================================================================
+
+#_______________________________________________________________________________
+#  fn_bs_lats_constants
+#  --------------------
+#
+#  TESTS:   Constants Are Set (and look reasonable)
+#_______________________________________________________________________________
+fn_bs_lats_constants() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBARRAY_SOURCED-}" || return $?
+
+    #-----------------------------------
+
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBARRAY_VERSION_MAJOR-}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBARRAY_VERSION_MINOR-}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBARRAY_VERSION_PATCH-}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBARRAY_VERSION_FULL-}"  || return $?
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBARRAY_VERSION-}"       || return $?
+
+    #  Check they are version numbers are actually numbers
+    test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBARRAY_VERSION_MAJOR-}" -notlike "*[!0123456789]*" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBARRAY_VERSION_MINOR-}" -notlike "*[!0123456789]*" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBARRAY_VERSION_PATCH-}" -notlike "*[!0123456789]*" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBARRAY_VERSION_FULL-}"  -notlike "*[!0123456789]*" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBARRAY_VERSION-}" -like "BetterScripts 'libarray' v*" || return $?
+
+    #-----------------------------------
+
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBARRAY_SH_TO_ARRAY-}" || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lats_array_new
+#  --------------------
+#
+#  TESTS:   `array_new`
+#_______________________________________________________________________________
+fn_bs_lats_array_new() { ## cSpell:Ignore BS_AIAN_
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  NEW ARRAY
+  {
+    TestArray=; unset 'TestArray'
+    fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+    #-----------------------------------
+
+    fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  NEW REVERSED ARRAY
+  {
+    {
+      TestArray=; unset 'TestArray'
+      test_run_expect_success          \
+        ${LINENO:+"@${LINENO}"}        \
+        array_new                      \
+          --reversed                   \
+          'TestArray'                  \
+          "${c_BS_LATS__ArrayValue_1}" \
+          "${c_BS_LATS__ArrayValue_2}" \
+          "${c_BS_LATS__ArrayValue_3}" \
+          "${c_BS_LATS__ArrayValue_4}" \
+          "${c_BS_LATS__ArrayValue_5}" \
+          "${c_BS_LATS__ArrayValue_6}" \
+          "${c_BS_LATS__ArrayValue_7}" || return $?
+
+      #-----------------------------------
+
+      eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} $# -eq "${c_BS_LATS__ArraySize}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_7}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_6}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${c_BS_LATS__ArrayValue_5}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${c_BS_LATS__ArrayValue_4}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${5-}" = "_${c_BS_LATS__ArrayValue_3}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${6-}" = "_${c_BS_LATS__ArrayValue_2}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${7-}" = "_${c_BS_LATS__ArrayValue_1}" || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestArray=; unset 'TestArray'
+      test_run_expect_success          \
+        ${LINENO:+"@${LINENO}"}        \
+        array_new                      \
+          'TestArray'                  \
+          --reversed                   \
+          "${c_BS_LATS__ArrayValue_1}" \
+          "${c_BS_LATS__ArrayValue_2}" \
+          "${c_BS_LATS__ArrayValue_3}" \
+          "${c_BS_LATS__ArrayValue_4}" \
+          "${c_BS_LATS__ArrayValue_5}" \
+          "${c_BS_LATS__ArrayValue_6}" \
+          "${c_BS_LATS__ArrayValue_7}" || return $?
+
+      #-----------------------------------
+
+      eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} $# -eq "${c_BS_LATS__ArraySize}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_7}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_6}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${c_BS_LATS__ArrayValue_5}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${c_BS_LATS__ArrayValue_4}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${5-}" = "_${c_BS_LATS__ArrayValue_3}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${6-}" = "_${c_BS_LATS__ArrayValue_2}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${7-}" = "_${c_BS_LATS__ArrayValue_1}" || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  NEW ARRAY from STDIN
+  {
+    #  Piped values can't contain
+    #+ embedded <newline> characters
+    TestArrayPipe_Value1="$(printf '%s' "${c_BS_LATS__ArrayValue_1}" | tr "${c_BS_LATS__newline}" ' ')"
+    TestArrayPipe_Value2="$(printf '%s' "${c_BS_LATS__ArrayValue_2}" | tr "${c_BS_LATS__newline}" ' ')"
+    TestArrayPipe_Value3="$(printf '%s' "${c_BS_LATS__ArrayValue_3}" | tr "${c_BS_LATS__newline}" ' ')"
+    TestArrayPipe_Value4="$(printf '%s' "${c_BS_LATS__ArrayValue_4}" | tr "${c_BS_LATS__newline}" ' ')"
+    TestArrayPipe_Value5="$(printf '%s' "${c_BS_LATS__ArrayValue_5}" | tr "${c_BS_LATS__newline}" ' ')"
+    TestArrayPipe_Value6="$(printf '%s' "${c_BS_LATS__ArrayValue_6}" | tr "${c_BS_LATS__newline}" ' ')"
+    TestArrayPipe_Value7="$(printf '%s' "${c_BS_LATS__ArrayValue_7}" | tr "${c_BS_LATS__newline}" ' ')"
+
+    TestArrayPipe_Size=7
+
+    #-----------------------------------
+
+    TestArrayPipe="$(
+      {
+        printf '%s\n' "${TestArrayPipe_Value1}" \
+                      "${TestArrayPipe_Value2}" \
+                      "${TestArrayPipe_Value3}" \
+                      "${TestArrayPipe_Value4}" \
+                      "${TestArrayPipe_Value5}" \
+                      "${TestArrayPipe_Value6}" \
+                      "${TestArrayPipe_Value7}"
+      } | {
+        test_run_expect_success   \
+          ${LINENO:+"@${LINENO}"} \
+          array_new
+      }
+    )" || return $?
+
+    #-----------------------------------
+
+    eval "set 'BS_DUMMY_PARAM' ${TestArrayPipe:+${TestArrayPipe}} && shift" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} $# -eq "${TestArrayPipe_Size}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${TestArrayPipe_Value1}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${TestArrayPipe_Value2}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${TestArrayPipe_Value3}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${TestArrayPipe_Value4}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${5-}" = "_${TestArrayPipe_Value5}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${6-}" = "_${TestArrayPipe_Value6}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${7-}" = "_${TestArrayPipe_Value7}" || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lats_array_size
+#  ---------------------
+#
+#  TESTS:   `array_size`
+#_______________________________________________________________________________
+fn_bs_lats_array_size() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Create test array
+  TestArray=; unset 'TestArray'
+  fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+  {
+    TestArraySize=; unset 'TestArraySize'
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      array_size              \
+        'TestArray'           \
+        'TestArraySize'       || return $?
+
+    #-----------------------------------
+
+    fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "${TestArraySize-}" -eq "${c_BS_LATS__ArraySize}" || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  {
+    TestArraySize=; unset 'TestArraySize'
+    test_run_expect_success         \
+      ${LINENO:+"--line=${LINENO}"} \
+      --output='TestArraySize'      \
+      array_size                    \
+        'TestArray'                 || return $?
+
+    #-----------------------------------
+
+    fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "${TestArraySize-}" -eq "${c_BS_LATS__ArraySize}" || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lats_array_get
+#  --------------------
+#
+#  TESTS:   `array_get`
+#_______________________________________________________________________________
+fn_bs_lats_array_get() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  TestArray=; unset 'TestArray'
+  fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+  TestArray_GetIndex=$((BS_LATS_ARRAY_FIRST_INDEX + 2))
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    TestValue=; unset 'TestValue'
+    test_run_expect_success     \
+      ${LINENO:+"@${LINENO}"}   \
+      array_get                 \
+        'TestArray'             \
+        "${TestArray_GetIndex}" \
+        'TestValue'             || return $?
+
+    #-----------------------------------
+
+    fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${TestValue-}" = "_${c_BS_LATS__ArrayValue_3}" || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    TestValue=; unset 'TestValue'
+    test_run_expect_success         \
+      ${LINENO:+"--line=${LINENO}"} \
+      --output='TestValue'          \
+      array_get                     \
+        'TestArray'                 \
+        "${TestArray_GetIndex}"     || return $?
+
+    #-----------------------------------
+
+    fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${TestValue-}" = "_${c_BS_LATS__ArrayValue_3}" || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lats_array_set
+#  --------------------
+#
+#  TESTS:   `array_set`
+#_______________________________________________________________________________
+fn_bs_lats_array_set() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  TestArray=; unset 'TestArray'
+  fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+  TestNewValue='A "different" value than it was!'
+     TestIndex=$((BS_LATS_ARRAY_FIRST_INDEX + 2))
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      array_set               \
+        'TestArray'           \
+        "${TestIndex}"        \
+        "${TestNewValue}"     || return $?
+
+    #-----------------------------------
+
+    eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} $# -eq "${c_BS_LATS__ArraySize}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_1}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_2}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${TestNewValue}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${c_BS_LATS__ArrayValue_4}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${5-}" = "_${c_BS_LATS__ArrayValue_5}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${6-}" = "_${c_BS_LATS__ArrayValue_6}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${7-}" = "_${c_BS_LATS__ArrayValue_7}" || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lats_array_insert
+#  -----------------------
+#
+#  TESTS:   `array_insert`
+#_______________________________________________________________________________
+fn_bs_lats_array_insert() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  INSERT into an EMPTY array
+  {
+    TestIndex=$((BS_LATS_ARRAY_FIRST_INDEX + 0))
+
+    #-----------------------------------
+
+    TestArray=; unset 'TestArray'
+    test_run_expect_success          \
+      ${LINENO:+"@${LINENO}"}        \
+      array_insert                   \
+        'TestArray'                  \
+        "${TestIndex}"               \
+        "${c_BS_LATS__ArrayValue_1}" \
+        "${c_BS_LATS__ArrayValue_2}" || return $?
+
+    #-----------------------------------
+
+    eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} $# -eq 2 || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_1}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_2}" || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  INSERT into an EXISTING array
+  {
+    TestIndex=$((BS_LATS_ARRAY_FIRST_INDEX + 2))
+
+    #-----------------------------------
+
+    TestArray=; unset 'TestArray'
+    fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+    #-----------------------------------
+
+    test_run_expect_success          \
+      ${LINENO:+"@${LINENO}"}        \
+      array_insert                   \
+        'TestArray'                  \
+        "${TestIndex}"               \
+        "${c_BS_LATS__ArrayValue_5}" \
+        "${c_BS_LATS__ArrayValue_6}" || return $?
+
+    #-----------------------------------
+
+    eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} $# -eq $((c_BS_LATS__ArraySize + 2)) || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_1}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_2}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${c_BS_LATS__ArrayValue_5}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${c_BS_LATS__ArrayValue_6}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${5-}" = "_${c_BS_LATS__ArrayValue_3}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${6-}" = "_${c_BS_LATS__ArrayValue_4}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${7-}" = "_${c_BS_LATS__ArrayValue_5}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${8-}" = "_${c_BS_LATS__ArrayValue_6}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${9-}" = "_${c_BS_LATS__ArrayValue_7}" || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lats_array_remove
+#  -----------------------
+#
+#  TESTS:   `array_remove`
+#_______________________________________________________________________________
+fn_bs_lats_array_remove() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Remove ALL elements
+  {
+    TestRangeBegin=$((BS_LATS_ARRAY_FIRST_INDEX + 0))
+      TestRangeEnd=$((BS_LATS_ARRAY_FIRST_INDEX + c_BS_LATS__ArraySize))
+
+    #-----------------------------------
+    #  by EXPRESSION
+    {
+      TestArray=; unset 'TestArray'
+      fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+      #.................................
+
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        array_remove            \
+          'TestArray'           \
+          '-notlike'            \
+          ''                    || return $?
+
+      #.................................
+
+      eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} $# -eq 0 || return $?
+    }
+
+    #-----------------------------------
+    #  by RANGE
+    {
+      TestArray=; unset 'TestArray'
+      fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+      #.................................
+
+      test_run_expect_success                 \
+        ${LINENO:+"@${LINENO}"}               \
+        array_remove                          \
+          'TestArray'                         \
+          "${TestRangeBegin}:${TestRangeEnd}" || return $?
+
+      #.................................
+
+      eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} $# -eq 0 || return $?
+    }
+
+    #-----------------------------------
+    #  by LENGTH
+    {
+      TestArray=; unset 'TestArray'
+      fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+      #.................................
+
+      test_run_expect_success                         \
+        ${LINENO:+"@${LINENO}"}                       \
+        array_remove                                  \
+          'TestArray'                                 \
+          "${TestRangeBegin}#${c_BS_LATS__ArraySize}" || return $?
+
+      #.................................
+
+      eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} $# -eq 0 || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Remove SOME elements
+  {
+     TestRangeBegin=$((BS_LATS_ARRAY_FIRST_INDEX + 1))
+       TestRangeEnd=$((BS_LATS_ARRAY_FIRST_INDEX + 5))
+    TestRangeLength=4
+
+    #-----------------------------------
+    #  by EXPRESSION
+    {
+      TestArray=; unset 'TestArray'
+      fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+      #.................................
+
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        array_remove            \
+          'TestArray'           \
+          '-like'               \
+          '*[lL]*'              || return $?
+
+      #.................................
+
+      eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} $# -eq 2 || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_3}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_5}" || return $?
+    }
+
+    #-----------------------------------
+    #  by RANGE
+    {
+      TestArray=; unset 'TestArray'
+      fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+      #.................................
+
+      test_run_expect_success                 \
+        ${LINENO:+"@${LINENO}"}               \
+        array_remove                          \
+          'TestArray'                         \
+          "${TestRangeBegin}:${TestRangeEnd}" || return $?
+
+      #.................................
+
+      eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} $# -eq $((c_BS_LATS__ArraySize - TestRangeLength)) || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_6}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${c_BS_LATS__ArrayValue_7}" || return $?
+    }
+
+    #-----------------------------------
+    #  by LENGTH
+    {
+      TestArray=; unset 'TestArray'
+      fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+      #.................................
+
+      test_run_expect_success                     \
+        ${LINENO:+"@${LINENO}"}                   \
+        array_remove                              \
+          'TestArray'                             \
+          "${TestRangeBegin}#${TestRangeLength}"  || return $?
+
+      #.................................
+
+      eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} $# -eq $((c_BS_LATS__ArraySize - TestRangeLength)) || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_6}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${c_BS_LATS__ArrayValue_7}" || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Remove ONE element
+  {
+          TestIndex=$((BS_LATS_ARRAY_FIRST_INDEX + 2))
+     TestRangeBegin=$((BS_LATS_ARRAY_FIRST_INDEX + 2))
+       TestRangeEnd=$((TestRangeBegin + 1))
+    TestRangeLength=1
+
+    #-----------------------------------
+    #  by INDEX
+    {
+      TestArray=; unset 'TestArray'
+      fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+      #.................................
+
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        array_remove            \
+          'TestArray'           \
+          "${TestIndex}"        || return $?
+
+      #.................................
+
+      eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} $# -eq $((c_BS_LATS__ArraySize - 1)) || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_2}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${c_BS_LATS__ArrayValue_4}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${c_BS_LATS__ArrayValue_5}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${5-}" = "_${c_BS_LATS__ArrayValue_6}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${6-}" = "_${c_BS_LATS__ArrayValue_7}" || return $?
+    }
+
+    #-----------------------------------
+    #  by RANGE
+    {
+      TestArray=; unset 'TestArray'
+      fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+      #.................................
+
+      test_run_expect_success                 \
+        ${LINENO:+"@${LINENO}"}               \
+        array_remove                          \
+          'TestArray'                         \
+          "${TestRangeBegin}:${TestRangeEnd}" || return $?
+
+      #.................................
+
+      eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} $# -eq $((c_BS_LATS__ArraySize - 1)) || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_2}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${c_BS_LATS__ArrayValue_4}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${c_BS_LATS__ArrayValue_5}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${5-}" = "_${c_BS_LATS__ArrayValue_6}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${6-}" = "_${c_BS_LATS__ArrayValue_7}" || return $?
+    }
+
+    #-----------------------------------
+    #  by LENGTH
+    {
+      TestArray=; unset 'TestArray'
+      fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+      #.................................
+
+      test_run_expect_success                    \
+        ${LINENO:+"@${LINENO}"}                  \
+        array_remove                             \
+          'TestArray'                            \
+          "${TestRangeBegin}#${TestRangeLength}" || return $?
+
+      #.................................
+
+      eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} $# -eq $((c_BS_LATS__ArraySize - 1)) || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_2}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${c_BS_LATS__ArrayValue_4}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${c_BS_LATS__ArrayValue_5}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${5-}" = "_${c_BS_LATS__ArrayValue_6}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${6-}" = "_${c_BS_LATS__ArrayValue_7}" || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Remove NO elements
+  {
+    #-----------------------------------
+    #  by EXPRESSION
+    {
+      TestArray=; unset 'TestArray'
+      fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+      #.................................
+
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        array_remove            \
+          'TestArray'           \
+          '-like'               \
+          ''                    || return $?
+
+      #.................................
+
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+    }
+  }
+
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lats_array_push
+#  ---------------------
+#
+#  TESTS:   `array_push`
+#_______________________________________________________________________________
+fn_bs_lats_array_push() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Create test array
+  TestArray=; unset 'TestArray'
+  fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+  TestNewValue='A value that'\''s been "pushed"!'
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      array_push              \
+        'TestArray'           \
+        "${TestNewValue}"     || return $?
+
+    #-----------------------------------
+
+    eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} $# -eq $((c_BS_LATS__ArraySize + 1)) || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_1}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_2}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${c_BS_LATS__ArrayValue_3}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${c_BS_LATS__ArrayValue_4}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${5-}" = "_${c_BS_LATS__ArrayValue_5}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${6-}" = "_${c_BS_LATS__ArrayValue_6}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${7-}" = "_${c_BS_LATS__ArrayValue_7}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${8-}" = "_${TestNewValue}" || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lats_array_pop
+#  --------------------
+#
+#  TESTS:   `array_pop`
+#_______________________________________________________________________________
+fn_bs_lats_array_pop() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Create test array
+  TestArray=; unset 'TestArray'
+  fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    TestValue=; unset TestValue
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      array_pop               \
+        'TestArray'           \
+        'TestValue'           || return $?
+
+    #-----------------------------------
+
+    eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} $# -eq $((c_BS_LATS__ArraySize - 1)) || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_1}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_2}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${c_BS_LATS__ArrayValue_3}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${c_BS_LATS__ArrayValue_4}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${5-}" = "_${c_BS_LATS__ArrayValue_5}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${6-}" = "_${c_BS_LATS__ArrayValue_6}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${TestValue-}" = "_${c_BS_LATS__ArrayValue_7}" || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lats_array_unshift
+#  ------------------------
+#
+#  TESTS:   `array_unshift`
+#_______________________________________________________________________________
+fn_bs_lats_array_unshift() {
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Clear positional parameters
+  set 'BS_DUMMY_PARAM' && shift
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Create test array
+  TestArray=; unset 'TestArray'
+  fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+  TestNewValue='A value that'\''s been "unshifted"!'
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      array_unshift           \
+        'TestArray'           \
+        "${TestNewValue}"     || return $?
+
+    #-----------------------------------
+
+    eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} $# -eq $((c_BS_LATS__ArraySize + 1)) || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${TestNewValue}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_1}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${c_BS_LATS__ArrayValue_2}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${c_BS_LATS__ArrayValue_3}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${5-}" = "_${c_BS_LATS__ArrayValue_4}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${6-}" = "_${c_BS_LATS__ArrayValue_5}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${7-}" = "_${c_BS_LATS__ArrayValue_6}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${8-}" = "_${c_BS_LATS__ArrayValue_7}" || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lats_array_shift
+#  ----------------------
+#
+#  TESTS:   `array_shift`
+#_______________________________________________________________________________
+fn_bs_lats_array_shift() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Create test array
+  TestArray=; unset 'TestArray'
+  fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    TestValue=; unset 'TestValue'
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      array_shift             \
+        'TestArray'           \
+        'TestValue'           || return $?
+
+    #-----------------------------------
+
+    eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} $# -eq $((c_BS_LATS__ArraySize - 1)) || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "${TestValue-}" = "${c_BS_LATS__ArrayValue_1}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_2}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_3}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${c_BS_LATS__ArrayValue_4}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${c_BS_LATS__ArrayValue_5}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${5-}" = "_${c_BS_LATS__ArrayValue_6}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${6-}" = "_${c_BS_LATS__ArrayValue_7}" || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lats_array_reverse
+#  ------------------------
+#
+#  TESTS:   `array_reverse`
+#_______________________________________________________________________________
+fn_bs_lats_array_reverse() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Create test array
+  TestArray=; unset 'TestArray'
+  fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  OUTPUT: new array
+  {
+    ReversedArray=; unset 'ReversedArray'
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      array_reverse           \
+        'TestArray'           \
+        'ReversedArray'       || return $?
+
+    #-----------------------------------
+
+    fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+
+    #-----------------------------------
+
+    eval "set 'BS_DUMMY_PARAM' ${ReversedArray:+${ReversedArray}} && shift" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} $# -eq "${c_BS_LATS__ArraySize}" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "_${7-}" = "_${c_BS_LATS__ArrayValue_1}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${6-}" = "_${c_BS_LATS__ArrayValue_2}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${5-}" = "_${c_BS_LATS__ArrayValue_3}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${c_BS_LATS__ArrayValue_4}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${c_BS_LATS__ArrayValue_5}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_6}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_7}" || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  OUTPUT: input array
+  {
+    ReversedArray="${TestArray}"
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      array_reverse           \
+        'ReversedArray'       || return $?
+
+    #-----------------------------------
+
+    eval "set 'BS_DUMMY_PARAM' ${ReversedArray:+${ReversedArray}} && shift" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} $# -eq "${c_BS_LATS__ArraySize}" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "_${7-}" = "_${c_BS_LATS__ArrayValue_1}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${6-}" = "_${c_BS_LATS__ArrayValue_2}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${5-}" = "_${c_BS_LATS__ArrayValue_3}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${c_BS_LATS__ArrayValue_4}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${c_BS_LATS__ArrayValue_5}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_6}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_7}" || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lats_array_slice
+#  ----------------------
+#
+#  TESTS:   `array_slice`
+#_______________________________________________________________________________
+fn_bs_lats_array_slice() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Create test array
+  TestArray=; unset 'TestArray'
+  fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  SLICE: NORMAL; FULL ARRAY
+  {
+     TestRangeBegin=$((BS_LATS_ARRAY_FIRST_INDEX + 0))
+       TestRangeEnd=$((BS_LATS_ARRAY_FIRST_INDEX + c_BS_LATS__ArraySize))
+    TestRangeLength="${c_BS_LATS__ArraySize}"
+
+    #-----------------------------------
+    #  by RANGE
+    {
+      TestSlice=; unset 'TestSlice'
+      test_run_expect_success                 \
+        ${LINENO:+"@${LINENO}"}               \
+        array_slice                           \
+          'TestArray'                         \
+          "${TestRangeBegin}:${TestRangeEnd}" \
+          'TestSlice'                         || return $?
+
+      #.................................
+
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestSlice' || return $?
+    }
+
+    #-----------------------------------
+    #  by LENGTH
+    {
+      TestSlice=; unset 'TestSlice'
+      test_run_expect_success                    \
+        ${LINENO:+"@${LINENO}"}                  \
+        array_slice                              \
+          'TestArray'                            \
+          "${TestRangeBegin}#${TestRangeLength}" \
+          'TestSlice'                            || return $?
+
+      #.................................
+
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestSlice' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  SLICE: NORMAL
+  {
+     TestRangeBegin=$((BS_LATS_ARRAY_FIRST_INDEX + 1))
+       TestRangeEnd=$((BS_LATS_ARRAY_FIRST_INDEX + 5))
+    TestRangeLength=4
+
+    #-----------------------------------
+    #  by RANGE
+    {
+      TestSlice=; unset 'TestSlice'
+      test_run_expect_success                 \
+        ${LINENO:+"@${LINENO}"}               \
+        array_slice                           \
+          'TestArray'                         \
+          "${TestRangeBegin}:${TestRangeEnd}" \
+          'TestSlice'                         || return $?
+
+      #.................................
+
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+
+      #.................................
+
+      eval "set 'BS_DUMMY_PARAM' ${TestSlice:+${TestSlice}} && shift" || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} $# -eq "${TestRangeLength}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_2}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_3}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${c_BS_LATS__ArrayValue_4}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${c_BS_LATS__ArrayValue_5}" || return $?
+    }
+
+    #-----------------------------------
+    #  by LENGTH
+    {
+      TestSlice=; unset 'TestSlice'
+      test_run_expect_success                    \
+        ${LINENO:+"@${LINENO}"}                  \
+        array_slice                              \
+          'TestArray'                            \
+          "${TestRangeBegin}#${TestRangeLength}" \
+          'TestSlice'                            || return $?
+
+      #.................................
+
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+
+      #.................................
+
+      eval "set 'BS_DUMMY_PARAM' ${TestSlice:+${TestSlice}} && shift" || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} $# -eq "${TestRangeLength}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_2}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_3}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${c_BS_LATS__ArrayValue_4}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${c_BS_LATS__ArrayValue_5}" || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  SLICE: NORMAL; UNSET START
+  {
+    TestRangeBegin=;                                        #< <UNUSED>
+       TestRangeEnd=$((BS_LATS_ARRAY_FIRST_INDEX + 4))
+    TestRangeLength=$((c_BS_LATS__ArraySize - (4 - 1) ))
+
+    #-----------------------------------
+    #  by RANGE
+    {
+      TestSlice=; unset 'TestSlice'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        array_slice             \
+          'TestArray'           \
+          ":${TestRangeEnd}"    \
+          'TestSlice'           || return $?
+
+      #.................................
+
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+
+      #.................................
+
+      eval "set 'BS_DUMMY_PARAM' ${TestSlice:+${TestSlice}} && shift" || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} $# -eq "${TestRangeLength}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_2}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${c_BS_LATS__ArrayValue_3}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${c_BS_LATS__ArrayValue_4}" || return $?
+    }
+
+    #-----------------------------------
+    #  by LENGTH
+    {
+      TestSlice=; unset 'TestSlice'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        array_slice             \
+          'TestArray'           \
+          "#${TestRangeLength}" \
+          'TestSlice'           || return $?
+
+      #.................................
+
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+
+      #.................................
+
+      eval "set 'BS_DUMMY_PARAM' ${TestSlice:+${TestSlice}} && shift" || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} $# -eq "${TestRangeLength}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_2}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${c_BS_LATS__ArrayValue_3}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${c_BS_LATS__ArrayValue_4}" || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  SLICE: NORMAL; UNSET END
+  {
+    TestRangeBegin=$((BS_LATS_ARRAY_FIRST_INDEX + 2))
+    TestRangeEnd=;                                          #< <UNUSED>
+    TestRangeLength=$((c_BS_LATS__ArraySize - 2))
+
+    #-----------------------------------
+    #  by RANGE
+    {
+      TestSlice=; unset 'TestSlice'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        array_slice             \
+          'TestArray'           \
+          "${TestRangeBegin}:"  \
+          'TestSlice'           || return $?
+
+      #.................................
+
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+
+      #.................................
+
+      eval "set 'BS_DUMMY_PARAM' ${TestSlice:+${TestSlice}} && shift" || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} $# -eq "${TestRangeLength}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_3}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_4}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${c_BS_LATS__ArrayValue_5}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${c_BS_LATS__ArrayValue_6}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${5-}" = "_${c_BS_LATS__ArrayValue_7}" || return $?
+    }
+
+    #-----------------------------------
+    #  by LENGTH
+    {
+      TestSlice=; unset 'TestSlice'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        array_slice             \
+          'TestArray'           \
+          "${TestRangeBegin?}#" \
+          'TestSlice'           || return $?
+
+      #.................................
+
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+
+      #.................................
+
+      eval "set 'BS_DUMMY_PARAM' ${TestSlice:+${TestSlice}} && shift" || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} $# -eq "${TestRangeLength}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_3}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_4}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${c_BS_LATS__ArrayValue_5}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${c_BS_LATS__ArrayValue_6}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${5-}" = "_${c_BS_LATS__ArrayValue_7}" || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  SLICE: REVERSE
+  {
+     TestRangeBegin=$((BS_LATS_ARRAY_FIRST_INDEX + 3))
+       TestRangeEnd=$((BS_LATS_ARRAY_FIRST_INDEX + 0))
+    TestRangeLength=3
+
+    #-----------------------------------
+    #  SLICE: REVERSE by RANGE
+    {
+      TestSlice=; unset 'TestSlice'
+      test_run_expect_success                 \
+        ${LINENO:+"@${LINENO}"}               \
+        array_slice                           \
+          'TestArray'                         \
+          "${TestRangeBegin}:${TestRangeEnd}" \
+          'TestSlice'                         || return $?
+
+      #.................................
+
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+
+      #.................................
+
+      eval "set 'BS_DUMMY_PARAM' ${TestSlice:+${TestSlice}} && shift" || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} $# -eq "${TestRangeLength}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${c_BS_LATS__ArrayValue_2}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_3}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_4}" || return $?
+    }
+
+    #-----------------------------------
+    #  SLICE: REVERSE by LENGTH
+    {
+      TestSlice=; unset 'TestSlice'
+      test_run_expect_success                     \
+        ${LINENO:+"@${LINENO}"}                   \
+        array_slice                               \
+          'TestArray'                             \
+          "${TestRangeBegin}#-${TestRangeLength}" \
+          'TestSlice'                             || return $?
+
+      #.................................
+
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+
+      #.................................
+
+      eval "set 'BS_DUMMY_PARAM' ${TestSlice:+${TestSlice}} && shift" || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} $# -eq "${TestRangeLength}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${c_BS_LATS__ArrayValue_2}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${c_BS_LATS__ArrayValue_3}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${c_BS_LATS__ArrayValue_4}" || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lats_array_sort
+#  ---------------------
+#
+#  TESTS:   `array_sort`
+#_______________________________________________________________________________
+fn_bs_lats_array_sort() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Sort test array values (all start
+  #+ with a number so order is known)
+  TestArraySort_Value1="1. ${c_BS_LATS__ArrayValue_1}"
+  TestArraySort_Value2="2. ${c_BS_LATS__ArrayValue_2}"
+  TestArraySort_Value3="3. ${c_BS_LATS__ArrayValue_3}"
+  TestArraySort_Value4="4. ${c_BS_LATS__ArrayValue_4}"
+  TestArraySort_Value5="5. ${c_BS_LATS__ArrayValue_5}"
+  TestArraySort_Value6="6. ${c_BS_LATS__ArrayValue_6}"
+  TestArraySort_Value7="7. ${c_BS_LATS__ArrayValue_7}"
+
+  TestArraySort_Size=7
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Create test array
+  TestArray=; unset 'TestArray'
+  test_run_expect_success       \
+    ${LINENO:+"@${LINENO}"}     \
+    array_new                   \
+      'TestArray'               \
+      "${TestArraySort_Value6}" \
+      "${TestArraySort_Value2}" \
+      "${TestArraySort_Value5}" \
+      "${TestArraySort_Value3}" \
+      "${TestArraySort_Value1}" \
+      "${TestArraySort_Value7}" \
+      "${TestArraySort_Value4}" || return $?
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  OUTPUT: new array; SORT: no args
+  {
+    SortedArray=; unset 'SortedArray'
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      array_sort              \
+        'TestArray'           \
+        'SortedArray'         || return $?
+
+    #-----------------------------------
+
+    eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} $# -eq "${TestArraySort_Size}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${TestArraySort_Value6}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${TestArraySort_Value2}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${TestArraySort_Value5}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${TestArraySort_Value3}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${5-}" = "_${TestArraySort_Value1}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${6-}" = "_${TestArraySort_Value7}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${7-}" = "_${TestArraySort_Value4}" || return $?
+
+    #-----------------------------------
+
+    eval "set 'BS_DUMMY_PARAM' ${SortedArray:+${SortedArray}} && shift" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} $# -eq "${TestArraySort_Size}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${TestArraySort_Value1}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${TestArraySort_Value2}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${TestArraySort_Value3}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${TestArraySort_Value4}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${5-}" = "_${TestArraySort_Value5}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${6-}" = "_${TestArraySort_Value6}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${7-}" = "_${TestArraySort_Value7}" || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  OUTPUT: new array; SORT: with args
+  {
+    SortedArray=; unset 'SortedArray'
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      array_sort              \
+        'TestArray'           \
+        'SortedArray'         \
+        -n -r                 || return $?
+
+    #-----------------------------------
+
+    eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} $# -eq "${TestArraySort_Size}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${TestArraySort_Value6}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${TestArraySort_Value2}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${TestArraySort_Value5}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${TestArraySort_Value3}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${5-}" = "_${TestArraySort_Value1}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${6-}" = "_${TestArraySort_Value7}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${7-}" = "_${TestArraySort_Value4}" || return $?
+
+    #-----------------------------------
+
+    eval "set 'BS_DUMMY_PARAM' ${SortedArray:+${SortedArray}} && shift" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} $# -eq "${TestArraySort_Size}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${7-}" = "_${TestArraySort_Value1}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${6-}" = "_${TestArraySort_Value2}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${5-}" = "_${TestArraySort_Value3}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${TestArraySort_Value4}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${TestArraySort_Value5}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${TestArraySort_Value6}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${TestArraySort_Value7}" || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  OUTPUT: input array; SORT: no args
+  {
+    SortedArray="${TestArray}"
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      array_sort              \
+        'SortedArray'         || return $?
+
+    #-----------------------------------
+
+    eval "set 'BS_DUMMY_PARAM' ${SortedArray:+${SortedArray}} && shift" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} $# -eq "${TestArraySort_Size}" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${TestArraySort_Value1}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${TestArraySort_Value2}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${TestArraySort_Value3}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${TestArraySort_Value4}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${5-}" = "_${TestArraySort_Value5}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${6-}" = "_${TestArraySort_Value6}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${7-}" = "_${TestArraySort_Value7}" || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  OUTPUT: input array; SORT: with args
+  {
+    SortedArray="${TestArray}"
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      array_sort              \
+        'SortedArray'         \
+        -n -r                 || return $?
+
+    #-----------------------------------
+
+    eval "set 'BS_DUMMY_PARAM' ${SortedArray:+${SortedArray}} && shift" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} $# -eq "${TestArraySort_Size}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${7-}" = "_${TestArraySort_Value1}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${6-}" = "_${TestArraySort_Value2}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${5-}" = "_${TestArraySort_Value3}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = "_${TestArraySort_Value4}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = "_${TestArraySort_Value5}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = "_${TestArraySort_Value6}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = "_${TestArraySort_Value7}" || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lats_array_contains
+#  -----------------------
+#
+#  TESTS:   `array_contains`
+#_______________________________________________________________________________
+fn_bs_lats_array_contains() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Create test array
+  TestArray=; unset 'TestArray'
+  fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    TestValue="${c_BS_LATS__ArrayValue_4}"
+
+    #-----------------------------------
+
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      array_contains          \
+        'TestArray'           \
+        "${TestValue}"        || return $?
+
+    #-----------------------------------
+
+    fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    TestValue="${c_BS_LATS__ArrayValue_4}"
+
+    #-----------------------------------
+
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      array_contains          \
+        'TestArray'           \
+        '='                   \
+        "${TestValue}"        || return $?
+
+    #-----------------------------------
+
+    fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  {
+    TestValue="${c_BS_LATS__ArrayValue_4}${c_BS_LATS__ArrayValue_5}"
+
+    #-----------------------------------
+
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      array_contains          \
+        'TestArray'           \
+        '='                   \
+        "${TestValue}"        || return $?
+
+    #-----------------------------------
+
+    fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  {
+    TestValue=;
+
+    #-----------------------------------
+
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      array_contains          \
+        'TestArray'           \
+        '='                   \
+        "${TestValue}"        || return $?
+
+    #-----------------------------------
+
+    fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    TestValue="${c_BS_LATS__ArrayValue_4}"
+
+    #-----------------------------------
+
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      array_contains          \
+        'TestArray'           \
+        '!='                  \
+        "${TestValue}"        || return $?
+
+    #-----------------------------------
+
+    fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  {
+    TestValue="${c_BS_LATS__ArrayValue_4}${c_BS_LATS__ArrayValue_5}"
+
+    #-----------------------------------
+
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      array_contains          \
+        'TestArray'           \
+        '!='                  \
+        "${TestValue}"        || return $?
+
+    #-----------------------------------
+
+    fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  {
+    TestValue=;
+
+    #-----------------------------------
+
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      array_contains          \
+        'TestArray'           \
+        '!='                  \
+        "${TestValue}"        || return $?
+
+    #-----------------------------------
+
+    fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lats_array_search
+#  -----------------------
+#
+#  TESTS:   `array_search`
+#_______________________________________________________________________________
+fn_bs_lats_array_search() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Create test array
+  TestArray=; unset 'TestArray'
+  fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  A simple value
+  {
+    {
+      TestIndex=; unset 'TestIndex'
+      test_run_expect_success           \
+        ${LINENO:+"@${LINENO}"}         \
+        array_search                    \
+          'TestArray'                   \
+          'TestIndex'                   \
+          '='                           \
+          "${c_BS_LATS__ArrayValue_3}"  || return $?
+
+      #.................................
+
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} -n "${TestIndex:+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${TestIndex?}" -eq $((BS_LATS_ARRAY_FIRST_INDEX + 2)) || return $?
+    }
+
+    #-----------------------------------
+    #  Offset from previous index,
+    #+ looking for a new value
+    {
+      test_run_expect_success          \
+        ${LINENO:+"@${LINENO}"}        \
+        array_search                   \
+          'TestArray'                  \
+          'TestIndex'                  \
+          '='                          \
+          "${c_BS_LATS__ArrayValue_4}" || return $?
+
+      #.................................
+
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} -n "${TestIndex:+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${TestIndex?}" -eq $((BS_LATS_ARRAY_FIRST_INDEX + 3)) || return $?
+    }
+
+    #-----------------------------------
+    #  Offset from previous index,
+    #+ looking for the same value
+    {
+      test_run_expect_failure          \
+        ${LINENO:+"@${LINENO}"}        \
+        array_search                   \
+          'TestArray'                  \
+          'TestIndex'                  \
+          '='                          \
+          "${c_BS_LATS__ArrayValue_4}" || return $?
+
+      #.................................
+
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} -z "${TestIndex:+1}" || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  `case` pattern
+  {
+    {
+      TestIndex=; unset 'TestIndex'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        array_search            \
+          'TestArray'           \
+          'TestIndex'           \
+          '-like'               \
+          '\[5](*'              || return $?
+
+      #.................................
+
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} -n "${TestIndex:+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${TestIndex?}" -eq $((BS_LATS_ARRAY_FIRST_INDEX + 4)) || return $?
+    }
+
+    #-----------------------------------
+    #  Offset from previous index,
+    #+ looking for a new value
+    {
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        array_search            \
+          'TestArray'           \
+          'TestIndex'           \
+          '-like'               \
+          '\*6\**'              || return $?
+
+      #.................................
+
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} -n "${TestIndex:+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${TestIndex?}" -eq $((BS_LATS_ARRAY_FIRST_INDEX + 5)) || return $?
+    }
+
+    #-----------------------------------
+    #  Offset from previous index,
+    #+ looking for the same value
+    {
+      test_run_expect_failure   \
+        ${LINENO:+"@${LINENO}"} \
+        array_search            \
+          'TestArray'           \
+          'TestIndex'           \
+          '-like'               \
+          '\*6\**'              || return $?
+
+      #.................................
+
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} -z "${TestIndex:+1}" || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Basic Regular Expression
+  {
+    {
+      TestIndex=; unset 'TestIndex'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        array_search            \
+          'TestArray'           \
+          'TestIndex'           \
+          '-bre'                \
+          '\(\[5](.*\)'         || return $?
+
+      #.................................
+
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} -n "${TestIndex:+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${TestIndex?}" -eq $((BS_LATS_ARRAY_FIRST_INDEX + 4)) || return $?
+    }
+
+    #-----------------------------------
+    #  Offset from previous index,
+    #+ looking for a new value
+    {
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        array_search            \
+          'TestArray'           \
+          'TestIndex'           \
+          '-bre'                \
+          '[*]6\*.*'            || return $?
+
+      #.................................
+
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} -n "${TestIndex:+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${TestIndex?}" -eq $((BS_LATS_ARRAY_FIRST_INDEX + 5)) || return $?
+    }
+
+    #-----------------------------------
+    #  Offset from previous index,
+    #+ looking for the same value
+    {
+      test_run_expect_failure   \
+        ${LINENO:+"@${LINENO}"} \
+        array_search            \
+          'TestArray'           \
+          'TestIndex'           \
+          '-bre'                \
+          '[*]6\*.*'            || return $?
+
+      #.................................
+
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} -z "${TestIndex:+1}" || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Extended Regular Expression
+  {
+    {
+      TestIndex=; unset 'TestIndex'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        array_search            \
+          'TestArray'           \
+          'TestIndex'           \
+          '-ere'                \
+          '(\[5]\(.*)'          || return $?
+
+      #.................................
+
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} -n "${TestIndex:+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${TestIndex?}" -eq $((BS_LATS_ARRAY_FIRST_INDEX + 4)) || return $?
+    }
+
+    #-----------------------------------
+    #  Offset from previous index,
+    #+ looking for a new value
+    {
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        array_search            \
+          'TestArray'           \
+          'TestIndex'           \
+          '-ere'                \
+          '([*]6\*.*)'          || return $?
+
+      #.................................
+
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} -n "${TestIndex:+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${TestIndex?}" -eq $((BS_LATS_ARRAY_FIRST_INDEX + 5)) || return $?
+    }
+
+    #-----------------------------------
+    #  Offset from previous index,
+    #+ looking for the same value
+    {
+      test_run_expect_failure   \
+        ${LINENO:+"@${LINENO}"} \
+        array_search            \
+          'TestArray'           \
+          'TestIndex'           \
+          '-ere'                \
+          '([*]6\*.*)'          || return $?
+
+      #.................................
+
+      fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} -z "${TestIndex:+1}" || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lats_array_join
+#  ---------------------
+#
+#  TESTS:   `array_join`
+#_______________________________________________________________________________
+fn_bs_lats_array_join() {
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Clear positional parameters
+  set 'BS_DUMMY_PARAM' && shift
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Create test array
+  TestArray=; unset 'TestArray'
+  fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+  TestArray_join_expect="${c_BS_LATS__ArrayValue_1}"
+  TestArray_join_expect="${TestArray_join_expect}:%:${c_BS_LATS__ArrayValue_2}"
+  TestArray_join_expect="${TestArray_join_expect}:%:${c_BS_LATS__ArrayValue_3}"
+  TestArray_join_expect="${TestArray_join_expect}:%:${c_BS_LATS__ArrayValue_4}"
+  TestArray_join_expect="${TestArray_join_expect}:%:${c_BS_LATS__ArrayValue_5}"
+  TestArray_join_expect="${TestArray_join_expect}:%:${c_BS_LATS__ArrayValue_6}"
+  TestArray_join_expect="${TestArray_join_expect}:%:${c_BS_LATS__ArrayValue_7}"
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    JoinedText=; unset 'JoinedText'
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      array_join              \
+        'TestArray'           \
+        ':%:'                 \
+        'JoinedText'          || return $?
+
+    #-----------------------------------
+
+    fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${JoinedText-}" = "_${TestArray_join_expect}" || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lats_array_split
+#  ----------------------
+#
+#  TESTS:   `array_split`
+#_______________________________________________________________________________
+fn_bs_lats_array_split() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  TestArray_split_text="${c_BS_LATS__ArrayValue_1}"
+  TestArray_split_text="${TestArray_split_text}:%:${c_BS_LATS__ArrayValue_2}"
+  TestArray_split_text="${TestArray_split_text}:%:${c_BS_LATS__ArrayValue_3}"
+  TestArray_split_text="${TestArray_split_text}:%:${c_BS_LATS__ArrayValue_4}"
+  TestArray_split_text="${TestArray_split_text}:%:${c_BS_LATS__ArrayValue_5}"
+  TestArray_split_text="${TestArray_split_text}:%:${c_BS_LATS__ArrayValue_6}"
+  TestArray_split_text="${TestArray_split_text}:%:${c_BS_LATS__ArrayValue_7}"
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    TestArray=; unset 'TestArray'
+    test_run_expect_success       \
+      ${LINENO:+"@${LINENO}"}     \
+      array_split                 \
+        'TestArray'               \
+        "${TestArray_split_text}" \
+        ':%:'                     || return $?
+
+    #-----------------------------------
+
+    fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lats_array_printf
+#  -----------------------
+#
+#  TESTS:   `array_printf`
+#_______________________________________________________________________________
+fn_bs_lats_array_printf() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Create test array
+  TestArray=; unset 'TestArray'
+  fn_bs_lats_create_array "@${LINENO-}" 'TestArray' || return $?
+
+  TestArray_printf_expect=;
+  TestArray_printf_expect="${TestArray_printf_expect}${c_BS_LATS__ArrayValue_1}:%:"
+  TestArray_printf_expect="${TestArray_printf_expect}${c_BS_LATS__ArrayValue_2}:%:"
+  TestArray_printf_expect="${TestArray_printf_expect}${c_BS_LATS__ArrayValue_3}:%:"
+  TestArray_printf_expect="${TestArray_printf_expect}${c_BS_LATS__ArrayValue_4}:%:"
+  TestArray_printf_expect="${TestArray_printf_expect}${c_BS_LATS__ArrayValue_5}:%:"
+  TestArray_printf_expect="${TestArray_printf_expect}${c_BS_LATS__ArrayValue_6}:%:"
+  TestArray_printf_expect="${TestArray_printf_expect}${c_BS_LATS__ArrayValue_7}:%:"
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_success         \
+      ${LINENO:+"--line=${LINENO}"} \
+      --output='TestOutput'         \
+      array_printf                  \
+      'TestArray'                   \
+      '%s:%%:'                      || return $?
+
+    #-----------------------------------
+
+    fn_bs_lats_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" = "_${TestArray_printf_expect}" || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lats_array_from_path
+#  --------------------------
+#
+#  TESTS:   `array_from_path`
+#
+#  NOTE:
+#   - Difficult to test this in depth as there are very few paths guaranteed to
+#+    exist and it's difficult to know what the contents of those paths would
+#+    be (if anything). It would also be easy for this to be very time consuming
+#+    if any path chosen contained many files.
+#_______________________________________________________________________________
+fn_bs_lats_array_from_path() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    TestArray=; unset 'TestArray'
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      array_from_path         \
+        'TestArray'           \
+        '/dev/'               || return $?
+
+    #-----------------------------------
+
+    eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} $# -ge 1 || return $?
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      array_contains          \
+        'TestArray'           \
+        '/dev/null'           || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    TestArray=; unset 'TestArray'
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      array_from_path         \
+        --all                 \
+        'TestArray'           \
+        '/dev/'               || return $?
+
+    #-----------------------------------
+
+    eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} $# -ge 1 || return $?
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      array_contains          \
+        'TestArray'           \
+        '/dev/null'           || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    TestArray=; unset 'TestArray'
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      array_from_path         \
+        'TestArray'           \
+        -a                    \
+        '/dev/'               || return $?
+
+    #-----------------------------------
+
+    eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} $# -ge 1 || return $?
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      array_contains          \
+        'TestArray'           \
+        '/dev/null'           || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lats_array_from_find
+#  -----------------------
+#
+#  TESTS:   `array_from_find`
+#
+#  NOTE:
+#   - Difficult to test this in depth as there are very few paths guaranteed to
+#+    exist and it's difficult to know what the contents of those paths would
+#+    be (if anything). It would also be easy for this to be very time consuming
+#+    if any path chosen contained many files.
+#_______________________________________________________________________________
+fn_bs_lats_array_from_find() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    TestArray=; unset 'TestArray'
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      array_from_find         \
+        'TestArray'           \
+        '/dev/null'           \
+        '/dev/null'           \
+        '/dev/null'           \
+        '/dev/null'           || return $?
+
+    #-----------------------------------
+    eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} $# -eq 4 || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = '_/dev/null' || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = '_/dev/null' || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = '_/dev/null' || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = '_/dev/null' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    TestArray=; unset 'TestArray'
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestArray      \
+      array_from_find         \
+        --                    \
+        '/dev/null'           \
+        '/dev/null'           \
+        '/dev/null'           \
+        '/dev/null'           || return $?
+
+    #-----------------------------------
+
+    eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} $# -eq 4 || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = '_/dev/null' || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = '_/dev/null' || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = '_/dev/null' || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = '_/dev/null' || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lats_array_from_find_allow_print
+#  --------------------------------------
+#
+#  TESTS:   `array_from_find_allow_print`
+#
+#  NOTE:
+#   - Difficult to test this in depth as there are very few paths guaranteed to
+#+    exist and it's difficult to know what the contents of those paths would
+#+    be (if anything). It would also be easy for this to be very time consuming
+#+    if any path chosen contained many files.
+#_______________________________________________________________________________
+fn_bs_lats_array_from_find_allow_print() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    TestArray=; unset 'TestArray'
+    test_run_expect_success       \
+      ${LINENO:+"@${LINENO}"}     \
+      array_from_find_allow_print \
+        'TestArray'               \
+        '/dev/null'               \
+        '/dev/null'               \
+        '/dev/null'               \
+        '/dev/null'               || return $?
+
+    #-----------------------------------
+
+    eval "set 'BS_DUMMY_PARAM' ${TestArray:+${TestArray}} && shift" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} $# -eq 4 || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${1-}" = '_/dev/null' || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${2-}" = '_/dev/null' || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${3-}" = '_/dev/null' || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "_${4-}" = '_/dev/null' || return $?
+  }
+}
+
+#===============================================================================
+#===============================================================================
+#  TEST MAIN
+#===============================================================================
+#===============================================================================
+
+#_______________________________________________________________________________
+#  fn_bs_lats_run_units
+#  --------------------
+#
+#  Run all test units for the library
+#_______________________________________________________________________________
+fn_bs_lats_run_units() {
+  #  Ensure always at least one argument so no issues with "$@"
+  case $# in 0) set 'BS_DUMMY_PARAM' '--' && shift ;; esac
+
+  #-------------------------------------
+  #  CONSTANTS
+  test_run_unit              \
+    -u 'libarray: constants' \
+    'fn_bs_lats_constants'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_new`
+  test_run_unit              \
+    -u 'libarray: array_new' \
+    'fn_bs_lats_array_new'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_size`
+  test_run_unit               \
+    -u 'libarray: array_size' \
+    'fn_bs_lats_array_size'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_get`
+  test_run_unit              \
+    -u 'libarray: array_get' \
+    'fn_bs_lats_array_get'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_set`
+  test_run_unit              \
+    -u 'libarray: array_set' \
+    'fn_bs_lats_array_set'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_insert`
+  test_run_unit                 \
+    -u 'libarray: array_insert' \
+    'fn_bs_lats_array_insert'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_remove`
+  test_run_unit                 \
+    -u 'libarray: array_remove' \
+    'fn_bs_lats_array_remove'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_push`
+  test_run_unit               \
+    -u 'libarray: array_push' \
+    'fn_bs_lats_array_push'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_pop`
+  test_run_unit              \
+    -u 'libarray: array_pop' \
+    'fn_bs_lats_array_pop'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_unshift`
+  test_run_unit                  \
+    -u 'libarray: array_unshift' \
+    'fn_bs_lats_array_unshift'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_shift`
+  test_run_unit                \
+    -u 'libarray: array_shift' \
+    'fn_bs_lats_array_shift'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_reverse`
+  test_run_unit                  \
+    -u 'libarray: array_reverse' \
+    'fn_bs_lats_array_reverse'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_slice`
+  test_run_unit                \
+    -u 'libarray: array_slice' \
+    'fn_bs_lats_array_slice'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_sort`
+  test_run_unit               \
+    -u 'libarray: array_sort' \
+    'fn_bs_lats_array_sort'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_contains`
+  test_run_unit                   \
+    -u 'libarray: array_contains' \
+    'fn_bs_lats_array_contains'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_search`
+  test_run_unit                 \
+    -u 'libarray: array_search' \
+    'fn_bs_lats_array_search'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_join`
+  test_run_unit               \
+    -u 'libarray: array_join' \
+    'fn_bs_lats_array_join'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_split`
+  test_run_unit                \
+    -u 'libarray: array_split' \
+    'fn_bs_lats_array_split'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_printf`
+  test_run_unit                 \
+    -u 'libarray: array_printf' \
+    'fn_bs_lats_array_printf'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_from_path`
+  test_run_unit                    \
+    -u 'libarray: array_from_path' \
+    'fn_bs_lats_array_from_path'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_from_find`
+  test_run_unit                    \
+    -u 'libarray: array_from_find' \
+    'fn_bs_lats_array_from_find'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_from_find_allow_print`
+  test_run_unit                                \
+    -u 'libarray: array_from_find_allow_print' \
+    'fn_bs_lats_array_from_find_allow_print'   \
+      "$@"
+}
+
+################################################################################
+################################################################################
+#  TESTWRAPPER Values & Commands
+################################################################################
+################################################################################
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  FRIENDLY NAME
+BS_TEST_NAME='[libarray] Test Success'
+export BS_TEST_NAME
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  NUMBER OF AVAILABLE CONFIGURATIONS
+BS_TEST_CONFIG_COUNT=7
+export BS_TEST_CONFIG_COUNT
+
+#_______________________________________________________________________________
+#  test_run_config
+#  ---------------
+#
+#  Run tests for a specific library configuration.
+#_______________________________________________________________________________
+test_run_config() { ## cSpell:Ignore BS_TRC_
+  #---------------------------------------------------------
+  #  Ensure none of the config variables are already set
+  BS_LIBARRAY_CONFIG_START_INDEX_ONE=;
+  unset BS_LIBARRAY_CONFIG_START_INDEX_ONE
+  BS_LIBARRAY_CONFIG_NO_MULTIDIGIT_PARAMETER=;
+  unset BS_LIBARRAY_CONFIG_NO_MULTIDIGIT_PARAMETER
+  BS_LIBARRAY_CONFIG_NO_SHIFT_N=;
+  unset BS_LIBARRAY_CONFIG_NO_SHIFT_N
+  BS_LIBARRAY_CONFIG_NO_EXPR_BRE_MATCH=;
+  unset BS_LIBARRAY_CONFIG_NO_EXPR_BRE_MATCH
+  BS_LIBARRAY_CONFIG_NO_DEV_NULL=;
+  unset BS_LIBARRAY_CONFIG_NO_DEV_NULL
+
+  BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1=;
+  unset BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1
+  BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2=;
+  unset BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2
+
+  #---------------------------------------------------------
+  #  Get Library File & Config ID
+  BS_TRC_Library="${1:?'[libarray::success::test_run_config]: Error: expected a library to source'}"
+  shift
+  BS_TRC_Config="${1:?'[libarray::success::test_run_config]: Error: expected a configuration index'}"
+  shift
+
+  #---------------------------------------------------------
+  #  Set Configuration Accordingly
+  BS_LATS_ARRAY_FIRST_INDEX=0           #< Default Array index offset
+  case ${BS_TRC_Config} in
+    #...................................
+    #  CONFIG: DEFAULT
+    1)  test_print_config_info   \
+          'Config: DEFAULT'      \
+          'Type:   NORMAL USAGE' ;;
+
+    #...................................
+    #  CONFIG: ONE-BASED INDEXES
+    2)  BS_LIBARRAY_CONFIG_START_INDEX_ONE=1
+        export BS_LIBARRAY_CONFIG_START_INDEX_ONE
+
+        BS_LATS_ARRAY_FIRST_INDEX=1     #< Alternate Array index offset
+
+        test_print_config_info      \
+          'Config: START_INDEX_ONE' \
+          'Type:   NORMAL USAGE'    ;;
+
+    #...................................
+    #  CONFIG: ONLY ALLOW `$1`-`$9`
+    3)  BS_LIBARRAY_CONFIG_NO_MULTIDIGIT_PARAMETER=1
+        export BS_LIBARRAY_CONFIG_NO_MULTIDIGIT_PARAMETER
+
+        test_print_config_info              \
+          'Config: NO_MULTIDIGIT_PARAMETER' \
+          'Type:   NORMAL USAGE'            ;;
+
+    #...................................
+    #  CONFIG: NO `shift N`
+    4)  BS_LIBARRAY_CONFIG_NO_SHIFT_N=1
+        export BS_LIBARRAY_CONFIG_NO_SHIFT_N
+
+        test_print_config_info   \
+          'Config: NO_SHIFT_N'   \
+          'Type:   NORMAL USAGE' ;;
+
+    #...................................
+    #  CONFIG: NO `expr` BRE match
+    5)  BS_LIBARRAY_CONFIG_NO_EXPR_BRE_MATCH=1
+        export BS_LIBARRAY_CONFIG_NO_EXPR_BRE_MATCH
+
+        test_print_config_info        \
+          'Config: NO_EXPR_BRE_MATCH' \
+          'Type:   NORMAL USAGE'      ;;
+
+    #...................................
+    #  CONFIG: NO `/dev/null`
+    6)  BS_LIBARRAY_CONFIG_NO_DEV_NULL=1
+        export BS_LIBARRAY_CONFIG_NO_DEV_NULL
+
+        test_print_config_info   \
+          'Config: NO_DEV_NULL'  \
+          'Type:   NORMAL USAGE' ;;
+
+    #...................................
+    #  CONFIG: FIND FILE DESCRIPTORS
+    7)  BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1=9
+        export BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1
+        BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2=8
+        export BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2
+
+        test_print_config_info       \
+          'Config: FIND_REDIRECT_FD' \
+          'Type:   NORMAL USAGE'     ;;
+
+    #...................................
+    #  CONFIG: UNKNOWN
+    *)  return 1 ;;
+  esac
+
+  #---------------------------------------------------------
+  # Source the tool
+  # shellcheck source=/dev/null
+  . "${BS_TRC_Library}" || return $?
+  #---------------------------------------------------------
+
+  #---------------------------------------------------------
+  #  Run the tests
+  case $# in
+  0) fn_bs_lats_run_units      ;;
+  *) fn_bs_lats_run_units "$@" ;;
+  esac
+  #---------------------------------------------------------
+}

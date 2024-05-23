@@ -1,0 +1,2603 @@
+#!/usr/bin/env false
+# SPDX-License-Identifier: MPL-2.0
+#################################### LICENSE ###################################
+#******************************************************************************#
+#*                                                                            *#
+#* BetterScripts 'libarray/failure': Tests for 'libarray' failure conditions. *#
+#*                                                                            *#
+#* Copyright (c) 2022 BetterScripts ( better.scripts@proton.me,               *#
+#*                                    https://github.com/BetterScripts )      *#
+#*                                                                            *#
+#* This file is part of the BetterScripts POSIX Suite.                        *#
+#*                                                                            *#
+#* This Source Code Form is subject to the terms of the Mozilla Public        *#
+#* License, v. 2.0. If a copy of the MPL was not distributed with this        *#
+#* file, You can obtain one at https://mozilla.org/MPL/2.0/.                  *#
+#*                                                                            *#
+#* -------------------------------------------------------------------------- *#
+#*                                                                            *#
+#* ADDENDUM:                                                                  *#
+#*                                                                            *#
+#* In addition to the Mozilla Public License a copy of LICENSE.MD should have *#
+#* been be provided alongside this file; LICENSE.MD clarifies how the Mozilla *#
+#* Public License v2.0 applies to this file and MAY confer additional rights. *#
+#*                                                                            *#
+#* Should there be any apparent ambiguity (implied or otherwise) the terms    *#
+#* and conditions from the Mozilla Public License v2.0 shall apply.           *#
+#*                                                                            *#
+#* If a copy of LICENSE.MD was not provided it can be obtained from           *#
+#* https://github.com/BetterScripts/posix/LICENSE.MD.                         *#
+#*                                                                            *#
+#* NOTE:                                                                      *#
+#*                                                                            *#
+#* The Mozilla Public License v2.0 is compatible with the GNU General Public  *#
+#* License v2.0.                                                              *#
+#*                                                                            *#
+#******************************************************************************#
+################################################################################
+
+############################### LIBARRAY/FAILURE ###############################
+#
+# Documentation is written inline formatted as [`Markdown`][markdown], this is
+# in addition to the suite wide documentation which includes details common to
+# multiple suite libraries that may not be detailed here.
+#
+# The included `Makefile` can be used to generate standalone documentation in
+# various formats with various verbosity settings. The `Makefile` can also be
+# used to install scripts and documentation in appropriate locations.
+#
+# As far as possible, terminology and conventions follow those of the
+# [_POSIX.1-2008_ Standard][posix_2008].
+#===============================================================================
+## cSpell:Ignore libarray testrunner testwrapper LATF
+################################ DOCUMENTATION #################################
+#
+#% % libarray-failure(7) BetterScripts | Tests for 'libarray' failure conditions.
+#% % BetterScripts (better.scripts@proton.me)  
+#
+#: <!-- #################################################################### -->
+#: <!-- ########## THIS FILE WAS GENERATED FROM 'libarray/failure' ######### -->
+#: <!-- #################################################################### -->
+#: <!-- ########################### DO NOT EDIT! ########################### -->
+#: <!-- #################################################################### -->
+#:
+#: # LIBARRAY/FAILURE
+#:
+#:
+#
+#  LibArray Test Failure (LATF)
+#  ============================
+#
+#  Tests for `libarray` checking failure conditions.
+#
+#
+################################################################################
+
+############################## SHELLCHECK: GLOBAL ##############################
+# shellcheck shell=sh                                                          #
+#                                                                              #
+# Enable some optional checks:                                                 #
+#                                                                              #
+# shellcheck enable=avoid-nullary-conditions                                   #
+# shellcheck enable=check-extra-masked-returns                                 #
+# shellcheck enable=deprecate-which                                            #
+# shellcheck enable=require-variable-braces                                    #
+#                                                                              #
+################################################################################
+
+#===============================================================================
+#===============================================================================
+#  COMMON VALUES
+#===============================================================================
+#===============================================================================
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Main test array values
+## cSpell:Ignore Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+## cSpell:Ignore sed do eiusmod tempor incididunt ut labore et dolore magna
+## cSpell:Ignore aliqua. Ut enim ad minim veniam,
+c_BS_LATF__ArrayValue_1='1 Lorem ipsum '
+c_BS_LATF__ArrayValue_2='"2 dolor sit amet,"'
+c_BS_LATF__ArrayValue_3='!3 consectetur adipiscing '
+c_BS_LATF__ArrayValue_4='4 "
+" elit,'
+c_BS_LATF__ArrayValue_5='[5] sed do eiusmod tempor incididunt
+'
+c_BS_LATF__ArrayValue_6='*6* ut labore et dolore magna  '
+c_BS_LATF__ArrayValue_7='aliqua.
+'\''#Ut'\'' enim "ad" minim veniam,#'\''
+!'
+
+c_BS_LATF__ArraySize=7
+
+#===============================================================================
+#===============================================================================
+#  COMMON COMMANDS
+#===============================================================================
+#===============================================================================
+
+#_______________________________________________________________________________
+#  fn_bs_latf_create_array
+#  -----------------------
+#
+#  Create the default test array and perform some simple checks.
+#_______________________________________________________________________________
+fn_bs_latf_create_array() { ## cSpell:Ignore BS_LATF_CA_
+    BS_LATF_CA_LINENO=${1?'[libarray::success::fn_bs_latf_create_array] Internal Error: a line number is required'}
+  BS_LATF_CA_refArray=${2:?'[libarray::success::fn_bs_latf_create_array] Internal Error: an output variable is required'}
+    BS_LATF_CA_LINENO="${BS_LATF_CA_LINENO#@}"
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  BS_LATF_CA_Array=; unset 'BS_LATF_CA_Array'
+  test_run_expect_success                               \
+    ${BS_LATF_CA_LINENO:+"--line=${BS_LATF_CA_LINENO}"} \
+    array_new                                           \
+      'BS_LATF_CA_Array'                                \
+      "${c_BS_LATF__ArrayValue_1}"                      \
+      "${c_BS_LATF__ArrayValue_2}"                      \
+      "${c_BS_LATF__ArrayValue_3}"                      \
+      "${c_BS_LATF__ArrayValue_4}"                      \
+      "${c_BS_LATF__ArrayValue_5}"                      \
+      "${c_BS_LATF__ArrayValue_6}"                      \
+      "${c_BS_LATF__ArrayValue_7}"                      || return $?
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  eval "set 'BS_DUMMY_PARAM' ${BS_LATF_CA_Array:+${BS_LATF_CA_Array}} && shift" || return $?
+  test_assert ${BS_LATF_CA_LINENO:+"@${BS_LATF_CA_LINENO}"} $# -eq "${c_BS_LATF__ArraySize}" || return $?
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  eval "${BS_LATF_CA_refArray}=\"\${BS_LATF_CA_Array}\""
+}
+
+#_______________________________________________________________________________
+#  fn_bs_latf_verify_test_array
+#  ----------------------------
+#
+#  Check an array is equivalent to the default test array.
+#_______________________________________________________________________________
+fn_bs_latf_verify_test_array() { ## cSpell:Ignore BS_LATF_VTA_
+    BS_LATF_VTA_LINENO=${1?'[libarray::success::fn_bs_latf_verify_test_array] Internal Error: a line number is required'}
+  BS_LATF_VTA_refArray=${2:?'[libarray::success::fn_bs_latf_verify_test_array] Internal Error: an array variable is required'}
+    BS_LATF_VTA_LINENO="${BS_LATF_VTA_LINENO#@}"
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  BS_LATF_VTA_Array=;
+  eval "BS_LATF_VTA_Array=\"\${${BS_LATF_VTA_refArray}-}\"" || return $?
+  eval "set 'BS_DUMMY_PARAM' ${BS_LATF_VTA_Array:+${BS_LATF_VTA_Array}} && shift" || return $?
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  test_assert ${BS_LATF_VTA_LINENO:+"@${BS_LATF_VTA_LINENO}"} $# -eq "${c_BS_LATF__ArraySize}" || return $?
+  test_assert ${BS_LATF_VTA_LINENO:+"@${BS_LATF_VTA_LINENO}"} "_${1-}" = "_${c_BS_LATF__ArrayValue_1}" || return $?
+  test_assert ${BS_LATF_VTA_LINENO:+"@${BS_LATF_VTA_LINENO}"} "_${2-}" = "_${c_BS_LATF__ArrayValue_2}" || return $?
+  test_assert ${BS_LATF_VTA_LINENO:+"@${BS_LATF_VTA_LINENO}"} "_${3-}" = "_${c_BS_LATF__ArrayValue_3}" || return $?
+  test_assert ${BS_LATF_VTA_LINENO:+"@${BS_LATF_VTA_LINENO}"} "_${4-}" = "_${c_BS_LATF__ArrayValue_4}" || return $?
+  test_assert ${BS_LATF_VTA_LINENO:+"@${BS_LATF_VTA_LINENO}"} "_${5-}" = "_${c_BS_LATF__ArrayValue_5}" || return $?
+  test_assert ${BS_LATF_VTA_LINENO:+"@${BS_LATF_VTA_LINENO}"} "_${6-}" = "_${c_BS_LATF__ArrayValue_6}" || return $?
+  test_assert ${BS_LATF_VTA_LINENO:+"@${BS_LATF_VTA_LINENO}"} "_${7-}" = "_${c_BS_LATF__ArrayValue_7}" || return $?
+}
+
+#_______________________________________________________________________________
+#  fn_bs_latf_source_in_subshell
+#  -----------------------------
+#_______________________________________________________________________________
+fn_bs_latf_source_in_subshell() {
+  # shellcheck source=/dev/null
+  (. "$1") || return $?
+}
+
+#===============================================================================
+#===============================================================================
+#  CONFIG TESTS
+#===============================================================================
+#===============================================================================
+
+#_______________________________________________________________________________
+#  fn_bs_latf_configuration
+#  ------------------------
+#_______________________________________________________________________________
+fn_bs_latf_configuration() { ## cSpell:Ignore BS_LATF_CFG_
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  BS_LATF_CFG_tool="$1"
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid file descriptor
+  {
+    {
+      BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1='bad'
+      export BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1
+      BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2=;
+      unset BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2
+
+      #.................................
+
+      TestOutput=;  unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        fn_bs_latf_source_in_subshell \
+          "${BS_LATF_CFG_tool}"       || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*CONFIG ERROR*BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1*must be an integer > 2*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1=;
+      unset BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1
+      BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2='>5'
+      export BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2
+
+      #.................................
+
+      TestOutput=;  unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        fn_bs_latf_source_in_subshell \
+          "${BS_LATF_CFG_tool}"       || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*CONFIG ERROR*BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2*must be an integer > 2*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1=3
+      export BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1
+      BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2=3
+      export BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2
+
+      #.................................
+
+      TestOutput=;  unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        fn_bs_latf_source_in_subshell \
+          "${BS_LATF_CFG_tool}"       || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*CONFIG ERROR*BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1*BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2*must be different*' || return $?
+    }
+  }
+}
+
+#===============================================================================
+#===============================================================================
+#  COMMAND TESTS
+#===============================================================================
+#===============================================================================
+
+#_______________________________________________________________________________
+#  fn_bs_latf_array_value
+#  ----------------------
+#
+#  TESTS:   `array_value`
+#_______________________________________________________________________________
+fn_bs_latf_array_value() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count
+  {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_value                   || return $?
+
+    #-----------------------------------
+
+    test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_value*expected a value*' || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_latf_array_new
+#  --------------------
+#
+#  TESTS:   `array_new`
+#_______________________________________________________________________________
+fn_bs_latf_array_new() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure         \
+      ${LINENO:+"--line=${LINENO}"} \
+      --output='TestOutput'         \
+      array_new                     \
+        'Test::Array'               \
+        1 2 3                       || return $?
+
+    #-----------------------------------
+
+    test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_new*invalid variable name*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure         \
+      ${LINENO:+"--line=${LINENO}"} \
+      --output='TestOutput'         \
+      array_new                     \
+        --reverse                   || return $?
+
+    #-----------------------------------
+
+    test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like "_*array_new*an array variable is required with '--reverse'*" || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_latf_array_size
+#  ---------------------
+#
+#  TESTS:   `array_size`
+#_______________________________________________________________________________
+fn_bs_latf_array_size() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Create test array
+  TestArray=; unset 'TestArray'
+  fn_bs_latf_create_array "@${LINENO-}" 'TestArray' || return $?
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_size                    || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_size*expected an array variable, and an output variable (optional)*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestSize=;      unset 'TestSize'
+      TestSizeAgain=; unset 'TestSizeAgain'
+      TestOutput=;    unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_size                    \
+          'TestArray'                 \
+          'TestSize'                  \
+          'TestSizeAgain'             || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} -z "${TestSize+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} -z "${TestSizeAgain+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_size*expected an array variable, and an output variable (optional)*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    {
+      TestOutput=;  unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_size                    \
+          'TestArray'                 \
+          ''                          || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_size*invalid variable name*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestSize=;    unset 'TestSize'
+      TestOutput=;  unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_size                    \
+          '#TestArray'                \
+          'TestSize'                  || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} -z "${TestSize+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_size*invalid variable name*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestOutput=;  unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_size                    \
+          'TestArray'                 \
+          'Test~Size'                 || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_size*invalid variable name*' || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_latf_array_get
+#  --------------------
+#
+#  TESTS:   `array_get`
+#_______________________________________________________________________________
+fn_bs_latf_array_get() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Create test array
+  TestArray=; unset 'TestArray'
+  fn_bs_latf_create_array "@${LINENO-}" 'TestArray' || return $?
+
+  TestArray_Index_OOB=$((c_BS_LATF__ArraySize + 2))
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_get                     || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_get*expected an array variable, an array index, and an output variable (optional)*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_get                     \
+          'TestArray'                 || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_get*expected an array variable, an array index, and an output variable (optional)*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_get                     \
+          'TestArray'                 \
+          1 2 3                       || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_get*expected an array variable, an array index, and an output variable (optional)*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_get                     \
+          'Test Array'                \
+          1                           || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_get*invalid variable name*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_get                     \
+          'TestArray'                 \
+          1                           \
+          ''                          || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_get*invalid variable name*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_get                     \
+          'TestArray'                 \
+          "${TestArray_Index_OOB}"    \
+          'Test.Get.Value'            || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_get*invalid variable name*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Index
+  {
+    {
+      TestGetValue=;  unset 'TestGetValue'
+      TestOutput=;    unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_get                     \
+          'TestArray'                 \
+          'bad index'                 \
+          'TestGetValue'              || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} -z "${TestGetValue+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_get*invalid index*' || return $?
+    }
+
+    #-----------------------------------
+    case ${BS_LATF_ARRAY_FIRST_INDEX:-0} in
+    1)  #...............................
+        TestGetValue=; unset 'TestGetValue'
+        TestOutput=;   unset 'TestOutput'
+        test_run_expect_failure         \
+          ${LINENO:+"--line=${LINENO}"} \
+          --output='TestOutput'         \
+          array_get                     \
+            'TestArray'                 \
+            0                           \
+            'TestGetValue'              || return $?
+
+        #...............................
+
+        fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+        test_assert ${LINENO:+"@${LINENO}"} -z "${TestGetValue+1}" || return $?
+        test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_get*invalid index*' || return $? ;;
+    esac
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Index Out of Bounds
+  {
+    {
+      TestGetValue=;  unset 'TestGetValue'
+      TestOutput=;    unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_get                     \
+          'TestArray'                 \
+          "${TestArray_Index_OOB}"    \
+          'TestGetValue'              || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} -z "${TestGetValue+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_get*out of range*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestGetValue=;  unset 'TestGetValue'
+      TestOutput=;    unset 'TestOutput'
+      test_run_expect_failure          \
+        ${LINENO:+"--line=${LINENO}"}  \
+        --output='TestOutput'          \
+        array_get                      \
+          'TestArray'                  \
+          $((0 - TestArray_Index_OOB)) \
+          'TestGetValue'               || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} -z "${TestGetValue+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_get*out of range*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Empty Array
+  {
+    {
+      NullTestArray=; unset 'NullTestArray'
+      TestOutput=;    unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_get                     \
+          'NullTestArray'             \
+          1                           || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} -z "${NullTestArray+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_get*can not "get" value from empty array*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      EmptyTestArray=;  unset 'EmptyTestArray'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        array_new               \
+          'EmptyTestArray'      || return $?
+
+      #.................................
+
+      TestOutput=;      unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_get                     \
+          'EmptyTestArray'            \
+          1                           || return $?
+
+      #.................................
+
+      EmptyTestArraySize=;  unset 'EmptyTestArraySize'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        array_size              \
+          'EmptyTestArray'      \
+          'EmptyTestArraySize'  || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "${EmptyTestArraySize}" -eq 0 || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_get*can not "get" value from empty array*' || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_latf_array_set
+#  --------------------
+#
+#  TESTS:   `array_set`
+#_______________________________________________________________________________
+fn_bs_latf_array_set() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Create test array
+  TestArray=; unset 'TestArray'
+  fn_bs_latf_create_array "@${LINENO-}" 'TestArray' || return $?
+
+  TestArray_Index_OOB=$((c_BS_LATF__ArraySize + 2))
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_set                     || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_set*expected an array variable, an array index, and a value*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_set                     \
+          'TestArray'                 || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_set*expected an array variable, an array index, and a value*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_set                     \
+          'TestArray'                 \
+          1                           || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_set*expected an array variable, an array index, and a value*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_set                     \
+          'TestArray'                 \
+          1 2 3                       || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_set*expected an array variable, an array index, and a value*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_set                     \
+          'Test;Array'                \
+          1                           \
+          'New Value'                 || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_set*invalid variable name*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Index
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_set                     \
+          'TestArray'                 \
+          'bad index'                 \
+          'New Value'                 || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_set*invalid index*' || return $?
+    }
+
+    #-----------------------------------
+    case ${BS_LATF_ARRAY_FIRST_INDEX:-0} in
+    1)  #...............................
+        TestOutput=; unset 'TestOutput'
+        test_run_expect_failure         \
+          ${LINENO:+"--line=${LINENO}"} \
+          --output='TestOutput'         \
+          array_set                     \
+            'TestArray'                 \
+            0                           \
+            'New Value'                 || return $?
+
+        #...............................
+
+        fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+        test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_set*invalid index*' || return $? ;;
+    esac
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Index Out of Bounds
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_set                     \
+          'TestArray'                 \
+          "${TestArray_Index_OOB}"    \
+          'New Value'                 || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_set*out of range*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure          \
+        ${LINENO:+"--line=${LINENO}"}  \
+        --output='TestOutput'          \
+        array_set                      \
+          'TestArray'                  \
+          $((0 - TestArray_Index_OOB)) \
+          'New Value'                  || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_set*out of range*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Empty Array
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_set                     \
+          'NullTestArray'             \
+          1                           \
+          'New Value'                 || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} -z "${NullTestArray+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_set*can not "set" value in empty array*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      EmptyTestArray=; unset 'EmptyTestArray'
+      test_run_expect_success         \
+        ${LINENO:+"--line=${LINENO}"} \
+        array_new                     \
+          'EmptyTestArray'            || return $?
+
+      #.................................
+
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_set                     \
+          'EmptyTestArray'            \
+          1                           \
+          'New Value'                 || return $?
+
+      #.................................
+
+      EmptyTestArraySize=;  unset 'EmptyTestArraySize'
+      test_run_expect_success          \
+        ${LINENO:+"--line=${LINENO}"} \
+        array_size                     \
+          'EmptyTestArray'             \
+          'EmptyTestArraySize'         || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "${EmptyTestArraySize}" -eq 0 || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_set*can not "set" value in empty array*' || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_latf_array_insert
+#  ---------------------
+#
+#  TESTS:   `array_insert`
+#_______________________________________________________________________________
+fn_bs_latf_array_insert() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_insert                  || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_insert*expected an array variable, an array index, and one or more values*' || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_latf_array_remove
+#  ---------------------
+#
+#  TESTS:   `array_remove`
+#_______________________________________________________________________________
+fn_bs_latf_array_remove() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_remove                  || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_remove*expected an array variable, and an index, range, or glob*' || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_latf_array_push
+#  ---------------------
+#
+#  TESTS:   `array_push`
+#_______________________________________________________________________________
+fn_bs_latf_array_push() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_push                    || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*expected an array variable, and zero or more values*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_push                    \
+          'Test!Array'                \
+          1 2 3                       || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_push*invalid variable name*' || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_latf_array_pop
+#  --------------------
+#
+#  TESTS:   `array_pop`
+#_______________________________________________________________________________
+fn_bs_latf_array_pop() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Create test array
+  TestArray=; unset 'TestArray'
+  fn_bs_latf_create_array "@${LINENO-}" 'TestArray' || return $?
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_pop                     || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_pop*expected an array variable, and an output variable*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_pop                     \
+          'TestArray'                 || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_pop*expected an array variable, and an output variable*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    # SC2016: Expressions don't expand in single quotes, use
+    #+        double quotes for that.
+    # EXCEPT: $TestArray is NOT a variable, it is an invalid
+    #+        variable NAME.
+    # shellcheck disable=SC2016
+    {
+      PoppedValue=; unset 'PoppedValue'
+      TestOutput=;  unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_pop                     \
+          '$TestArray'                \
+          'PoppedValue'               || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} -z "${PoppedValue+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_pop*invalid variable name*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_pop                     \
+          'TestArray'                 \
+          'Popped/Value'              || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_pop*invalid variable name*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Empty Array
+  {
+    {
+      PoppedValue=; unset 'PoppedValue'
+      TestOutput=;  unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_pop                     \
+          'EmptyTestArray'            \
+          'PoppedValue'               || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} -z "${NullTestArray+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} -z "${PoppedValue+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_pop*can not "pop" from empty array*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      EmptyTestArray=; unset 'EmptyTestArray'
+      test_run_expect_success         \
+        ${LINENO:+"--line=${LINENO}"} \
+        array_new                     \
+          'EmptyTestArray'            || return $?
+
+      #.................................
+
+      PoppedValue=; unset 'PoppedValue'
+      TestOutput=;  unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_pop                     \
+          'EmptyTestArray'            \
+          'PoppedValue'               || return $?
+
+      #.................................
+
+      EmptyTestArraySize=;  unset 'EmptyTestArraySize'
+      test_run_expect_success         \
+        ${LINENO:+"--line=${LINENO}"} \
+        array_size                    \
+          'EmptyTestArray'            \
+          'EmptyTestArraySize'        || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "${EmptyTestArraySize}" -eq 0 || return $?
+      test_assert ${LINENO:+"@${LINENO}"} -z "${PoppedValue+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_pop*can not "pop" from empty array*' || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_latf_array_unshift
+#  ------------------------
+#
+#  TESTS:   `array_unshift`
+#_______________________________________________________________________________
+fn_bs_latf_array_unshift() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_unshift                 || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_unshift*expected an array variable, and zero or more values*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_unshift                 \
+          'Test?Array'                \
+          1 2 3                       || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_unshift*invalid variable name*' || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_latf_array_shift
+#  ----------------------
+#
+#  TESTS:   `array_shift`
+#_______________________________________________________________________________
+fn_bs_latf_array_shift() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Create test array
+  TestArray=; unset 'TestArray'
+  fn_bs_latf_create_array "@${LINENO-}" 'TestArray' || return $?
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_shift                   || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_shift*expected an array variable, and an output variable*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_shift                   \
+          'TestArray'                 || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_shift*expected an array variable, and an output variable*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    {
+      ShiftedValue=; unset 'ShiftedValue'
+      TestOutput=;   unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_shift                   \
+          'Test=Array'                \
+          'ShiftedValue'              || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_shift*invalid variable name*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_shift                   \
+          'TestArray'                 \
+          'Shifted%Value'             || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_shift*invalid variable name*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Empty Array
+  {
+    {
+      ShiftedValue=; unset 'ShiftedValue'
+      TestOutput=;   unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_shift                   \
+          'EmptyTestArray'            \
+          'ShiftedValue'              || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} -z "${NullTestArray+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} -z "${ShiftedValue+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_shift*can not "shift" from empty array*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      EmptyTestArray=; unset 'EmptyTestArray'
+      test_run_expect_success         \
+        ${LINENO:+"--line=${LINENO}"} \
+        array_new                     \
+          'EmptyTestArray'            || return $?
+
+      #.................................
+
+      ShiftedValue=; unset 'ShiftedValue'
+      TestOutput=;   unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_shift                   \
+          'EmptyTestArray'            \
+          'ShiftedValue'              || return $?
+
+      #.................................
+
+      EmptyTestArraySize=;  unset 'EmptyTestArraySize'
+      test_run_expect_success         \
+        ${LINENO:+"--line=${LINENO}"} \
+        array_size                    \
+          'EmptyTestArray'            \
+          'EmptyTestArraySize'        || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "${EmptyTestArraySize}" -eq 0 || return $?
+      test_assert ${LINENO:+"@${LINENO}"} -z "${ShiftedValue+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_shift*can not "shift" from empty array*' || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_latf_array_reverse
+#  ------------------------
+#
+#  TESTS:   `array_reverse`
+#_______________________________________________________________________________
+fn_bs_latf_array_reverse() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Create test array
+  TestArray=; unset 'TestArray'
+  fn_bs_latf_create_array "@${LINENO-}" 'TestArray' || return $?
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_reverse                 || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_reverse*expected an array variable, and an output variable (optional)*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_reverse                 \
+          'TestArray'                 \
+          'Reversed^Array'            || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_reverse*invalid variable name*' || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_latf_array_slice
+#  ----------------------
+#
+#  TESTS:   `array_slice`
+#_______________________________________________________________________________
+fn_bs_latf_array_slice() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Create test array
+  TestArray=; unset 'TestArray'
+  fn_bs_latf_create_array "@${LINENO-}" 'TestArray' || return $?
+
+   TestArray_Index_OOB=$((c_BS_LATF__ArraySize + 2))
+  TestArray_Length_OOB=$((c_BS_LATF__ArraySize + 2))
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_slice                   || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_slice*expected an array variable, a slice range, and an output variable (optional)*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_slice                   \
+          'TestArray'                 || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_slice*expected an array variable, a slice range, and an output variable (optional)*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    {
+      TestSlice=;  unset 'TestSlice'
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_slice                   \
+          '{TestArray}'               \
+          ':'                         \
+          'TestSlice'                 || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} -z "${TestSlice+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_slice*invalid variable name*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_slice                   \
+          'TestArray'                 \
+          ':'                         \
+          '[TestSlice]'               || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_slice*invalid variable name*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid slice range
+  {
+    {
+      TestSlice=;  unset 'TestSlice'
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_slice                   \
+          'TestArray'                 \
+          '1,2'                       \
+          'TestSlice'                 || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} -z "${TestSlice+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_slice*invalid range*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestSlice=;  unset 'TestSlice'
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_slice                   \
+          'TestArray'                 \
+          "1#${TestArray_Length_OOB}" \
+          'TestSlice'                 || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} -z "${TestSlice+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_slice*invalid range*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestSlice=;  unset 'TestSlice'
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure          \
+        ${LINENO:+"--line=${LINENO}"}  \
+        --output='TestOutput'          \
+        array_slice                    \
+          'TestArray'                  \
+          "1#-${TestArray_Length_OOB}" \
+          'TestSlice'                  || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} -z "${TestSlice+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_slice*invalid range*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Index
+  {
+    {
+      TestSlice=;  unset 'TestSlice'
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_slice                   \
+          'TestArray'                 \
+          'bad:range'                 \
+          'TestSlice'                 || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} -z "${TestSlice+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_slice*invalid index*bad*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestSlice=;  unset 'TestSlice'
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_slice                   \
+          'TestArray'                 \
+          '1:range'                   \
+          'TestSlice'                 || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} -z "${TestSlice+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_slice*invalid index*range*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Index Out of Bounds
+  {
+    {
+      TestSlice=;  unset 'TestSlice'
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_slice                   \
+          'TestArray'                 \
+          "${TestArray_Index_OOB}:"   \
+          'TestSlice'                 || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} -z "${TestSlice+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_slice*out of range*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestSlice=;  unset 'TestSlice'
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_slice                   \
+          'TestArray'                 \
+          "-${TestArray_Index_OOB}:"  \
+          'TestSlice'                 || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} -z "${TestSlice+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_slice*out of range*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Empty Array
+  {
+    {
+      TestSlice=;  unset 'TestSlice'
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_slice                   \
+          'EmptyTestArray'            \
+          ':'                         \
+          'TestSlice'                 || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} -z "${NullTestArray+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} -z "${TestSlice+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_slice*can not "slice" empty array*' || return $?
+    }
+
+    #-----------------------------------
+
+    # SC2034: foo appears unused. Verify it or export it.
+    # EXCEPT: It is used dynamically.
+    # shellcheck disable=SC2034
+    {
+      EmptyTestArray=; unset 'EmptyTestArray'
+      test_run_expect_success         \
+        ${LINENO:+"--line=${LINENO}"} \
+        array_new                     \
+          'EmptyTestArray'            || return $?
+
+      #.................................
+
+      TestSlice=;  unset 'TestSlice'
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_slice                   \
+          'EmptyTestArray'            \
+          ':'                         \
+          'TestSlice'                 || return $?
+
+      #.................................
+
+      EmptyTestArraySize=;  unset 'EmptyTestArraySize'
+      test_run_expect_success         \
+        ${LINENO:+"--line=${LINENO}"} \
+        array_size                    \
+          'EmptyTestArray'            \
+          'EmptyTestArraySize'        || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "${EmptyTestArraySize}" -eq 0 || return $?
+      test_assert ${LINENO:+"@${LINENO}"} -z "${TestSlice+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_slice*can not "slice" empty array*' || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_latf_array_sort
+#  ---------------------
+#
+#  TESTS:   `array_sort`
+#_______________________________________________________________________________
+fn_bs_latf_array_sort() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Create test array
+  TestArray=; unset 'TestArray'
+  fn_bs_latf_create_array "@${LINENO-}" 'TestArray' || return $?
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_sort                    || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_sort*expected an array variable, an output variable (optional), and sort arguments (optional)*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    {
+      TestOutput=;  unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_sort                    \
+          '<TestArray>'               || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_sort*invalid variable name*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestOutput=;  unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_sort                    \
+          'TestArray'                 \
+          'Sorted|Array'              || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_sort*invalid variable name*' || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_latf_array_search
+#  -----------------------
+#
+#  TESTS:   `array_search`
+#_______________________________________________________________________________
+fn_bs_latf_array_search() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Create test array
+  TestArray=; unset 'TestArray'
+  fn_bs_latf_create_array "@${LINENO-}" 'TestArray' || return $?
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_search                  || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_search*expected an array variable, an output index variable (optional), a primary (optional), and an expression*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    {
+      TestOutput=;  unset 'TestOutput'
+      ArrayIndex=;  unset 'ArrayIndex'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_search                  \
+          '`TestArray;'               \
+          'ArrayIndex'                \
+          '='                         \
+          ''                          || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} -z "${ArrayIndex+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_search*invalid variable name*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestOutput=;  unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_search                  \
+          'TestArray'                 \
+          'Array%Index'               \
+          '='                         \
+          ''                          || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_search*invalid variable name*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Primary
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      ArrayIndex=; unset 'ArrayIndex'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_search                  \
+          'TestArray'                 \
+          'ArrayIndex'                \
+          '!'                         \
+          'Does Not Compute'          || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} -z "${ArrayIndex+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_search*invalid primary*' || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_latf_array_contains
+#  -----------------------
+#
+#  TESTS:   `array_contains`
+#_______________________________________________________________________________
+fn_bs_latf_array_contains() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Create test array
+  TestArray=; unset 'TestArray'
+  fn_bs_latf_create_array "@${LINENO-}" 'TestArray' || return $?
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_contains                || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_contains*expected an array variable, a primary (optional), and an expression*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    {
+      TestOutput=;  unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_contains                \
+          '<TestArray>'               \
+          ''                          || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} -z "${SortedArray+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_contains*invalid variable name*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Primary
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_contains                \
+          'TestArray'                 \
+          '!'                         \
+          'Does Not Compute'          || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_contains*invalid primary*' || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_latf_array_join
+#  ---------------------
+#
+#  TESTS:   `array_join`
+#_______________________________________________________________________________
+fn_bs_latf_array_join() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Create test array
+  TestArray=; unset 'TestArray'
+  fn_bs_latf_create_array "@${LINENO-}" 'TestArray' || return $?
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_join                    || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_join*expected an array variable, join text, and an output variable (optional)*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_join                    \
+          'TestArray'                 || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_join*expected an array variable, join text, and an output variable (optional)*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      JoinedText=;      unset 'JoinedText'
+      JoinedTextAgain=; unset 'JoinedTextAgain'
+      TestOutput=;      unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_join                    \
+          'TestArray'                 \
+          ':'                         \
+          'JoinedText'                \
+          'JoinedTextAgain'           || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} -z "${JoinedText+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} -z "${JoinedTextAgain+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_join*expected an array variable, join text, and an output variable (optional)*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_join                    \
+          ''                          \
+          ':'                         \
+          ''                          || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_join*invalid variable name*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_join                    \
+          'TestArray'                 \
+          ':'                         \
+          ''                          || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_join*invalid variable name*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      JoinedText=; unset 'JoinedText'
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_join                    \
+          'Test"Array'                \
+          ':'                         \
+          'JoinedText'                || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_join*invalid variable name*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_join                    \
+          'TestArray'                 \
+          ':'                         \
+          'Joined+Text'               || return $?
+
+      #.................................
+
+      fn_bs_latf_verify_test_array "@${LINENO-}" 'TestArray' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_join*invalid variable name*' || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_latf_array_split
+#  ----------------------
+#
+#  TESTS:   `array_split`
+#_______________________________________________________________________________
+fn_bs_latf_array_split() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_split                   || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_split*expected an array variable, input text, and a separator*' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestArray=;  unset 'TestArray'
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_split                   \
+          'TestArray'                 || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} -z "${TestArray+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_split*expected an array variable, input text, and a separator*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_split                   \
+          '(TestArray)'               \
+          ":${PATH?}:"                \
+          ':'                         || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_split*invalid variable name*' || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_latf_array_printf
+#  -----------------------
+#
+#  TESTS:   `array_printf`
+#_______________________________________________________________________________
+fn_bs_latf_array_printf() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Create test array
+  TestArray=; unset 'TestArray'
+  fn_bs_latf_create_array "@${LINENO-}" 'TestArray' || return $?
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_printf                  || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_printf*expected an array variable, and a print format*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_printf                  \
+          'Test*Array'                \
+          '%s\n'                      || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_printf*invalid variable name*' || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_latf_array_from_find
+#  --------------------------
+#
+#  TESTS:   `array_from_find`
+#_______________________________________________________________________________
+fn_bs_latf_array_from_find() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    {
+      TestOutput=;  unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_from_find               \
+          'Test\\Array'               || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} -z "${SortedArray+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_from_find*invalid variable name*' || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_latf_array_from_find_allow_print
+#  --------------------------
+#
+#  TESTS:   `array_from_find_allow_print`
+#_______________________________________________________________________________
+fn_bs_latf_array_from_find_allow_print() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count
+  {
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_from_find_allow_print   || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_from_find_allow_print*expected an output variable, two file descriptors (optional), and arguments for find (optional)*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    {
+      TestOutput=;  unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_from_find_allow_print   \
+          'Test`Array'                || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} -z "${SortedArray+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_from_find_allow_print*invalid variable name*' || return $?
+    }
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid file descriptors
+  {
+    {
+      TestArray=;   unset 'TestArray'
+      TestOutput=;  unset 'TestOutput'
+      test_run_expect_failure         \
+        ${LINENO:+"--line=${LINENO}"} \
+        --output='TestOutput'         \
+        array_from_find_allow_print   \
+          'TestArray'                 \
+          '3,3'                       || return $?
+
+      #.................................
+
+      test_assert ${LINENO:+"@${LINENO}"} -z "${TestArray+1}" || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_from_find_allow_print*file descriptors*must be different values*' || return $?
+    }
+  }
+}
+
+#===============================================================================
+#===============================================================================
+#  TEST MAIN
+#===============================================================================
+#===============================================================================
+
+#_______________________________________________________________________________
+#  fn_bs_latf_run_units
+#  ----------------
+#
+#  Run all individual tests
+#_______________________________________________________________________________
+fn_bs_latf_run_units() {
+  #  Ensure always at least one argument so no issues with "$@"
+  case $# in 0) set 'BS_DUMMY_PARAM' '--' && shift ;; esac
+
+  #-------------------------------------
+  #  `array_value`
+  test_run_unit                \
+    -u 'libarray: array_value' \
+    'fn_bs_latf_array_value'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_new`
+  test_run_unit              \
+    -u 'libarray: array_new' \
+    'fn_bs_latf_array_new'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_size`
+  test_run_unit               \
+    -u 'libarray: array_size' \
+    'fn_bs_latf_array_size'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_get`
+  test_run_unit              \
+    -u 'libarray: array_get' \
+    'fn_bs_latf_array_get'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_set`
+  test_run_unit              \
+    -u 'libarray: array_set' \
+    'fn_bs_latf_array_set'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_insert`
+  test_run_unit                 \
+    -u 'libarray: array_insert' \
+    'fn_bs_latf_array_insert'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_remove`
+  test_run_unit                 \
+    -u 'libarray: array_remove' \
+    'fn_bs_latf_array_remove'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_push`
+  test_run_unit               \
+    -u 'libarray: array_push' \
+    'fn_bs_latf_array_push'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_pop`
+  test_run_unit              \
+    -u 'libarray: array_pop' \
+    'fn_bs_latf_array_pop'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_unshift`
+  test_run_unit                  \
+    -u 'libarray: array_unshift' \
+    'fn_bs_latf_array_unshift'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_shift`
+  test_run_unit                \
+    -u 'libarray: array_shift' \
+    'fn_bs_latf_array_shift'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_reverse`
+  test_run_unit                  \
+    -u 'libarray: array_reverse' \
+    'fn_bs_latf_array_reverse'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_slice`
+  test_run_unit                \
+    -u 'libarray: array_slice' \
+    'fn_bs_latf_array_slice'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_sort`
+  test_run_unit               \
+    -u 'libarray: array_sort' \
+    'fn_bs_latf_array_sort'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_search`
+  test_run_unit                 \
+    -u 'libarray: array_search' \
+    'fn_bs_latf_array_search'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_contains`
+  test_run_unit                   \
+    -u 'libarray: array_contains' \
+    'fn_bs_latf_array_contains'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_join`
+  test_run_unit               \
+    -u 'libarray: array_join' \
+    'fn_bs_latf_array_join'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_split`
+  test_run_unit                \
+    -u 'libarray: array_split' \
+    'fn_bs_latf_array_split'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_printf`
+  test_run_unit                 \
+    -u 'libarray: array_printf' \
+    'fn_bs_latf_array_printf'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_from_find`
+  test_run_unit                    \
+    -u 'libarray: array_from_find' \
+    'fn_bs_latf_array_from_find'   \
+      "$@"
+
+  #-------------------------------------
+  #  `array_from_find_allow_print`
+  test_run_unit                                \
+    -u 'libarray: array_from_find_allow_print' \
+    'fn_bs_latf_array_from_find_allow_print'   \
+      "$@"
+}
+
+################################################################################
+################################################################################
+#  TESTWRAPPER Values & Commands
+################################################################################
+################################################################################
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  FRIENDLY NAME
+BS_TEST_NAME='[libarray] Test Failure'
+export BS_TEST_NAME
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  NUMBER OF AVAILABLE CONFIGURATIONS
+BS_TEST_CONFIG_COUNT=7
+export BS_TEST_CONFIG_COUNT
+
+#_______________________________________________________________________________
+#  test_run_config
+#  ---------------
+#
+#  Run the tests for a given configuration
+#_______________________________________________________________________________
+test_run_config() { ## cSpell:Ignore BS_TRC_
+  #---------------------------------------------------------
+  #  Ensure none of the config variables are already set
+  BS_LIBARRAY_CONFIG_START_INDEX_ONE=;
+  unset BS_LIBARRAY_CONFIG_START_INDEX_ONE
+  BS_LIBARRAY_CONFIG_NO_MULTIDIGIT_PARAMETER=;
+  unset BS_LIBARRAY_CONFIG_NO_MULTIDIGIT_PARAMETER
+  BS_LIBARRAY_CONFIG_NO_SHIFT_N=;
+  unset BS_LIBARRAY_CONFIG_NO_SHIFT_N
+  BS_LIBARRAY_CONFIG_NO_EXPR_BRE_MATCH=;
+  unset BS_LIBARRAY_CONFIG_NO_EXPR_BRE_MATCH
+  BS_LIBARRAY_CONFIG_NO_DEV_NULL=;
+  unset BS_LIBARRAY_CONFIG_NO_DEV_NULL
+
+  BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1=;
+  unset BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1
+  BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2=;
+  unset BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2
+
+  #---------------------------------------------------------
+  #  Get Library File & Config ID
+  BS_TRC_Library="${1:?'[libarray::success::test_run_config]: Error: expected a library to source'}"
+  shift
+  BS_TRC_Config="${1:?'[libarray::success::test_run_config]: Error: expected a configuration index'}"
+  shift
+
+  #---------------------------------------------------------
+  #  Set Configuration Accordingly
+  BS_LATF_ARRAY_FIRST_INDEX=0           #< Default Array index offset
+  case ${BS_TRC_Config} in
+    #...................................
+    #  CONFIG: INVALID
+    1)  #  This test needs handled
+        #+ differently to the other tests
+        #+ as it deals with invalid
+        #+ configuration and so needs
+        #+ the tool sourced in a subshell
+        #+ or the errors can't be caught
+        #+and inspected
+        test_print_config_info    \
+          'Config: TOOL CONFIG'   \
+          'Type:   INVALID USAGE'
+
+        test_run_unit                                 \
+          -u 'libarray: CONFIG (bad file descriptor)' \
+          'fn_bs_latf_configuration'                  \
+          "${BS_TRC_Library}"
+
+        return ;;                       #< Early return
+
+    #...................................
+    #  CONFIG: DEFAULT
+    2)  test_print_config_info    \
+          'Config: DEFAULT'       \
+          'Type:   INVALID USAGE' ;;
+
+    #...................................
+    #  CONFIG: ONE-BASED INDEXES
+    3)  BS_LIBARRAY_CONFIG_START_INDEX_ONE=1
+        export BS_LIBARRAY_CONFIG_START_INDEX_ONE
+
+        BS_LATF_ARRAY_FIRST_INDEX=1     #< Alternate Array index offset
+
+        test_print_config_info      \
+          'Config: START_INDEX_ONE' \
+          'Type:   INVALID USAGE'   ;;
+
+    #...................................
+    #  CONFIG: ONLY ALLOW `$1`-`$9`
+    4)  BS_LIBARRAY_CONFIG_NO_MULTIDIGIT_PARAMETER=1
+        export BS_LIBARRAY_CONFIG_NO_MULTIDIGIT_PARAMETER
+
+        test_print_config_info              \
+          'Config: NO_MULTIDIGIT_PARAMETER' \
+          'Type:   INVALID USAGE'           ;;
+
+    #...................................
+    #  CONFIG: NO `shift N`
+    5)  BS_LIBARRAY_CONFIG_NO_SHIFT_N=1
+        export BS_LIBARRAY_CONFIG_NO_SHIFT_N
+
+        test_print_config_info    \
+          'Config: NO_SHIFT_N'    \
+          'Type:   INVALID USAGE' ;;
+
+    #...................................
+    #  CONFIG: NO `expr` BRE match
+    6)  BS_LIBARRAY_CONFIG_NO_EXPR_BRE_MATCH=1
+        export BS_LIBARRAY_CONFIG_NO_EXPR_BRE_MATCH
+
+        test_print_config_info        \
+          'Config: NO_EXPR_BRE_MATCH' \
+          'Type:   INVALID USAGE'     ;;
+
+    #...................................
+    #  CONFIG: NO `/dev/null`
+    7)  BS_LIBARRAY_CONFIG_NO_DEV_NULL=1
+        export BS_LIBARRAY_CONFIG_NO_DEV_NULL
+
+        test_print_config_info    \
+          'Config: NO_DEV_NULL'   \
+          'Type:   INVALID USAGE' ;;
+
+    #...................................
+    #  CONFIG: UNKNOWN
+    *)  return 1 ;;
+  esac
+
+  #---------------------------------------------------------
+  #  Source the tool
+  # shellcheck source=/dev/null
+  . "${BS_TRC_Library}" || return $?
+  #---------------------------------------------------------
+
+  #---------------------------------------------------------
+  #  Run the tests
+  case $# in
+  0) fn_bs_latf_run_units      ;;
+  *) fn_bs_latf_run_units "$@" ;;
+  esac
+  #---------------------------------------------------------
+}

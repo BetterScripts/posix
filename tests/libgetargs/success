@@ -1,0 +1,954 @@
+#!/usr/bin/env false
+# SPDX-License-Identifier: MPL-2.0
+#################################### LICENSE ###################################
+#******************************************************************************#
+#*                                                                            *#
+#* BetterScripts 'libgetargs/success': Tests for 'libgetargs' success         *#
+#*                                     conditions.                            *#
+#*                                                                            *#
+#* Copyright (c) 2022 BetterScripts ( better.scripts@proton.me,               *#
+#*                                    https://github.com/BetterScripts )      *#
+#*                                                                            *#
+#* This file is part of the BetterScripts POSIX Suite.                        *#
+#*                                                                            *#
+#* This Source Code Form is subject to the terms of the Mozilla Public        *#
+#* License, v. 2.0. If a copy of the MPL was not distributed with this        *#
+#* file, You can obtain one at https://mozilla.org/MPL/2.0/.                  *#
+#*                                                                            *#
+#* -------------------------------------------------------------------------- *#
+#*                                                                            *#
+#* ADDENDUM:                                                                  *#
+#*                                                                            *#
+#* In addition to the Mozilla Public License a copy of LICENSE.MD should have *#
+#* been be provided alongside this file; LICENSE.MD clarifies how the Mozilla *#
+#* Public License v2.0 applies to this file and MAY confer additional rights. *#
+#*                                                                            *#
+#* Should there be any apparent ambiguity (implied or otherwise) the terms    *#
+#* and conditions from the Mozilla Public License v2.0 shall apply.           *#
+#*                                                                            *#
+#* If a copy of LICENSE.MD was not provided it can be obtained from           *#
+#* https://github.com/BetterScripts/posix/LICENSE.MD.                         *#
+#*                                                                            *#
+#* NOTE:                                                                      *#
+#*                                                                            *#
+#* The Mozilla Public License v2.0 is compatible with the GNU General Public  *#
+#* License v2.0.                                                              *#
+#*                                                                            *#
+#******************************************************************************#
+################################################################################
+
+############################## LIBGETARGS/SUCCESS ##############################
+#
+# Documentation is written inline formatted as [`Markdown`][markdown], this is
+# in addition to the suite wide documentation which includes details common to
+# multiple suite libraries that may not be detailed here.
+#
+# The included `Makefile` can be used to generate standalone documentation in
+# various formats with various verbosity settings. The `Makefile` can also be
+# used to install scripts and documentation in appropriate locations.
+#
+# As far as possible, terminology and conventions follow those of the
+# [_POSIX.1-2008_ Standard][posix_2008].
+#===============================================================================
+## cSpell:Ignore libgetargs testrunner testwrapper LGATS
+################################ DOCUMENTATION #################################
+#
+#% % libgetargs-success(7) BetterScripts | Tests for 'libgetargs' success conditions.
+#% % BetterScripts (better.scripts@proton.me)  
+#
+#: <!-- #################################################################### -->
+#: <!-- ######### THIS FILE WAS GENERATED FROM 'libgetargs/success' ######## -->
+#: <!-- #################################################################### -->
+#: <!-- ########################### DO NOT EDIT! ########################### -->
+#: <!-- #################################################################### -->
+#:
+#: # LIBGETARGS/SUCCESS
+#:
+#:
+#
+#  `libgetargs` Test Success (LGATS)
+#  ============================
+#
+#  Tests for `libgetargs` checking success conditions.
+#
+################################################################################
+
+############################## SHELLCHECK: GLOBAL ##############################
+# shellcheck shell=sh                                                          #
+#                                                                              #
+# Enable some optional checks:                                                 #
+#                                                                              #
+# shellcheck enable=avoid-nullary-conditions                                   #
+# shellcheck enable=check-extra-masked-returns                                 #
+# shellcheck enable=deprecate-which                                            #
+# shellcheck enable=require-variable-braces                                    #
+#                                                                              #
+################################################################################
+
+#===============================================================================
+#===============================================================================
+#  COMMON VALUES
+#===============================================================================
+#===============================================================================
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Main test array values
+## cSpell:Ignore Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+## cSpell:Ignore sed do eiusmod tempor incididunt ut labore et dolore magna
+## cSpell:Ignore aliqua. Ut enim ad minim veniam,
+BS_LGATS__test_value_1='Lorem ipsum dolor sit amet,'
+BS_LGATS__test_value_2=' consectetur adipiscing elit,'
+BS_LGATS__test_value_3=' sed do eiusmod tempor incididunt
+ut labore et dolore magna
+aliqua.'
+
+BS_LGATS__PATH="${PATH:-/usr/sbin:/usr/bin:/sbin:/bin}"
+ BS_LGATS__PWD="$(pwd || echo '.')"
+BS_LGATS__HOME="${HOME:-/dev/null}"
+ BS_LGATS__TMP="${TMPDIR:-${TMP:-/tmp}}"
+
+#===============================================================================
+#===============================================================================
+#  COMMON COMMANDS
+#===============================================================================
+#===============================================================================
+
+#===============================================================================
+#===============================================================================
+#  CONFIG TESTS
+#===============================================================================
+#===============================================================================
+
+#===============================================================================
+#===============================================================================
+#  COMMAND TESTS
+#===============================================================================
+#===============================================================================
+
+#_______________________________________________________________________________
+#  fn_bs_lgats_constants
+#  ---------------------
+#
+#  TESTS:   Constants are set
+#_______________________________________________________________________________
+fn_bs_lgats_constants() {
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Clear positional parameters
+  set 'BS_DUMMY_PARAM' && shift
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBGETARGS_SOURCED-}" || return $?
+
+    #-----------------------------------
+
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBGETARGS_VERSION_MAJOR-}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBGETARGS_VERSION_MINOR-}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBGETARGS_VERSION_PATCH-}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBGETARGS_VERSION_FULL-}"  || return $?
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBGETARGS_VERSION-}"       || return $?
+
+    #  Check they are version numbers are actually numbers
+    test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBGETARGS_VERSION_MAJOR-}" -notlike "*[!0123456789]*" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBGETARGS_VERSION_MINOR-}" -notlike "*[!0123456789]*" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBGETARGS_VERSION_PATCH-}" -notlike "*[!0123456789]*" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBGETARGS_VERSION_FULL-}"  -notlike "*[!0123456789]*" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBGETARGS_VERSION-}" -like "BetterScripts 'libgetargs' v*" || return $?
+  }
+}
+
+#===============================================================================
+#  SWITCH-OPTION ( '[-]' )
+#===============================================================================
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Simple Switches
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fn_bs_test_flags() {
+  AlphaSwitch=; unset 'AlphaSwitch' 'BetaSwitch'  \
+                      'GammaSwitch' 'DeltaSwitch' \
+                      'UnusedVar'
+  test_run_expect_success                         \
+    getargs                                       \
+      --options 'unused|u[-]UnusedVar'            \
+      --options 'alpha|a[-]AlphaSwitch'           \
+      --options 'beta|bravo|b[-]BetaSwitch'       \
+      --options 'gamma|g|charlie|c[-]GammaSwitch' \
+      --options 'delta|d[-]DeltaSwitch'           \
+      --                                          \
+      --alpha --bra  -c  --delta                  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${AlphaSwitch+1}" ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${BetaSwitch+1}"  ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${GammaSwitch+1}" ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${DeltaSwitch+1}" ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${UnusedVar+1}"   ||  return $?
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Combined Switches
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fn_bs_test_combined_flags() {
+  AlphaSwitch=; unset 'AlphaSwitch' 'BetaSwitch'  \
+                      'GammaSwitch' 'DeltaSwitch' \
+                      'UnusedVar'
+  test_run_expect_success                         \
+    getargs                                       \
+      --options 'unused|u[-]UnusedVar'            \
+      --options 'alpha|a[-]AlphaSwitch'           \
+      --options 'beta|bravo|b[-]BetaSwitch'       \
+      --options 'gamma|g|charlie|c[-]GammaSwitch' \
+      --options 'delta|d[-]DeltaSwitch'           \
+      --                                          \
+      --alpha -bcd                                || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${AlphaSwitch+1}" ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${BetaSwitch+1}"  ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${GammaSwitch+1}" ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${DeltaSwitch+1}" ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${UnusedVar+1}"   ||  return $?
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Tagged Switches
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#-------------------------------------------------------------------------------
+#
+#-------------------------------------------------------------------------------
+fn_bs_test_tagged_flags_with_val() { ## cSpell:Ignore BS_TTFWV
+  BS_TTFWV_True="${1?'[fn_bs_test_tagged_flags_with_val] A true value is required'}"
+  BS_TTFWV_False="${2?'[fn_bs_test_tagged_flags_with_val] A false value is required'}"
+
+  AlphaSwitch=; unset 'AlphaSwitch' 'BetaSwitch'  \
+                      'GammaSwitch' 'DeltaSwitch' \
+                      'UnusedVar'
+  test_run_expect_success                         \
+    getargs                                       \
+      --options='alpha|a[~]AlphaSwitch'           \
+      --options 'beta|bravo|b[~]BetaSwitch'       \
+      --options 'unused|u[~]UnusedVar'            \
+      --options='gamma|g|charlie|c[~]GammaSwitch' \
+      --options 'delta|d[~]DeltaSwitch'           \
+      --                                          \
+      --alpha                                     \
+      --bra:"${BS_TTFWV_True?}"                   \
+      --charlie:"${BS_TTFWV_False?}"              \
+      --delta:"${BS_TTFWV_True?}"                 || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} -n "${AlphaSwitch+1}" ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${BetaSwitch+1}"  ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${GammaSwitch+1}" ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${DeltaSwitch+1}" ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${UnusedVar+1}"   ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${AlphaSwitch}" = "${BS_TTFWV_True}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${BetaSwitch}"  = "${BS_TTFWV_True}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${GammaSwitch}" = "${BS_TTFWV_False}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${DeltaSwitch}" = "${BS_TTFWV_True}"  || return $?
+}
+
+#-------------------------------------------------------------------------------
+#
+#-------------------------------------------------------------------------------
+fn_bs_test_tagged_flags() {
+  #  Default
+  fn_bs_test_tagged_flags_with_val         \
+    "${BS_LIBGETARGS_CONFIG_TRUE_VALUE?}"  \
+    "${BS_LIBGETARGS_CONFIG_FALSE_VALUE?}" || return $?
+
+  #  User tags
+  BS_TTF_OldTrueValue=${BS_LIBGETARGS_CONFIG_TRUE_VALUE:+"${BS_LIBGETARGS_CONFIG_TRUE_VALUE}"}
+  BS_TTF_OldFalseValue=${BS_LIBGETARGS_CONFIG_FALSE_VALUE:+"${BS_LIBGETARGS_CONFIG_FALSE_VALUE}"}
+   BS_LIBGETARGS_CONFIG_TRUE_VALUE='yes'
+  BS_LIBGETARGS_CONFIG_FALSE_VALUE='no'
+  export BS_LIBGETARGS_CONFIG_TRUE_VALUE BS_LIBGETARGS_CONFIG_FALSE_VALUE
+
+  ec_fn_bs_test_tagged_flags=0
+  fn_bs_test_tagged_flags_with_val 'yes' 'no' || ec_fn_bs_test_tagged_flags=$?
+
+   BS_LIBGETARGS_CONFIG_TRUE_VALUE="${BS_TTF_OldTrueValue}"
+  BS_LIBGETARGS_CONFIG_FALSE_VALUE="${BS_TTF_OldFalseValue}"
+  export BS_LIBGETARGS_CONFIG_TRUE_VALUE BS_LIBGETARGS_CONFIG_FALSE_VALUE
+  return ${ec_fn_bs_test_tagged_flags}
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Single Value Option
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fn_bs_test_single_value_option() {
+
+  #  --<option> <value>
+  TargetPath=; unset 'TargetPath'
+  SourcePath=; unset 'SourcePath'
+  TempPath=;   unset 'TempPath'
+  UnusedVar=;  unset 'UnusedVar'
+  test_run_expect_success         \
+    getargs                       \
+      -o 'destination|d|target[:]TargetPath,source|s|input|i[:]SourcePath,temp|t[:]TempPath,unused|u[:]UnusedVar' \
+      --                          \
+      --target "${BS_LGATS__PWD}" \
+      --temp "${BS_LGATS__TMP}"   \
+      --input="${BS_LGATS__HOME}" || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} "${TargetPath-}" = "${BS_LGATS__PWD}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${SourcePath-}" = "${BS_LGATS__HOME}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${TempPath-}"   = "${BS_LGATS__TMP}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${UnusedVar+1}" ||  return $?
+
+  #  --<opt> <value>
+  TargetPath=; unset 'TargetPath'
+  SourcePath=; unset 'SourcePath'
+  TempPath=;   unset 'TempPath'
+  UnusedVar=;  unset 'UnusedVar'
+  test_run_expect_success                         \
+    getargs                                       \
+      --options 'destination|d|target[:]TargetPath,source|s|input|i[:]SourcePath' \
+      -o 'temp|t[:]TempPath,unused|u[:]UnusedVar' \
+      --                                          \
+      --tar "${BS_LGATS__PWD}"                    \
+      --tem "${BS_LGATS__TMP}"                    \
+      --in="${BS_LGATS__HOME}"                    || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} "${TargetPath}" = "${BS_LGATS__PWD}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${SourcePath}" = "${BS_LGATS__HOME}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${TempPath}"   = "${BS_LGATS__TMP}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${UnusedVar+1}" ||  return $?
+
+  #  -<o> <value>
+  TargetPath=; unset 'TargetPath'
+  SourcePath=; unset 'SourcePath'
+  TempPath=;   unset 'TempPath'
+  UnusedVar=;  unset 'UnusedVar'
+  test_run_expect_success                           \
+    getargs                                         \
+      --options 'destination|d|target[:]TargetPath' \
+      --options 'source|s|input|i[:]SourcePath'     \
+      --options 'temp|t[:]TempPath'                 \
+      --options 'unused|u[:]UnusedVar'              \
+      --                                            \
+      -d "${BS_LGATS__PWD}"                         \
+      -s="${BS_LGATS__HOME}"                        \
+      -t"${BS_LGATS__TMP}"                          || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} "${TargetPath}" = "${BS_LGATS__PWD}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${SourcePath}" = "${BS_LGATS__HOME}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${TempPath}"   = "${BS_LGATS__TMP}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${UnusedVar+1}" ||  return $?
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Optional Value Option
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fn_bs_test_optional_value_option() {
+
+  #  --<option> <value>
+  TargetPath=; unset 'TargetPath'
+  SourcePath=; unset 'SourcePath'
+  TempPath=;   unset 'TempPath'
+  UnusedVar=;  unset 'UnusedVar'
+  test_run_expect_success         \
+    getargs                       \
+      -o 'destination|d|target[?]TargetPath,source|s|input|i[?]SourcePath,temp|t[?]TempPath,unused|u[?]UnusedVar' \
+      --                          \
+      --target                    \
+      -t"${BS_LGATS__TMP}"        \
+      --input="${BS_LGATS__HOME}" || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} -n "${TargetPath+1}"  ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${TargetPath:+1}" ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${SourcePath}" = "${BS_LGATS__HOME}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${TempPath}"   = "${BS_LGATS__TMP}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${UnusedVar+1}" ||  return $?
+
+  #  --<opt> <value>
+  TargetPath=; unset 'TargetPath'
+  SourcePath=; unset 'SourcePath'
+  TempPath=;   unset 'TempPath'
+  UnusedVar=;  unset 'UnusedVar'
+  test_run_expect_success                         \
+    getargs                                       \
+      --options 'destination|d|target[?]TargetPath,source|s|input|i[?]SourcePath' \
+      -o 'temp|t[?]TempPath,unused|u[?]UnusedVar' \
+      --                                          \
+      --tar                                       \
+      --tem="${BS_LGATS__TMP}"                    \
+      --in="${BS_LGATS__HOME}"                    || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} -n "${TargetPath+1}"  ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${TargetPath:+1}" ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${SourcePath}" = "${BS_LGATS__HOME}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${TempPath}"   = "${BS_LGATS__TMP}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${UnusedVar+1}" ||  return $?
+
+  #  -<o> <value>
+  TargetPath=; unset 'TargetPath'
+  SourcePath=; unset 'SourcePath'
+  TempPath=;   unset 'TempPath'
+  UnusedVar=;  unset 'UnusedVar'
+  test_run_expect_success                           \
+    getargs                                         \
+      --options 'destination|d|target[?]TargetPath' \
+      --options 'source|s|input|i[?]SourcePath'     \
+      --options 'temp|t[?]TempPath'                 \
+      --options 'unused|u[?]UnusedVar'              \
+      --                                            \
+      -d                                            \
+      -s="${BS_LGATS__HOME}"                        \
+      -t="${BS_LGATS__TMP}"                         || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} -n "${TargetPath+1}"  ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${TargetPath:+1}" ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${SourcePath}" = "${BS_LGATS__HOME}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${TempPath}"   = "${BS_LGATS__TMP}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${UnusedVar+1}" ||  return $?
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Multiple Value Option
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fn_bs_test_multiple_value_option() {
+  #  --<option> <value>
+  TargetPath=;  unset 'TargetPath'
+  SourcePaths=; unset 'SourcePaths'
+  TempPath=;    unset 'TempPath'
+  UnusedVar=;   unset 'UnusedVar'
+  test_run_expect_success         \
+    getargs                       \
+      -o 'destination|d|target[:]TargetPath,source|s|input|i[+]SourcePaths,temp|t[:]TempPath,unused|u[:]UnusedVar' \
+      --                          \
+      --target "${BS_LGATS__PWD}" \
+      --temp "${BS_LGATS__TMP}"   \
+      --source "${BS_LGATS__PWD}" \
+      --input="${BS_LGATS__HOME}" \
+      --source="${BS_LGATS__TMP}" \
+      --input "${BS_LGATS__PATH}" || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} -n "${SourcePaths:+1}" ||  return $?
+  eval "set 'BS_DUMMY_PARAM' ${SourcePaths}" && shift
+  test_assert ${LINENO:+"@${LINENO}"} $# -eq 4 || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${TargetPath}" = "${BS_LGATS__PWD}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${TempPath}"   = "${BS_LGATS__TMP}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${1}"          = "${BS_LGATS__PWD}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${2}"          = "${BS_LGATS__HOME}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${3}"          = "${BS_LGATS__TMP}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${4}"          = "${BS_LGATS__PATH}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${UnusedVar+1}" ||  return $?
+
+  #  --<opt> <value>
+  TargetPath=;  unset 'TargetPath'
+  SourcePaths=; unset 'SourcePaths'
+  TempPath=;    unset 'TempPath'
+  UnusedVar=;   unset 'UnusedVar'
+  test_run_expect_success                         \
+    getargs                                       \
+      --options 'destination|d|target[:]TargetPath,source|s|input|i[+]SourcePaths' \
+      -o 'temp|t[:]TempPath,unused|u[:]UnusedVar' \
+      --                                          \
+      --dest "${BS_LGATS__PWD}"                   \
+      --tem "${BS_LGATS__TMP}"                    \
+      --sou "${BS_LGATS__PWD}"                    \
+      --in="${BS_LGATS__HOME}"                    \
+      --sou="${BS_LGATS__TMP}"                    \
+      --in "${BS_LGATS__PATH}"                    || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} -n "${SourcePaths:+1}" ||  return $?
+  eval "set 'BS_DUMMY_PARAM' ${SourcePaths}" && shift
+  test_assert ${LINENO:+"@${LINENO}"} $# -eq 4 || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${TargetPath}" = "${BS_LGATS__PWD}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${TempPath}"   = "${BS_LGATS__TMP}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${1}"          = "${BS_LGATS__PWD}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${2}"          = "${BS_LGATS__HOME}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${3}"          = "${BS_LGATS__TMP}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${4}"          = "${BS_LGATS__PATH}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${UnusedVar+1}" ||  return $?
+
+  #  -<o> <value>
+  TargetPath=;  unset 'TargetPath'
+  SourcePaths=; unset 'SourcePaths'
+  TempPath=;    unset 'TempPath'
+  UnusedVar=;   unset 'UnusedVar'
+  test_run_expect_success                           \
+    getargs                                         \
+      --options 'destination|d|target[:]TargetPath' \
+      --options 'source|s|input|i[+]SourcePaths'    \
+      --options 'temp|t[:]TempPath'                 \
+      --options 'unused|u[:]UnusedVar'              \
+      --                                            \
+      -d "${BS_LGATS__PWD}"                         \
+      -t"${BS_LGATS__TMP}"                          \
+      -s"${BS_LGATS__PWD}"                          \
+      -i="${BS_LGATS__HOME}"                        \
+      -s "${BS_LGATS__TMP}"                         \
+      -i"${BS_LGATS__PATH}"                         || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} -n "${SourcePaths:+1}" ||  return $?
+  eval "set 'BS_DUMMY_PARAM' ${SourcePaths}" && shift
+  test_assert ${LINENO:+"@${LINENO}"} $# -eq 4 || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${TargetPath}" = "${BS_LGATS__PWD}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${TempPath}"   = "${BS_LGATS__TMP}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${1}"          = "${BS_LGATS__PWD}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${2}"          = "${BS_LGATS__HOME}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${3}"          = "${BS_LGATS__TMP}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${4}"          = "${BS_LGATS__PATH}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${UnusedVar+1}" ||  return $?
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Validator
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#-------------------------------------------------------------------------------
+#
+#-------------------------------------------------------------------------------
+fn_bs_test_validate_paths() { ## cSpell:Ignore BS_TVP
+     BS_TVP_Target="${1:?'[fn_bs_test_validate_paths] A target variable name is required'}"
+#     BS_TVP_Option="${2?'[fn_bs_test_validate_paths] An option name is required'}"
+#  BS_TVP_ValueType="${3?'[fn_bs_test_validate_paths] A value type is required'}"
+      BS_TVP_Value="${4?'[fn_bs_test_validate_paths] A option value is required'}"
+
+  case ${BS_TVP_Target} in
+  'WorkingDirectory' )
+    if test_assert ${LINENO:+"@${LINENO}"} -d "${BS_LGATS__PWD}"; then
+      test_assert ${LINENO:+"@${LINENO}"} -d "${BS_TVP_Value}" || return $?
+    fi
+  ;;
+  'HomeDirectory' )
+    if test_assert ${LINENO:+"@${LINENO}"} -r "${BS_LGATS__HOME}"; then
+      test_assert ${LINENO:+"@${LINENO}"} -r "${BS_TVP_Value}" || return $?
+    fi
+  ;;
+  'TempDirectory' )
+    if test_assert ${LINENO:+"@${LINENO}"} -r "${BS_LGATS__TMP}"; then
+      test_assert ${LINENO:+"@${LINENO}"} -r "${BS_TVP_Value}" || return $?
+    fi
+  ;;
+  esac
+  true
+}
+
+#-------------------------------------------------------------------------------
+#
+#-------------------------------------------------------------------------------
+fn_bs_test_option_validator() {
+  WorkingDirectory=;  unset 'WorkingDirectory'
+  HomeDirectory=;     unset 'HomeDirectory'
+  TempDirectory=;     unset 'TempDirectory'
+  UnusedVar=;         unset 'UnusedVar'
+  test_run_expect_success                                \
+    getargs                                              \
+      --options 'working-directory|w[:]WorkingDirectory' \
+      --options 'home-directory|h[:]HomeDirectory'       \
+      --options 'temporary-directory|t[:]TempDirectory'  \
+      --options 'unused|u[:]UnusedVar'                   \
+      --validate='fn_bs_test_validate_paths'             \
+      --                                                 \
+      --working "${BS_LGATS__PWD}"                       \
+      --temporary-directory "${BS_LGATS__TMP}"           \
+      --home="${BS_LGATS__HOME}"                         || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} "${WorkingDirectory-}"  = "${BS_LGATS__PWD}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${HomeDirectory-}"     = "${BS_LGATS__HOME}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${TempDirectory-}"     = "${BS_LGATS__TMP}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${UnusedVar+1}" ||  return $?
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Difficult Values
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fn_bs_test_difficult_values() {
+  BS_TDV_TestValue='$^a "somewhat" '"'"'\\%difficult%'"'"' "
+"value$"
+  '
+
+  DifficultVar=;  unset 'DifficultVar'
+  IFSVar=;        unset 'IFSVar'
+  UnusedVar=;     unset 'UnusedVar'
+  test_run_expect_success               \
+    getargs                             \
+      -o 'difficult|d[:]DifficultVar'   \
+      -o 'ifs|i[:]IFSVar'               \
+      -o 'unused|u[:]UnusedVar'         \
+      --                                \
+      --difficult "${BS_TDV_TestValue}" \
+      --ifs="${IFS?}"                   || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} "${DifficultVar-}"  = "${BS_TDV_TestValue}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${IFSVar-}"        = "${IFS?}"             || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${UnusedVar+1}" ||  return $?
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Combined Switches & Values
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fn_bs_test_combined_flags_and_values() {
+  AlphaSwitch=; unset 'AlphaSwitch'
+  BetaValue=;   unset 'BetaValue'
+  GammaSwitch=; unset 'GammaSwitch'
+  DeltaValue=;  unset 'DeltaValue'
+  UnusedVar=;   unset 'UnusedVar'
+  test_run_expect_success                         \
+    getargs                                       \
+      --options 'unused|u[-]UnusedVar'            \
+      --options 'alpha|a[-]AlphaSwitch'           \
+      --options 'beta|bravo|b[:]BetaValue'        \
+      --options 'gamma|g|charlie|c[-]GammaSwitch' \
+      --options 'delta|d[:]DeltaValue'            \
+      --                                          \
+      -ab="${BS_LGATS__test_value_1}"             \
+      -cd"${BS_LGATS__test_value_2}"              || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} -n "${AlphaSwitch+1}" ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${GammaSwitch+1}" ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${BetaValue}"  = "${BS_LGATS__test_value_1}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${DeltaValue}" = "${BS_LGATS__test_value_2}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${UnusedVar+1}" ||  return $?
+
+  AlphaSwitch=; unset 'AlphaSwitch'
+  BetaValue=;   unset 'BetaValue'
+  GammaSwitch=; unset 'GammaSwitch'
+  DeltaValue=;  unset 'DeltaValue'
+  UnusedVar=;   unset 'UnusedVar'
+  test_run_expect_success                         \
+    getargs                                       \
+      --options 'unused|u[-]UnusedVar'            \
+      --options 'alpha|a[-]AlphaSwitch'           \
+      --options 'beta|bravo|b[:]BetaValue'        \
+      --options 'gamma|g|charlie|c[-]GammaSwitch' \
+      --options 'delta|d[:]DeltaValue'            \
+      --                                          \
+      -cab="${BS_LGATS__test_value_1}"            \
+      -d"${BS_LGATS__test_value_2}"               || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} -n "${AlphaSwitch+1}" ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${GammaSwitch+1}" ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${BetaValue}"  = "${BS_LGATS__test_value_1}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${DeltaValue}" = "${BS_LGATS__test_value_2}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${UnusedVar+1}" ||  return $?
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Extra Options
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fn_bs_test_extra_options() {
+  ProcIDVal=;        unset 'ProcIDVal'
+  UnusedVar=;        unset 'UnusedVar'
+  UnmatchedOptions=; unset 'UnmatchedOptions'
+  test_run_expect_success                                 \
+    getargs                                               \
+      --options='ppid|p[:]ProcIDVal,unused|u[:]UnusedVar' \
+      --positional '[+]UnmatchedOptions'                  \
+      --                                                  \
+      --ppid "$$"                                         \
+      "${BS_LGATS__test_value_1}"                         \
+      "${BS_LGATS__test_value_2}"                         \
+      "${BS_LGATS__test_value_3}"                         || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} "_${ProcIDVal}" = "_$$"     ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${UnmatchedOptions:+1}" ||  return $?
+  eval "set 'BS_DUMMY_PARAM' ${UnmatchedOptions}" && shift
+  test_assert ${LINENO:+"@${LINENO}"} $# -eq 3 || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${1}" = "${BS_LGATS__test_value_1}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${2}" = "${BS_LGATS__test_value_2}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${3}" = "${BS_LGATS__test_value_3}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${UnusedVar+1}" ||  return $?
+
+  ProcIDVal=;        unset 'ProcIDVal'
+  UnusedVar=;        unset 'UnusedVar'
+  UnmatchedOptions=; unset 'UnmatchedOptions'
+  test_run_expect_success                           \
+    getargs                                         \
+      -o 'ppid|p[:]ProcIDVal,unused|u[:]UnusedVar'  \
+      -p '[+]UnmatchedOptions'                      \
+      --                                            \
+      --ppid "$$"                                   \
+      --                                            \
+      "${BS_LGATS__test_value_1}"                   \
+      "${BS_LGATS__test_value_2}"                   \
+      "${BS_LGATS__test_value_3}"                   || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} "_${ProcIDVal}" = "_$$"     ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${UnmatchedOptions:+1}" ||  return $?
+  eval "set 'BS_DUMMY_PARAM' ${UnmatchedOptions}" && shift
+  test_assert ${LINENO:+"@${LINENO}"} $# -eq 3 || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${1}" = "${BS_LGATS__test_value_1}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${2}" = "${BS_LGATS__test_value_2}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${3}" = "${BS_LGATS__test_value_3}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${UnusedVar+1}" ||  return $?
+
+  ProcIDVal=;        unset 'ProcIDVal'
+  UnusedVar=;        unset 'UnusedVar'
+  TestVal=;          unset 'TestVal'
+  UnmatchedOptions=; unset 'UnmatchedOptions'
+  test_run_expect_success                           \
+    getargs       --check-config                    \
+      -o 'ppid|p[:]ProcIDVal,unused|u[:]UnusedVar'  \
+      -p '[:]TestVal,[+]UnmatchedOptions'           \
+      --interleaved                                 \
+      --                                            \
+      "${BS_LGATS__test_value_1}"                   \
+      --ppid "$$"                                   \
+      "${BS_LGATS__test_value_2}"                   \
+      "${BS_LGATS__test_value_3}"                   || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} "${ProcIDVal}" = "$$" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${TestVal:+1}" ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${BS_LGATS__test_value_1}" = "${TestVal}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${UnmatchedOptions:+1}" ||  return $?
+  eval "set 'BS_DUMMY_PARAM' ${UnmatchedOptions}" && shift
+  test_assert ${LINENO:+"@${LINENO}"} $# -eq 2 || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${1}" = "${BS_LGATS__test_value_2}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${2}" = "${BS_LGATS__test_value_3}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${UnusedVar+1}" ||  return $?
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Tagged Multiple Value Option
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fn_bs_test_tagged_multiple_value_option() {
+  MultiOptionArrayVar=; unset 'MultiOptionArrayVar'
+  UnmatchedOptions=;    unset 'UnmatchedOptions'
+  UnusedVar=;           unset 'UnusedVar'
+
+  test_run_expect_success         \
+    getargs                       \
+      -o 'unused|u[:]UnusedVar'   \
+      -p '[+]UnmatchedOptions'    \
+      --                          \
+      "${BS_LGATS__test_value_1}" \
+      "${BS_LGATS__test_value_2}" \
+      "${BS_LGATS__test_value_3}" || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} -n "${UnmatchedOptions+1}" ||  return $?
+
+  test_run_expect_success                                   \
+    getargs                                                 \
+      -o                                                    \
+      'multi|m[+]MultiOptionArrayVar,unused|u[:]UnusedVar'  \
+      --                                                    \
+      --multi:array 'UnmatchedOptions'                      \
+      --multi       "${BS_LGATS__test_value_1}"             || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} -n "${MultiOptionArrayVar:+1}" ||  return $?
+  eval "set 'BS_DUMMY_PARAM' ${MultiOptionArrayVar}" && shift
+  test_assert ${LINENO:+"@${LINENO}"} $# -eq 4 || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${1}" = "${BS_LGATS__test_value_1}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${2}" = "${BS_LGATS__test_value_2}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${3}" = "${BS_LGATS__test_value_3}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${4}" = "${BS_LGATS__test_value_1}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${UnusedVar+1}" ||  return $?
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Automatic Unset
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fn_bs_test_automatic_unset() {
+  AlphaSwitch='not unset'; BetaSwitch='not unset'; GammaSwitch='not unset'
+  DeltaSwitch='not unset'; UnusedVar='not unset'
+
+  test_run_expect_success                         \
+    getargs                                       \
+      --unset                                     \
+      --posix-long                                \
+      --options 'unused|u[-]UnusedVar'            \
+      --options 'alpha|a[-]AlphaSwitch'           \
+      --options 'beta|bravo|b[-]BetaSwitch'       \
+      --options 'gamma|g|charlie|c[-]GammaSwitch' \
+      --options 'delta|d[-]DeltaSwitch'           \
+      --                                          \
+      -alpha -bc --delta                          || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} -n "${AlphaSwitch+1}" ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${BetaSwitch+1}"  ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${GammaSwitch+1}" ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${DeltaSwitch+1}" ||  return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${UnusedVar+1}"   ||  return $?
+}
+
+################################################################################
+# TEST
+################################################################################
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  RUN A BATCH OF TESTS
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fn_bs_lgats_units() {
+  #  Ensure always at least one argument so no issues with "$@"
+  case $# in 0) set 'BS_DUMMY_PARAM' '--' && shift ;; esac
+
+  #-------------------------------------
+  #  CONSTANTS
+  test_run_unit                \
+    -u 'libgetargs: constants' \
+    'fn_bs_lgats_constants'    \
+    "$@"
+
+  #-------------------------------------
+  #  Simple Switches
+  test_run_unit                      \
+    -u 'libgetargs: Simple Switches' \
+    'fn_bs_test_flags'               \
+    "$@"
+
+  #-------------------------------------
+  #  Combined Switches
+  test_run_unit                        \
+    -u 'libgetargs: Combined Switches' \
+    'fn_bs_test_combined_flags'        \
+    "$@"
+
+  #-------------------------------------
+  #  Tagged Switches
+  test_run_unit                      \
+    -u 'libgetargs: Tagged Switches' \
+    'fn_bs_test_tagged_flags'        \
+    "$@"
+
+  #-------------------------------------
+  #  Single Value Option
+  test_run_unit                          \
+    -u 'libgetargs: Single Value Option' \
+    'fn_bs_test_single_value_option'     \
+    "$@"
+
+  #-------------------------------------
+  #  Multiple Value Option
+  test_run_unit                            \
+    -u 'libgetargs: Multiple Value Option' \
+    'fn_bs_test_multiple_value_option'     \
+    "$@"
+
+  #-------------------------------------
+  #  Optional Value Option
+  test_run_unit                            \
+    -u 'libgetargs: Optional Value Option' \
+    'fn_bs_test_optional_value_option'     \
+    "$@"
+
+  #-------------------------------------
+  #  Difficult values
+  test_run_unit                       \
+    -u 'libgetargs: Difficult Values' \
+    'fn_bs_test_difficult_values'     \
+    "$@"
+
+  #-------------------------------------
+  #  Combined Switches & Values
+  test_run_unit                                 \
+    -u 'libgetargs: Combined Switches & Values' \
+    'fn_bs_test_combined_flags_and_values'      \
+    "$@"
+
+  #-------------------------------------
+  #  Extra Options
+  test_run_unit                    \
+    -u 'libgetargs: Extra Options' \
+    'fn_bs_test_extra_options'     \
+    "$@"
+
+  #-------------------------------------
+  #  Tagged Multiple Value Option
+  test_run_unit                                   \
+    -u 'libgetargs: Tagged Multiple Value Option' \
+    'fn_bs_test_tagged_multiple_value_option'     \
+    "$@"
+
+  #-------------------------------------
+  #  Validator
+  test_run_unit                   \
+    -u 'libgetargs: Validator'    \
+    'fn_bs_test_option_validator' \
+    "$@"
+
+  #-------------------------------------
+  #  Automatic Unset
+  test_run_unit                      \
+    -u 'libgetargs: Automatic Unset' \
+    'fn_bs_test_automatic_unset'     \
+    "$@"
+}
+
+################################################################################
+################################################################################
+#  TESTWRAPPER Values & Commands
+################################################################################
+################################################################################
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  FRIENDLY NAME
+BS_TEST_NAME='[libgetargs] Test Success'
+export BS_TEST_NAME
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  NUMBER OF AVAILABLE CONFIGURATIONS
+BS_TEST_CONFIG_COUNT=4
+export BS_TEST_CONFIG_COUNT
+
+#_______________________________________________________________________________
+#  test_run_config
+#  --------
+#
+#  Run the tests for a given configuration
+#
+# ----------------------------------------------------------
+# SC2034: foo appears unused. Verify it or export it.
+# EXCEPT: It is checked by the sourced tool and is unset
+#+        here to ensure the state is as expected
+# shellcheck disable=SC2034
+#_______________________________________________________________________________
+test_run_config() { ## cSpell:Ignore BS_TRC_
+  #.....................................
+  #  Ensure none of the config variables
+  #+ are already set
+  BS_LIBGETARGS_CONFIG_ALLOW_AMBIGUOUS=;
+  unset BS_LIBGETARGS_CONFIG_ALLOW_AMBIGUOUS
+  BS_LIBGETARGS_CONFIG_ALLOW_UNSAFE_OPTIONS=;
+  unset BS_LIBGETARGS_CONFIG_ALLOW_UNSAFE_OPTIONS
+  BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS=;
+  unset BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS
+
+  #.....................................
+  #  Common arguments
+  BS_TRC_Tool="$1"
+  shift
+  BS_TRC_Config="$1"
+  shift
+
+  #.....................................
+  #  Configure the tool
+  case ${BS_TRC_Config} in
+  1)  test_print_config_info  \
+        'Config: DEFAULT'     \
+        'Type:   BASIC USAGE' ;;
+
+  2)  BS_LIBGETARGS_CONFIG_ALLOW_AMBIGUOUS=1
+      export BS_LIBGETARGS_CONFIG_ALLOW_AMBIGUOUS
+
+      test_print_config_info      \
+        'Config: ALLOW_AMBIGUOUS' \
+        'Type:   BASIC USAGE'     ;;
+
+  3)  BS_LIBGETARGS_CONFIG_ALLOW_UNSAFE_OPTIONS=1
+      export BS_LIBGETARGS_CONFIG_ALLOW_UNSAFE_OPTIONS
+
+      test_print_config_info           \
+        'Config: ALLOW_UNSAFE_OPTIONS' \
+        'Type:   BASIC USAGE'          ;;
+
+  4)  BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS=1
+      export BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS
+
+      test_print_config_info           \
+        'Config: INTERLEAVED_OPERANDS' \
+        'Type:   BASIC USAGE'          ;;
+
+  *)  return 1 ;;                       #< No such config
+  esac
+
+  #.....................................
+  # Source the tool
+  # shellcheck source=/dev/null
+  . "${BS_TRC_Tool}" || return $?
+
+  #.....................................
+  # Run the tests
+  fn_bs_lgats_units ${1+"$@"}
+}

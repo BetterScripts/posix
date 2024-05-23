@@ -1,0 +1,442 @@
+#!/usr/bin/env false
+# SPDX-License-Identifier: MPL-2.0
+#################################### LICENSE ###################################
+#******************************************************************************#
+#*                                                                            *#
+#* BetterScripts 'libgetargs/failure': Tests for 'libgetargs' failure         *#
+#*                                     conditions.                            *#
+#*                                                                            *#
+#* Copyright (c) 2022 BetterScripts ( better.scripts@proton.me,               *#
+#*                                    https://github.com/BetterScripts )      *#
+#*                                                                            *#
+#* This file is part of the BetterScripts POSIX Suite.                        *#
+#*                                                                            *#
+#* This Source Code Form is subject to the terms of the Mozilla Public        *#
+#* License, v. 2.0. If a copy of the MPL was not distributed with this        *#
+#* file, You can obtain one at https://mozilla.org/MPL/2.0/.                  *#
+#*                                                                            *#
+#* -------------------------------------------------------------------------- *#
+#*                                                                            *#
+#* ADDENDUM:                                                                  *#
+#*                                                                            *#
+#* In addition to the Mozilla Public License a copy of LICENSE.MD should have *#
+#* been be provided alongside this file; LICENSE.MD clarifies how the Mozilla *#
+#* Public License v2.0 applies to this file and MAY confer additional rights. *#
+#*                                                                            *#
+#* Should there be any apparent ambiguity (implied or otherwise) the terms    *#
+#* and conditions from the Mozilla Public License v2.0 shall apply.           *#
+#*                                                                            *#
+#* If a copy of LICENSE.MD was not provided it can be obtained from           *#
+#* https://github.com/BetterScripts/posix/LICENSE.MD.                         *#
+#*                                                                            *#
+#* NOTE:                                                                      *#
+#*                                                                            *#
+#* The Mozilla Public License v2.0 is compatible with the GNU General Public  *#
+#* License v2.0.                                                              *#
+#*                                                                            *#
+#******************************************************************************#
+################################################################################
+
+############################## LIBGETARGS/SUCCESS ##############################
+#
+# Documentation  is written inline formatted as [`Markdown`][markdown], this is
+# in addition to the suite wide documentation which includes details common to
+# multiple suite libraries that may not be detailed here.
+#
+# The included `Makefile` can be used to generate standalone documentation in
+# various formats with various verbosity settings. The `Makefile` can also be
+# used to install scripts and documentation in appropriate locations.
+#
+# As far as possible, terminology and conventions follow those of the
+# [_POSIX.1-2008_ Standard][posix_2008].
+#===============================================================================
+## cSpell:Ignore libgetargs testrunner testwrapper LGATF
+################################ DOCUMENTATION #################################
+#
+#% % libgetargs-failure(7) BetterScripts | Tests for 'libgetargs' failure conditions.
+#% % BetterScripts (better.scripts@proton.me)  
+#
+#: <!-- #################################################################### -->
+#: <!-- ######### THIS FILE WAS GENERATED FROM 'libgetargs/failure' ######## -->
+#: <!-- #################################################################### -->
+#: <!-- ########################### DO NOT EDIT! ########################### -->
+#: <!-- #################################################################### -->
+#:
+#: # LIBGETARGS/FAILURE
+#:
+#:
+#
+#  `libgetargs` Test Success (LGATF)
+#  ============================
+#
+#  Tests for `libgetargs` checking failure conditions.
+#
+################################################################################
+
+############################## SHELLCHECK: GLOBAL ##############################
+# shellcheck shell=sh                                                          #
+#                                                                              #
+# Enable some optional checks:                                                 #
+#                                                                              #
+# shellcheck enable=avoid-nullary-conditions                                   #
+# shellcheck enable=check-extra-masked-returns                                 #
+# shellcheck enable=deprecate-which                                            #
+# shellcheck enable=require-variable-braces                                    #
+#                                                                              #
+################################################################################
+
+#===============================================================================
+#===============================================================================
+#  COMMON VALUES
+#===============================================================================
+#===============================================================================
+
+#===============================================================================
+#===============================================================================
+#  COMMON COMMANDS
+#===============================================================================
+#===============================================================================
+
+#===============================================================================
+#===============================================================================
+#  CONFIG TESTS
+#===============================================================================
+#===============================================================================
+
+#===============================================================================
+#===============================================================================
+#  COMMAND TESTS
+#===============================================================================
+#===============================================================================
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  No Option Configuration
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fn_bs_test_no_config() {
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure \
+      --output='TestOutput' \
+      getargs               \
+        --                  \
+        --not --an --option || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -like '*OPTION-CONFIG is required*' || return $?
+  }
+
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure \
+      --output='TestOutput' \
+      getargs               \
+        -o=                 \
+        --                  \
+        --not --an --option || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -like '*a value is required with*' || return $?
+  }
+
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure       \
+      --output='TestOutput'       \
+      getargs                     \
+        -o='option|o[-]Variable'  \
+        -p=                       \
+        --                        \
+        --not --an --option       || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -like '*a value is required with*' || return $?
+  }
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  Bad Option Configuration
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fn_bs_test_bad_config() {
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure        \
+      --output='TestOutput'        \
+      getargs                      \
+        --check-config             \
+        -o 'this!is!not!a!config!' \
+        --   --this                || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -like '*invalid OPTION-CONFIG*' || return $?
+  }
+
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure        \
+      --output='TestOutput'        \
+      getargs                      \
+        --no-check-config          \
+        -o 'this!is!not!a!config!' \
+        --                         \
+        --this                     || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -like '*Unrecognized option*' || return $?
+  }
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fn_bs_test_unexpected_arguments() {
+  {
+    TestOutput=; unset 'TestOutput'
+    FlagVar=;    unset 'FlagVar'
+    test_run_expect_failure          \
+      --output='TestOutput'          \
+      getargs                        \
+        --interleaved                \
+        --options 'flag|f[-]FlagVar' \
+        --                           \
+        --flag 'bad'                 || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} -z "${FlagVar+1}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -like '*Unexpected OPERAND*' || return $?
+  }
+
+  {
+    TestOutput=; unset 'TestOutput'
+    FlagVar=;    unset 'FlagVar'
+    test_run_expect_failure          \
+      --output='TestOutput'          \
+      getargs                        \
+        --options 'flag|f[-]FlagVar' \
+        --                           \
+        --                           \
+        'extra' 'argument'           || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -like '*Unexpected OPERAND*' || return $?
+  }
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fn_bs_test_invalid_tag() {
+  TestOutput=; unset 'TestOutput' 'FlagVar'
+  test_run_expect_failure          \
+    --output='TestOutput'          \
+    getargs                        \
+      --options 'flag|f[-]FlagVar' \
+      --                           \
+      --flag:bad                   || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -like '*Invalid tag *' || return $?
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fn_bs_test_ambiguous_option() {
+  TestOutput=; unset 'TestOutput'
+  Flag1Var=;   unset 'Flag1Var'
+  Flag2Var=;   unset 'Flag2Var'
+  test_run_expect_failure            \
+    --output='TestOutput'            \
+    getargs                          \
+      --no-ambiguous                 \
+      --options 'flag1|1[-]Flag1Var' \
+      --options 'flag2|2[-]Flag2Var' \
+      --                             \
+      --fl                           || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} -z "${Flag1Var+SET}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -z "${Flag2Var+SET}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -like '*Ambiguous*' || return $?
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fn_bs_test_multiple_set() {
+   TestOutput=; unset 'TestOutput' 'TargetPath'
+  test_run_expect_failure                           \
+    --output='TestOutput'                           \
+    getargs                                         \
+      --options 'destination|target|t[:]TargetPath' \
+      --                                            \
+      --target '/dev/null'                          \
+      --target '/tmp'                               || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -like '*Multiple values for single value option*' || return $?
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+validate_paths() { false; }
+fn_bs_test_failed_validation() { ## cSpell:Ignore nulldoesnotexist
+   TestOutput=; unset 'TestOutput' 'TargetPath'
+  test_run_expect_failure                           \
+    --output='TestOutput'                           \
+    getargs                                         \
+      --options 'destination|target|t[:]TargetPath' \
+      --validate='validate_paths'                   \
+      --                                            \
+      --target "/dev/nulldoesnotexist"              || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -like '*Invalid value*' || return $?
+}
+
+#===============================================================================
+#
+#===============================================================================
+fn_bs_lgatf_units() {
+  #.....................................
+  #  No Config
+  test_run_unit                \
+    -u 'libgetargs: No Config' \
+    'fn_bs_test_no_config'     \
+    "$@"
+
+  #.....................................
+  #  Bad Config
+  test_run_unit                 \
+    -u 'libgetargs: Bad Config' \
+    'fn_bs_test_bad_config'     \
+    "$@"
+
+  #.....................................
+  #  Unexpected arguments
+  test_run_unit                           \
+    -u 'libgetargs: Unexpected arguments' \
+    'fn_bs_test_unexpected_arguments'     \
+    "$@"
+
+  #.....................................
+  #  Invalid Tag
+  test_run_unit                  \
+    -u 'libgetargs: Invalid Tag' \
+    'fn_bs_test_invalid_tag'     \
+    "$@"
+
+  #.....................................
+  #  Ambiguous Option
+  test_run_unit                       \
+    -u 'libgetargs: Ambiguous Option' \
+    'fn_bs_test_ambiguous_option'     \
+    "$@"
+
+  #.....................................
+  #  Multiple Set
+  test_run_unit                   \
+    -u 'libgetargs: Multiple Set' \
+    'fn_bs_test_multiple_set'     \
+    "$@"
+
+  #.....................................
+  #  Failed Validation
+  test_run_unit                        \
+    -u 'libgetargs: Failed Validation' \
+    'fn_bs_test_failed_validation'     \
+    "$@"
+}
+
+################################################################################
+################################################################################
+#  TESTWRAPPER Values & Commands
+################################################################################
+################################################################################
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  FRIENDLY NAME
+BS_TEST_NAME='[libgetargs] Test Failure'
+export BS_TEST_NAME
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  NUMBER OF AVAILABLE CONFIGURATIONS
+BS_TEST_CONFIG_COUNT=4
+export BS_TEST_CONFIG_COUNT
+
+#_______________________________________________________________________________
+#  test_run_config
+#  --------
+#
+#  Run the tests for a given configuration
+#
+# ----------------------------------------------------------
+# SC2034: foo appears unused. Verify it or export it.
+# EXCEPT: It is checked by the sourced tool and is unset
+#+        here to ensure the state is as expected
+# shellcheck disable=SC2034
+#_______________________________________________________________________________
+test_run_config() { ## cSpell:Ignore BS_TRC_
+  #.....................................
+  #  Ensure none of the config variables
+  #+ are already set
+  BS_LIBGETARGS_CONFIG_TRUE_VALUE=;
+  unset BS_LIBGETARGS_CONFIG_TRUE_VALUE
+  BS_LIBGETARGS_CONFIG_FALSE_VALUE=;
+  unset BS_LIBGETARGS_CONFIG_FALSE_VALUE
+  BS_LIBGETARGS_CONFIG_OPTIONAL_VALUE=;
+  unset BS_LIBGETARGS_CONFIG_OPTIONAL_VALUE
+
+  BS_LIBGETARGS_CONFIG_ALLOW_UNSAFE_OPTIONS=;
+  unset BS_LIBGETARGS_CONFIG_ALLOW_UNSAFE_OPTIONS
+  BS_LIBGETARGS_CONFIG_AUTO_UNSET=;
+  unset BS_LIBGETARGS_CONFIG_AUTO_UNSET
+  BS_LIBGETARGS_CONFIG_NO_CONFIG_CHECK=;
+  unset BS_LIBGETARGS_CONFIG_NO_CONFIG_CHECK
+  BS_LIBGETARGS_CONFIG_ALLOW_AMBIGUOUS=;
+  unset BS_LIBGETARGS_CONFIG_ALLOW_AMBIGUOUS
+  BS_LIBGETARGS_CONFIG_NO_ABBREVIATIONS=;
+  unset BS_LIBGETARGS_CONFIG_NO_ABBREVIATIONS
+  BS_LIBGETARGS_CONFIG_STRICT_OPERANDS=;
+  unset BS_LIBGETARGS_CONFIG_STRICT_OPERANDS
+  BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS=;
+  unset BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS
+
+  #.....................................
+  #  Common arguments
+  BS_TRC_Tool="$1"
+  shift
+  BS_TRC_Config="$1"
+  shift
+
+  #.....................................
+  #  Configure the tool
+  case ${BS_TRC_Config} in
+  1)  test_print_config_info         \
+        'Config: DEFAULT'            \
+        'Type:   FAILURE CONDITIONS' ;;
+
+  2)  BS_LIBGETARGS_CONFIG_ALLOW_AMBIGUOUS=1
+      export BS_LIBGETARGS_CONFIG_ALLOW_AMBIGUOUS
+
+      test_print_config_info         \
+        'Config: ALLOW_AMBIGUOUS'    \
+        'Type:   FAILURE CONDITIONS' ;;
+
+  3)  BS_LIBGETARGS_CONFIG_ALLOW_UNSAFE_OPTIONS=1
+      export BS_LIBGETARGS_CONFIG_ALLOW_UNSAFE_OPTIONS
+
+      test_print_config_info           \
+        'Config: ALLOW_UNSAFE_OPTIONS' \
+        'Type:   FAILURE CONDITIONS'   ;;
+
+  4)  BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS=1
+      export BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS
+
+      test_print_config_info           \
+        'Config: INTERLEAVED_OPERANDS' \
+        'Type:   FAILURE CONDITIONS'   ;;
+
+  *)  return 1 ;;                       #< No such config
+  esac
+
+  #.....................................
+  # Source the tool
+  # shellcheck source=/dev/null
+  . "${BS_TRC_Tool}" || return $?
+
+  #.....................................
+  # Run the tests
+  case $# in
+  0) fn_bs_lgatf_units      ;;
+  *) fn_bs_lgatf_units "$@" ;;
+  esac
+}
