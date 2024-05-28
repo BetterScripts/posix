@@ -1526,6 +1526,21 @@ options where they are noted to have a performance impact will also help
 
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
+## CAVEATS
+
+The environment in which the library is invoked will dictate limitations
+for the library that can not be avoided. In particular, the command line
+length limit will impose restrictions on the length of a single invocation
+of `getargs`, though other limitations may also be problematic.
+
+Importantly, the command line length limit imposes a limit on the combined
+length of _both_ the SPECIFICATION _and_ the ARGUMENTs to process, and may
+be a particular issue where [AUTO-HELP](#auto-help) is used.
+
+_For more details see the common suite [documentation](./README.MD#caveats)._
+
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+
 ## EXAMPLE
 
 Additional examples can be found in the test files for the library.

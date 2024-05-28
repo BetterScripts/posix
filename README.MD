@@ -582,6 +582,49 @@ Library commands document arguments with a tag indicating argument usage:
               surprisingly small despite the significant reduction in file
               sizes - most of the expensive computation is unavoidable.
 
+## CAVEATS
+
+The tools and libraries in _the Suite_ are subject to the limitations imposed by
+the particular environment in which they are invoked. Each implementation of the
+required utilities and command execution environment will have specific
+limitations that may be different to those in another implementation and may
+change between versions of the same utilities.[^standard_limits]
+
+[^standard_limits]: Many of these limitations are specified in the standard,
+                    with specific constraints, though generally the actual value
+                    is "implementation defined".
+
+For most use cases it is deemed unlikely that these limitations will be an
+issue, however, there will be cases where some limitations may cause problems.
+
+### COMMAND LINE LENGTH LIMIT
+
+It is impossible to determine all the possible limitations that may exist or may
+be of issue (even when considering only those specified in the standard).
+However, of the known limitations, perhaps the most likely to be encountered
+across multiple libraries from _the Suite_ is the command line length limit,
+which can be encountered in a number of scenarios, and in unexpected ways.
+
+The standard specifies this as [`{ARG_MAX}`][posix_exec] and defines it as:
+
+> The number of bytes available for \[a] new process' combined argument and
+> environment lists... It is implementation-defined whether null
+> terminators, pointers, and/or any alignment bytes are included in this
+> total.
+
+The value for any particular environment can be queried using the command
+`getconf ARG_MAX`, though this value can only be used as a guide since it is
+impossible to know how many bytes any command will require in advance.
+
+It _is_ possible to increase the available command line length for commands,
+by, for example, by:
+
+- reducing the number (and size) of exported variables;
+- avoiding characters that use more than a single byte.
+
+Importantly, any variable which is exported and also has it's contents used as
+an argument to a command will count **TWICE** towards this limit.
+
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 <!-- %                                                                       -->
 <!-- % ## SEE ALSO                                                           -->
@@ -607,6 +650,7 @@ Library commands document arguments with a tag indicating argument usage:
 [posix_utility_conventions]:  <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap12.html>                "POSIX: Utility Conventions \[pubs.opengroup.org\]"
 [posix_variable]:             <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap03.html#tag_03_230>     "Definitions: Name \[pubs.opengroup.org\]"
 [posix_shell_utils]:          <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/idx/xcu.html>                           "POSIX: Shell & Utilities \[pubs.opengroup.org\]"
+[posix_exec]:                 <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/functions/execl.html>                   "POSIX: exec \[pubs.opengroup.org\]"
 
 [markdown]:                   <https://daringfireball.net/projects/markdown/syntax>                                                 "Markdown: Syntax \[daringfireball.net\]"
 [commonmark]:                 <https://commonmark.org/>                                                                             "CommonMark \[spec.commonmark.org\]"
