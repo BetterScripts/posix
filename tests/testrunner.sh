@@ -54,7 +54,7 @@
 ################################ DOCUMENTATION #################################
 #
 #% % testrunner(7) BetterScripts | Test harness for BetterScripts POSIX Suite.
-#% % BetterScripts (better.scripts@proton.me)  
+#% % BetterScripts (better.scripts@proton.me)
 #
 #: <!-- #################################################################### -->
 #: <!-- ########### THIS FILE WAS GENERATED FROM 'testrunner.sh' ########### -->
@@ -358,7 +358,7 @@ g_BS_TR_CFG__Trace=0;
 g_BS_TR__Timed=0;
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#  
+#
 g_BS_TR_CFG__Quiet="${BS_TESTRUNNER_CONFIG_QUIET:-0}"
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -408,7 +408,7 @@ g_BS_TR__TestWrapper='.testwrapper.sh'; ## cSpell:ignore testwrapper
 fn_bs_testrunner_diagnostic() { ## cSpell:Ignore BS_TR_Diag_
   BS_TR_Diag_Type="${1:?'[testrunner::fn_bs_testrunner_diagnostic]: Internal Error: a diagnostic category is required'}"
   shift
-  
+
   {
     case $# in
     0)  : "${1:?'[testrunner::fn_bs_testrunner_diagnostic]: Internal Error: a message is required'}" ;;
@@ -457,7 +457,7 @@ fn_bs_testrunner_error() {
 #; See [`fn_bs_testrunner_diagnostic`][#fn_bs_testrunner_diagnostic].
 #;
 #_______________________________________________________________________________
-fn_bs_testrunner_warning() { 
+fn_bs_testrunner_warning() {
   case ${g_BS_TR_CFG__Quiet:-0} in
   0|1) fn_bs_testrunner_diagnostic 'WARNING' ${1+"$@"} ;;
   esac
@@ -538,7 +538,7 @@ fn_bs_testrunner_usage_error() {
 #; ...
 #;
 #_______________________________________________________________________________
-fn_bs_testrunner_print() { 
+fn_bs_testrunner_print() {
   #  SC2059: Don't use variables in the printf format string.
   #+         Use printf "..%s.." "$foo".
   #  EXCEPT: This is a replacement for `printf` so that output can be made
@@ -583,7 +583,7 @@ fn_bs_testrunner_print() {
 #; `PATH` \[in]
 #;
 #; : path to get the directory from;
-#; : a path that does not start with `/` will be 
+#; : a path that does not start with `/` will be
 #;   interpreted relative to the present working directory
 #;   (to avoid this a fake root can be added by the caller).
 #;
@@ -617,7 +617,7 @@ fn_bs_tr_get_dirname() { ## cSpell:Ignore BS_TRGD_
   # absolute path that MAY not be what the caller intended.
   #---------------------------------------------------------
   case ${BS_TRGD_Path-} in
-  [!/]*) 
+  [!/]*)
     case ${c_BS_TR__PWD:-} in
     /*) BS_TRGD_Path="${c_BS_TR__PWD}/${BS_TRGD_Path-}" ;;
      *) fn_bs_testrunner_warning \
@@ -630,7 +630,7 @@ fn_bs_tr_get_dirname() { ## cSpell:Ignore BS_TRGD_
   # Appending a `/` to path makes processing much simpler,
   # avoiding edge cases that otherwise require a lot of
   # extra code - it is removed before the value is returned.
-  # (All trailing `/` characters are removed from the 
+  # (All trailing `/` characters are removed from the
   # output.)
   #
   # _NOTES_
@@ -873,9 +873,9 @@ fn_bs_tr_get_basename() { ## cSpell:Ignore BS_TRGB_
 
       eval "${BS_TRGB_refBasename}=\"\${BS_TRGB_Basename}\""
     ;;
-    
-    *) 
-      false 
+
+    *)
+      false
     ;;
   esac
 }
@@ -1509,7 +1509,7 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
 
       #.................................
       # Timed
-      '--time'|'--timed'|'--profile') 
+      '--time'|'--timed'|'--profile')
         g_BS_TR__Timed=1
         g_BS_TR__aWrapperArgs="${g_BS_TR__aWrapperArgs-}$(fn_bs_tr_array_create '--no-assert')"
       ;;
@@ -1725,7 +1725,7 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
   # Validate & process arguments
   #---------------------------------------------------------
   case $# in
-  0) ;; 
+  0) ;;
   *) g_BS_TR__aTestArgs="${g_BS_TR__aTestArgs-}$(fn_bs_tr_array_create "$@")" ;;
   esac
 
@@ -1762,7 +1762,7 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
   *)  case ${opt_TestName-} in
       */*)  fn_bs_tr_get_dirname   \
               'BS_TR_Main_TestDir' \
-              "${opt_TestName}"    || return $? 
+              "${opt_TestName}"    || return $?
             fn_bs_tr_get_basename \
               'opt_TestName'      \
               "${opt_TestName}"   || return $? ;;
@@ -1844,7 +1844,7 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
   0)  fn_bs_testrunner_usage_error 'failed to find any valid shells'
       return "${c_BS_TR__EX_NOINPUT}" ;;
   esac
-            
+
   #---------------------------------------------------------
   # RUN TEST(S)
   #---------------------------------------------------------
@@ -1892,7 +1892,7 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
             } || {
               BS_TRM_ShellFailedCount=$(( BS_TRM_ShellFailedCount + $? ))
             }
-            
+
             case ${g_BS_TR_CFG__ExitOnFail:-0}:${BS_TRM_ShellFailedCount} in
             0:*|*:0) ;; *) break ;;
             esac
@@ -1905,7 +1905,7 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
     case ${BS_TRM_ShellFailedCount} in
     0)  ;;
     *)  BS_TRM_FailedShellInfo="${BS_TRM_FailedShellInfo-}${BS_TRM_Shell} (${BS_TRM_ShellFailedCount}), "
-            BS_TRM_FailedTotal=$(( BS_TRM_FailedTotal + BS_TRM_ShellFailedCount )) 
+            BS_TRM_FailedTotal=$(( BS_TRM_FailedTotal + BS_TRM_ShellFailedCount ))
         case ${g_BS_TR_CFG__ExitOnFail:-0} in
         0) ;; *) break ;;
         esac ;;

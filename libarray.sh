@@ -5839,17 +5839,12 @@ fn_bs_libarray_readonly 'BS_LIBARRAY_SOURCED'
 #:
 #: ## STANDARDS
 #:
-#: - [_POSIX.1-2008_][posix]
-#:   - also known as:
-#:     - _The Open Group Base Specifications Issue 7_
-#:     - _IEEE Std 1003.1-2008_
-#:     - _The Single UNIX Specification Version 4 (SUSv4)_
-#:   - the more recent
-#:     [_POSIX.1-2017_][posix_2017]
-#:     is functionally identical to _POSIX.1-2008_, but incorporates some errata
-#: - [FreeBSD SYSEXITS(3)][sysexits]
-#:   - while not truly standard, these are used by many projects
-#: - [Semantic Versioning v2.0.0][semver]
+#: - [_POSIX.1-2008_][posix].
+#: - [FreeBSD SYSEXITS(3)][sysexits].
+#: - [Semantic Versioning v2.0.0][semver].
+#: - [Inclusive Naming Initiative][inclusivenaming].
+#:
+#: _For more details see the common suite [documentation](./README.MD#standards)._
 #:
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
@@ -5905,14 +5900,6 @@ fn_bs_libarray_readonly 'BS_LIBARRAY_SOURCED'
 #. ## IMPLEMENTATION NOTES
 #. <!-- -------------- -->
 #.
-#. - Commands with the prefix 'fn_bs_' and variables
-#.   the prefix 'c_BS_' or 'g_BS_' are for implementation
-#.   of the provided commands, are subject to change or
-#.   removal and are not intended for external use.
-#. - Internal commands do not perform the same level of
-#.   parameter validation as external commands. The
-#.   caller is expected to have already validated the
-#.   parameters.
 #. - Unpacking array variables passed to commands by
 #.   name (aka reference) need TWO `eval` commands to
 #.   correctly set positional parameters. While it seems
@@ -5933,7 +5920,7 @@ fn_bs_libarray_readonly 'BS_LIBARRAY_SOURCED'
 #: operations).
 #:
 #: _For more details see the common suite [documentation](./README.MD#caveats)._
-#: 
+#:
 #% <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #%
 #% ## SEE ALSO

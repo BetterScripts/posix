@@ -96,9 +96,19 @@
 #: appropriate extensions where necessary. A brief summary of key terms can be
 #: found in [NOTES](#notes).
 #:
-#: The utility [`getarg`](./getarg.md) is a wrapper for `libgetargs.sh` which
-#: provides the functionality of the library as a directly invocable command
-#: (i.e. one that does not require the library be imported prior to use).
+#: The utility [`getarg`](./getarg.md)[^getarg_name] is a wrapper for
+#: `libgetargs.sh` which provides the functionality of the library as a directly
+#: invocable command (i.e. one that does not require the library be imported
+#: prior to use).
+#:
+#: [^getarg_name]: The choice of `getarg` for the name used by standalone
+#:                 version of the library is to avoid ambiguity. Originally it
+#:                 was also named `getargs`, but it quickly became clear that
+#:                 this was _not_ a good name as the documentation became very
+#:                 difficult to follow and the use of `getargs` in a script was
+#:                 ambiguous (did it mean an imported command or the wrapper
+#:                 binary) - this was particularly problematic since the usage
+#:                 needs to be different in each case.
 #:
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
@@ -216,12 +226,12 @@
 #: : \[Enable]/Disable error message output.
 #: : Overrides [`BS_LIBGETARGS_CONFIG_QUIET_ERRORS`](#bs_libgetargs_config_quiet_errors)
 #:
-#: `--[no-]strict`
+#: `--[no-]strict`, `--[no-]separated`
 #:
 #: : Enable/\[Disable] requiring the use of `--` (`<hyphen><hyphen>`) to separate
 #:   OPTIONs from OPERANDs.
 #: : Overrides [`BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`](#bs_libgetargs_config_strict_operands).
-#: : Can not be used with `--interleaved` or `--unmatched`
+#: : Can not be used with `--interleaved` or `--unmatched`.
 #:
 #: `--[no-]unsafe`
 #:
@@ -245,7 +255,7 @@
 #: _NOTES_
 #: <!-- -->
 #:
-#: Functionality can be invoked either by importing the `libgetargs` _or_ via
+#: Functionality can be invoked either by importing `libgetargs.sh` _or_ via
 #: the standalone wrapper script `getarg`. When invoked as `getarg`:
 #:
 #: - `--script` is implied (and can not be specified again).
@@ -520,12 +530,12 @@
 #: <!-- --- -->
 #:
 #: Additional information can be provided for any of the ARGUMENTs in the
-#: resulting text via `<HELP-TEXT>`, which is arbitrary text that can be 
+#: resulting text via `<HELP-TEXT>`, which is arbitrary text that can be
 #: specified along with OPTION-CONFIG or OPERAND-CONFIG.
 #:
 #: `<HELP-TEXT>` is specified using a single `#` (`<number-sign>`) following the
 #: OPTION or OPERAND for which the text applies and can contain any text.
-#: Multiple lines of `<HELP-TEXT>` may be specified by inserting a `\n` 
+#: Multiple lines of `<HELP-TEXT>` may be specified by inserting a `\n`
 #: (`<newline>`) character followed by any number of whitespace characters,
 #: then a `#` (`<number-sign>`) and the continued `<HELP-TEXT>`. Note that only
 #: continuation lines may contain whitespace prior to the `#` (`<number-sign>`),
@@ -535,7 +545,7 @@
 #: Formatting for `<HELP-TEXT>` will _not_ be retained:
 #:
 #:  - whitespace _after_ the `#` (`<number-sign>`) will be removed
-#:  - after a `\n` (`<newline>`) any whitespace _before_ the `#` 
+#:  - after a `\n` (`<newline>`) any whitespace _before_ the `#`
 #:    (`<number-sign>`) will be removed
 #:  - additional whitespace may be removed to facilitate text wrapping
 #:
@@ -1034,7 +1044,7 @@ fn_bs_lga_readonly 'c_BS_LGA_CFG_USE__expr_nested_captures'
 #: - Type:     FLAG
 #: - Class:    VARIABLE
 #: - Default:  _OFF_
-#: - Override: `--[no-]strict`
+#: - Override: `--[no-]strict`, `--[no-]separated`
 #: - Enable/\[Disable] requiring the use of `--` to separate
 #:   OPTIONs from OPERANDs.
 #: - _OFF_: the first ARGUMENT that is not and OPTION or an
@@ -1042,6 +1052,10 @@ fn_bs_lga_readonly 'c_BS_LGA_CFG_USE__expr_nested_captures'
 #:   ARGUMENTs to be OPERANDs.
 #: - _ON_: an ARGUMENT that is exactly `--` must be present
 #:   after _all_ OPTIONs and before _any_ OPERANDs.
+#: - If this is enabled (_ON_), then optional
+#:   OPTION-ARGUMENTS can be specified using the ARGUMENT
+#:   _following_ the OPTION (in addition to the normal
+#:   formats).
 #: - Can help detect some usage errors.
 #: - Mutually exclusive with
 #:   [`BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS`](#bs_libgetargs_config_interleaved_operands).
@@ -1368,7 +1382,7 @@ esac
 #:   etc, (a numerical suffix may also be appended).
 #:
   BS_LIBGETARGS_VERSION_MAJOR=1;
-  BS_LIBGETARGS_VERSION_MINOR=0;
+  BS_LIBGETARGS_VERSION_MINOR=1;
   BS_LIBGETARGS_VERSION_PATCH=0;
 BS_LIBGETARGS_VERSION_RELEASE=;
 
@@ -3122,9 +3136,17 @@ fn_bs_lga_process_simple_option() { ## cSpell:Ignore BS_LGAPSO
       # Optional values need to use an
       # aggregate value or they have no
       # value
-      case ${BS_LGAPSO_OptArgType} in
-      "${BS_LIBGETARGS_TYPE_OPT_ARG_DELIMITED}") BS_LGAPSO_OptArgUsed=1 ;;
-      "${BS_LIBGETARGS_TYPE_OPT_ARG_AGGREGATE}") BS_LGAPSO_OptArgUsed=1 ;;
+      #
+      # NOTE: In 'StrictOperand' mode,
+      # there is no possible ambiguity,
+      # so values can _also_ be the
+      # following argument, this is not
+      # possible in other modes as it
+      # causes ambiguity.
+      case ${g_BS_LGA_CFG_StrictOperands}:${BS_LGAPSO_OptArgType}:${BS_LGAPSO_OptArg:-1} in
+      ?:"${BS_LIBGETARGS_TYPE_OPT_ARG_DELIMITED}":*) BS_LGAPSO_OptArgUsed=1 ;;
+      ?:"${BS_LIBGETARGS_TYPE_OPT_ARG_AGGREGATE}":*) BS_LGAPSO_OptArgUsed=1 ;;
+      1:"${BS_LIBGETARGS_TYPE_OPT_ARG}":[!-]*)       BS_LGAPSO_OptArgUsed=1 ;;
       *)  BS_LGAPSO_OptArgUsed=0
               BS_LGAPSO_OptArg="${BS_LIBGETARGS_CONFIG_OPTIONAL_VALUE-}" ;;
       esac
@@ -4002,7 +4024,7 @@ fn_bs_lga_auto_help() { ## cSpell:Ignore BS_LGAAH_
         function bs_fn_trim_l(strText) {
           sub(/^[ \t\n\v\f\r]{1,}/, "", strText)
         }
-        
+
         #_______________________________________________________________________
         # ## `bs_fn_trim_r`
         #
@@ -4636,7 +4658,7 @@ fn_bs_lga_generate_script() { ## cSpell:Ignore BS_LGA_GS_
     #-------------------------------------------------------
     case ${BS_LGA_GS_Processed-} in
     *",${BS_LGA_GS_refVariable},"*) continue ;;
-    
+
     *) BS_LGA_GS_Processed="${BS_LGA_GS_Processed-},${BS_LGA_GS_refVariable}," ;;
     esac
 
@@ -4735,7 +4757,8 @@ SPECIFICATION OPTIONS:
                                 single preceding '-' (<hyphen>) character
                                 instead of the normally required two.
     --[no-]quiet[-error]        [Enable]/Disable error message output.
-    --[no-]strict               Enable/[Disable] requiring the use of '--' to
+    --[no-]strict,
+    --[no-]separated            Enable/[Disable] requiring the use of '--' to
                                 separate OPTIONs from OPERANDs. Can not be used
                                 with --interleaved or --unmatched
     --[no-]unsafe               [Enable]/Disable escaping OPTIONs to avoid any
@@ -5104,6 +5127,8 @@ getargs() { ## cSpell:Ignore BS_LGA_
       '--no-fatal'        | '--no-fatal-errors') g_BS_LGA_CFG_FatalErrors=0 ;;
       '--quiet'           | '--quiet-error'    ) g_BS_LGA_CFG_QuietErrors=1 ;;
       '--no-quiet'        | '--no-quiet-error' ) g_BS_LGA_CFG_QuietErrors=0 ;;
+      '--strict'          | '--separated'      ) g_BS_LGA_CFG_StrictOperands=1 ;;
+      '--no-strict'       | '--no-separated'   ) g_BS_LGA_CFG_StrictOperands=0 ;;
 
       '--abbreviations'   ) g_BS_LGA_CFG_AllowAbbreviations=1 ;;
       '--no-abbreviations') g_BS_LGA_CFG_AllowAbbreviations=0 ;;
@@ -5113,8 +5138,6 @@ getargs() { ## cSpell:Ignore BS_LGA_
       '--no-check-config' ) g_BS_LGA_CFG_CheckConfig=0        ;;
       '--posix-long'      ) g_BS_LGA_CFG_AllowPOSIXLong=1     ;;
       '--no-posix-long'   ) g_BS_LGA_CFG_AllowPOSIXLong=0     ;;
-      '--strict'          ) g_BS_LGA_CFG_StrictOperands=1     ;;
-      '--no-strict'       ) g_BS_LGA_CFG_StrictOperands=0     ;;
       '--unmatched'       ) g_BS_LGA_CFG_AllowUnmatched=1     ;;
       '--no-unmatched'    ) g_BS_LGA_CFG_AllowUnmatched=0     ;;
       '--unsafe'          ) g_BS_LGA_CFG_AllowUnsafeOptions=1 ;;
@@ -5528,23 +5551,23 @@ fn_bs_lga_readonly 'BS_LIBGETARGS_SOURCED'
 #.
 #. ## VERSIONS
 #.
+#. v1.1.0          Optional OPTION-ARGUMENTs can now be separated from the
+#.                 OPTION if
+#.                 [`BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`](#bs_libgetargs_config_strict_operands)
+#.                 is enabled.
+#.
 #. v1.0.0          First Release
 #.
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
 #: ## STANDARDS
 #:
-#: - [_POSIX.1-2008_][posix]
-#:   - also known as:
-#:     - _The Open Group Base Specifications Issue 7_
-#:     - _IEEE Std 1003.1-2008_
-#:     - _The Single UNIX Specification Version 4 (SUSv4)_
-#:   - the more recent
-#:     [_POSIX.1-2017_][posix_2017]
-#:     is functionally identical to _POSIX.1-2008_, but incorporates some errata
-#: - [FreeBSD SYSEXITS(3)][sysexits]
-#:   - while not truly standard, these are used by many projects
-#: - [Semantic Versioning v2.0.0][semver]
+#: - [_POSIX.1-2008_][posix].
+#: - [FreeBSD SYSEXITS(3)][sysexits].
+#: - [Semantic Versioning v2.0.0][semver].
+#: - [Inclusive Naming Initiative][inclusivenaming].
+#:
+#: _For more details see the common suite [documentation](./README.MD#standards)._
 #:
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
@@ -5574,8 +5597,11 @@ fn_bs_lga_readonly 'BS_LIBGETARGS_SOURCED'
 #:     `ARGUMENT` as the associated `OPTION`
 #:   - an optional `OPTION-ARGUMENT` can only be specified as part of the same
 #:     string as the `OPTION`
-#: - `OPERAND`
+#: - `OPERAND`[^positional_argument]
 #:   - an `ARGUMENT` that is not an `OPTION` or an `OPTION-ARGUMENT`
+#:
+#: [^positional_argument]: An `OPERAND` is the `ARGUMENT` type most frequently
+#:                         referred to with
 #:
 #: _Additional Terms_
 #: <!-- --------- -->
@@ -5660,6 +5686,12 @@ fn_bs_lga_readonly 'BS_LIBGETARGS_SOURCED'
 #:   is always explicitly named as such (when such a distinction matters).
 #: - A _simple_ `SWITCH-OPTION` is _NOT_ directly supported by `getargs` but
 #:   can be emulated using the other types of `SWITCH-OPTION`.
+#: - An `OPERAND` is the `ARGUMENT` type most frequently referred to with an
+#:   alternate name with the terms `POSITIONAL-ARGUMENT` or `PARAMETER`
+#:   frequently used (among others). The term `POSITIONAL-ARGUMENT` or simply
+#:   `POSITIONAL` is used occasionally in this documentation (and related code),
+#:   for example, the `--positional` OPTION (alias for `--operands`). In all
+#:   cases this is synonymous with `OPERAND`.
 #:
 #: _Example Arguments_
 #: <!-- ---------- -->
@@ -5732,6 +5764,8 @@ fn_bs_lga_readonly 'BS_LIBGETARGS_SOURCED'
 #: [environment variables](#environment) rather than passing as options to
 #: `getargs` options, can make minor improvements.
 #:
+#: _For more details see the common suite [documentation](./README.MD#performance)._
+#:
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
 #: ## CAVEATS
@@ -5746,7 +5780,7 @@ fn_bs_lga_readonly 'BS_LIBGETARGS_SOURCED'
 #: be a particular issue where [AUTO-HELP](#auto-help) is used.
 #:
 #: _For more details see the common suite [documentation](./README.MD#caveats)._
-#: 
+#:
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
 #: ## EXAMPLE

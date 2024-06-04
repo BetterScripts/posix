@@ -51,7 +51,7 @@ Conventions\[rq] (https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/b
 with appropriate extensions where necessary.
 A brief summary of key terms can be found in NOTES.
 .PP
-The utility \f[V]getarg\f[R] is a wrapper for \f[V]libgetargs.sh\f[R]
+The utility \f[V]getarg\f[R][1] is a wrapper for \f[V]libgetargs.sh\f[R]
 which provides the functionality of the library as a directly invocable
 command (i.e.\ one that does not require the library be imported prior
 to use).
@@ -155,11 +155,11 @@ Overrides \f[V]BS_LIBGETARGS_CONFIG_ALLOW_POSIX_LONG\f[R]
 [Enable]/Disable error message output.
 Overrides \f[V]BS_LIBGETARGS_CONFIG_QUIET_ERRORS\f[R]
 .TP
-\f[V]--[no-]strict\f[R]
+\f[V]--[no-]strict\f[R], \f[V]--[no-]separated\f[R]
 Enable/[Disable] requiring the use of \f[V]--\f[R]
 (\f[V]<hyphen><hyphen>\f[R]) to separate OPTIONs from OPERANDs.
 Overrides \f[V]BS_LIBGETARGS_CONFIG_STRICT_OPERANDS\f[R].
-Can not be used with \f[V]--interleaved\f[R] or \f[V]--unmatched\f[R]
+Can not be used with \f[V]--interleaved\f[R] or \f[V]--unmatched\f[R].
 .TP
 \f[V]--[no-]unsafe\f[R]
 [Enable]/Disable escaping OPTIONs to avoid any erroneous results when
@@ -179,9 +179,8 @@ Can not be used with \f[V]--strict\f[R].
 .PP
 \f[I]NOTES\f[R]
 .PP
-Functionality can be invoked either by importing the
-\f[V]libgetargs\f[R] \f[I]or\f[R] via the standalone wrapper script
-\f[V]getarg\f[R].
+Functionality can be invoked either by importing \f[V]libgetargs.sh\f[R]
+\f[I]or\f[R] via the standalone wrapper script \f[V]getarg\f[R].
 When invoked as \f[V]getarg\f[R]:
 .IP \[bu] 2
 \f[V]--script\f[R] is implied (and can not be specified again).
@@ -189,7 +188,7 @@ When invoked as \f[V]getarg\f[R]:
 \f[V]--[no-]fatal[-errors]\f[R] is permitted, but is not useful.
 .IP \[bu] 2
 \f[V]--auto-help\f[R] works as intended, but the output can not be
-stored in a variable[1].
+stored in a variable[2].
 .SS OPTION-CONFIG
 .IP
 .nf
@@ -1141,7 +1140,7 @@ Class: VARIABLE
 .IP \[bu] 2
 Default: \f[I]OFF\f[R]
 .IP \[bu] 2
-Override: \f[V]--[no-]strict\f[R]
+Override: \f[V]--[no-]strict\f[R], \f[V]--[no-]separated\f[R]
 .IP \[bu] 2
 Enable/[Disable] requiring the use of \f[V]--\f[R] to separate OPTIONs
 from OPERANDs.
@@ -1152,6 +1151,10 @@ OPERANDs.
 .IP \[bu] 2
 \f[I]ON\f[R]: an ARGUMENT that is exactly \f[V]--\f[R] must be present
 after \f[I]all\f[R] OPTIONs and before \f[I]any\f[R] OPERANDs.
+.IP \[bu] 2
+If this is enabled (\f[I]ON\f[R]), then optional OPTION-ARGUMENTS can be
+specified using the ARGUMENT \f[I]following\f[R] the OPTION (in addition
+to the normal formats).
 .IP \[bu] 2
 Can help detect some usage errors.
 .IP \[bu] 2
@@ -1698,32 +1701,15 @@ array of values can be used directly with \f[V][+]\f[R] type OPTIONs by
 using an OPTION-TAG.
 .SS STANDARDS
 .IP \[bu] 2
-\f[I]POSIX.1-2008\f[R] (https://pubs.opengroup.org/onlinepubs/9699919799.2008edition)
-.RS 2
+\f[I]POSIX.1-2008\f[R] (https://pubs.opengroup.org/onlinepubs/9699919799.2008edition).
 .IP \[bu] 2
-also known as:
-.RS 2
+FreeBSD SYSEXITS(3) (https://www.freebsd.org/cgi/man.cgi?sysexits(3)).
 .IP \[bu] 2
-\f[I]The Open Group Base Specifications Issue 7\f[R]
+Semantic Versioning v2.0.0 (https://semver.org/).
 .IP \[bu] 2
-\f[I]IEEE Std 1003.1-2008\f[R]
-.IP \[bu] 2
-\f[I]The Single UNIX Specification Version 4 (SUSv4)\f[R]
-.RE
-.IP \[bu] 2
-the more recent
-\f[I]POSIX.1-2017\f[R] (https://pubs.opengroup.org/onlinepubs/9699919799)
-is functionally identical to \f[I]POSIX.1-2008\f[R], but incorporates
-some errata
-.RE
-.IP \[bu] 2
-FreeBSD SYSEXITS(3) (https://www.freebsd.org/cgi/man.cgi?sysexits(3))
-.RS 2
-.IP \[bu] 2
-while not truly standard, these are used by many projects
-.RE
-.IP \[bu] 2
-Semantic Versioning v2.0.0 (https://semver.org/)
+[Inclusive Naming Initiative][inclusivenaming].
+.PP
+\f[I]For more details see the common suite documentation.\f[R]
 .SS NOTES
 .SS TERMINOLOGY
 .PP
@@ -1765,7 +1751,7 @@ an optional \f[V]OPTION-ARGUMENT\f[R] can only be specified as part of
 the same string as the \f[V]OPTION\f[R]
 .RE
 .IP \[bu] 2
-\f[V]OPERAND\f[R]
+\f[V]OPERAND\f[R][3]
 .RS 2
 .IP \[bu] 2
 an \f[V]ARGUMENT\f[R] that is not an \f[V]OPTION\f[R] or an
@@ -1956,6 +1942,15 @@ such a distinction matters).
 A \f[I]simple\f[R] \f[V]SWITCH-OPTION\f[R] is \f[I]NOT\f[R] directly
 supported by \f[V]getargs\f[R] but can be emulated using the other types
 of \f[V]SWITCH-OPTION\f[R].
+.IP \[bu] 2
+An \f[V]OPERAND\f[R] is the \f[V]ARGUMENT\f[R] type most frequently
+referred to with an alternate name with the terms
+\f[V]POSITIONAL-ARGUMENT\f[R] or \f[V]PARAMETER\f[R] frequently used
+(among others).
+The term \f[V]POSITIONAL-ARGUMENT\f[R] or simply \f[V]POSITIONAL\f[R] is
+used occasionally in this documentation (and related code), for example,
+the \f[V]--positional\f[R] OPTION (alias for \f[V]--operands\f[R]).
+In all cases this is synonymous with \f[V]OPERAND\f[R].
 .PP
 \f[I]Example Arguments\f[R]
 .IP
@@ -2054,6 +2049,8 @@ impact will also help (though to a lesser extent).
 Additionally, setting config using the provided environment variables
 rather than passing as options to \f[V]getargs\f[R] options, can make
 minor improvements.
+.PP
+\f[I]For more details see the common suite documentation.\f[R]
 .SS CAVEATS
 .PP
 The environment in which the library is invoked will dictate limitations
@@ -2294,8 +2291,22 @@ betterscripts(7), libarray(7)
 .SH NOTES
 .SS [1]
 .PP
+The choice of \f[V]getarg\f[R] for the name used by standalone version
+of the library is to avoid ambiguity.
+Originally it was also named \f[V]getargs\f[R], but it quickly became
+clear that this was \f[I]not\f[R] a good name as the documentation
+became very difficult to follow and the use of \f[V]getargs\f[R] in a
+script was ambiguous (did it mean an imported command or the wrapper
+binary) - this was particularly problematic since the usage needs to be
+different in each case.
+.SS [2]
+.PP
 Technically this is incorrect, the output from \f[V]--auto-help\f[R]
 \f[I]can\f[R] be stored in a variable, however this value will be lost
 when the sub-shell where \f[V]getarg\f[R] was invoked exits.
+.SS [3]
+.PP
+An \f[V]OPERAND\f[R] is the \f[V]ARGUMENT\f[R] type most frequently
+referred to with
 .SH AUTHORS
 BetterScripts (better.scripts\[at]proton.me).

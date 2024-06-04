@@ -55,7 +55,7 @@
 ################################ DOCUMENTATION #################################
 #
 #% % testwrapper(7) BetterScripts | Test wrapper for BetterScripts POSIX Suite.
-#% % BetterScripts (better.scripts@proton.me)  
+#% % BetterScripts (better.scripts@proton.me)
 #
 #: <!-- #################################################################### -->
 #: <!-- ########### THIS FILE WAS GENERATED FROM 'testwrapper.sh' ########## -->
@@ -305,18 +305,18 @@ g_BS_TESTWRAPPER__ID="${c_BS_TW__Param0##*/}"
 g_BS_TESTWRAPPER_Iterations=;
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#  
+#
      g_BS_TW_CFG__Quiet="${BS_TESTWRAPPER_CONFIG_QUIET:-0}"
      g_BS_TW_CFG__Trace=0
 g_BS_TW_CFG__ExitOnFail=0
     g_BS_TW_CFG__Assert=1
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#  Colo[u]r output helpers         
+#  Colo[u]r output helpers
   g_BS_TW_CFG__Color=0
-   g_BS_TW_CFG__sgr0=;   ## cSpell:Ignore sgr             
+   g_BS_TW_CFG__sgr0=;   ## cSpell:Ignore sgr
 g_BS_TW_CFG__setfGRN=;   ## cSpell:Ignore setf
-g_BS_TW_CFG__setfRED=;             
+g_BS_TW_CFG__setfRED=;
 
 #===============================================================================
 #===============================================================================
@@ -441,7 +441,7 @@ EndOfUsageText
 fn_bs_tw_diagnostic() { ## cSpell:Ignore BS_TWDiag_
   BS_TWDiag_Type="${1:?'[testwrapper::fn_bs_tw_diagnostic]: Internal Error: a diagnostic category is required'}"
   shift
-  
+
   {
     case $# in
     0)  : "${1:?'[testwrapper::fn_bs_tw_diagnostic]: Internal Error: a message is required'}" ;;
@@ -749,7 +749,7 @@ test_assert() { ## cSpell:Ignore BS_TWTA_ notlike
 
   *) test "$@" || ec_test_assert=1 ;;
   esac
-  
+
   #---------------------------------------------------------
   #
   #---------------------------------------------------------
@@ -759,7 +759,7 @@ test_assert() { ## cSpell:Ignore BS_TWTA_ notlike
         printf 'Test Assert Failed%s: [' "${BS_TWTA_AssertInfo-}"
         printf ' "%s"' "$@"
         echo ']'
-      } >&2 
+      } >&2
       return 1 ;;
   esac
 
@@ -788,7 +788,7 @@ test_assert_command() { ## cSpell:Ignore BS_TWTAC_
   '--line='*  |'-l='*   ) BS_TWTAC_AssertInfo=" (@ ${1#-*=})" ; shift         ;;
                '-l'[!=]*) BS_TWTAC_AssertInfo=" (@ ${1#-?})"  ; shift         ;;
                     '@'*) BS_TWTAC_AssertInfo=" (@ ${1#?})"   ; shift         ;;
-                    
+
   '--info'    |'-i'     ) BS_TWTAC_AssertInfo=" (${2-})"      ; shift ; shift ;;
   '--info='*  |'-i='*   ) BS_TWTAC_AssertInfo=" (${1#-*=})"   ; shift         ;;
                '-i'[!=]*) BS_TWTAC_AssertInfo=" (${1#-?})"    ; shift         ;;
@@ -1136,7 +1136,7 @@ fn_bs_tw_main() { ## cSpell:Ignore BS_TWM_
       '--version'|'-v')
         printf '%s\n' "${BS_TESTWRAPPER_VERSION}"
         return ;;
-      
+
       #.................................
       # Help
       '--help'|'-h')
@@ -1442,7 +1442,7 @@ fn_bs_tw_main() { ## cSpell:Ignore BS_TWM_
         ) || {
           BS_TWM_TotalFailureCount=$(( BS_TWM_TotalFailureCount + $? ))
         }
-            
+
         case ${g_BS_TW_CFG__ExitOnFail:-0}:${BS_TWM_TotalFailureCount} in
         0:*|*:0) ;; *) break ;;
         esac

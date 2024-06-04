@@ -37,9 +37,19 @@ in other contexts. Terminology used here is based on the
 appropriate extensions where necessary. A brief summary of key terms can be
 found in [NOTES](#notes).
 
-The utility [`getarg`](./getarg.md) is a wrapper for `libgetargs.sh` which
-provides the functionality of the library as a directly invocable command
-(i.e. one that does not require the library be imported prior to use).
+The utility [`getarg`](./getarg.md)[^getarg_name] is a wrapper for
+`libgetargs.sh` which provides the functionality of the library as a directly
+invocable command (i.e. one that does not require the library be imported
+prior to use).
+
+[^getarg_name]: The choice of `getarg` for the name used by standalone
+                version of the library is to avoid ambiguity. Originally it
+                was also named `getargs`, but it quickly became clear that
+                this was _not_ a good name as the documentation became very
+                difficult to follow and the use of `getargs` in a script was
+                ambiguous (did it mean an imported command or the wrapper
+                binary) - this was particularly problematic since the usage
+                needs to be different in each case.
 
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
@@ -157,12 +167,12 @@ can be found with these variables.
 - \[Enable]/Disable error message output.
 - Overrides [`BS_LIBGETARGS_CONFIG_QUIET_ERRORS`](#bs_libgetargs_config_quiet_errors)
 
-`--[no-]strict`
+`--[no-]strict`, `--[no-]separated`
 
 - Enable/\[Disable] requiring the use of `--` (`<hyphen><hyphen>`) to separate
   OPTIONs from OPERANDs.
 - Overrides [`BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`](#bs_libgetargs_config_strict_operands).
-- Can not be used with `--interleaved` or `--unmatched`
+- Can not be used with `--interleaved` or `--unmatched`.
 
 `--[no-]unsafe`
 
@@ -186,7 +196,7 @@ can be found with these variables.
 _NOTES_
 <!-- -->
 
-Functionality can be invoked either by importing the `libgetargs` _or_ via
+Functionality can be invoked either by importing `libgetargs.sh` _or_ via
 the standalone wrapper script `getarg`. When invoked as `getarg`:
 
 - `--script` is implied (and can not be specified again).
@@ -461,12 +471,12 @@ will be used as the name of the command in the resulting text.
 <!-- --- -->
 
 Additional information can be provided for any of the ARGUMENTs in the
-resulting text via `<HELP-TEXT>`, which is arbitrary text that can be 
+resulting text via `<HELP-TEXT>`, which is arbitrary text that can be
 specified along with OPTION-CONFIG or OPERAND-CONFIG.
 
 `<HELP-TEXT>` is specified using a single `#` (`<number-sign>`) following the
 OPTION or OPERAND for which the text applies and can contain any text.
-Multiple lines of `<HELP-TEXT>` may be specified by inserting a `\n` 
+Multiple lines of `<HELP-TEXT>` may be specified by inserting a `\n`
 (`<newline>`) character followed by any number of whitespace characters,
 then a `#` (`<number-sign>`) and the continued `<HELP-TEXT>`. Note that only
 continuation lines may contain whitespace prior to the `#` (`<number-sign>`),
@@ -476,7 +486,7 @@ follow the VARIABLE to which the text applies.
 Formatting for `<HELP-TEXT>` will _not_ be retained:
 
  - whitespace _after_ the `#` (`<number-sign>`) will be removed
- - after a `\n` (`<newline>`) any whitespace _before_ the `#` 
+ - after a `\n` (`<newline>`) any whitespace _before_ the `#`
    (`<number-sign>`) will be removed
  - additional whitespace may be removed to facilitate text wrapping
 
@@ -814,7 +824,7 @@ Configuration that CAN be overridden by OPTIONs.
 - Type:     FLAG
 - Class:    VARIABLE
 - Default:  _OFF_
-- Override: `--[no-]strict`
+- Override: `--[no-]strict`, `--[no-]separated`
 - Enable/\[Disable] requiring the use of `--` to separate
   OPTIONs from OPERANDs.
 - _OFF_: the first ARGUMENT that is not and OPTION or an
@@ -822,6 +832,10 @@ Configuration that CAN be overridden by OPTIONs.
   ARGUMENTs to be OPERANDs.
 - _ON_: an ARGUMENT that is exactly `--` must be present
   after _all_ OPTIONs and before _any_ OPERANDs.
+- If this is enabled (_ON_), then optional
+  OPTION-ARGUMENTS can be specified using the ARGUMENT
+  _following_ the OPTION (in addition to the normal
+  formats).
 - Can help detect some usage errors.
 - Mutually exclusive with
   [`BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS`](#bs_libgetargs_config_interleaved_operands).
@@ -1326,17 +1340,12 @@ _NOTES_
 
 ## STANDARDS
 
-- [_POSIX.1-2008_][posix]
-  - also known as:
-    - _The Open Group Base Specifications Issue 7_
-    - _IEEE Std 1003.1-2008_
-    - _The Single UNIX Specification Version 4 (SUSv4)_
-  - the more recent
-    [_POSIX.1-2017_][posix_2017]
-    is functionally identical to _POSIX.1-2008_, but incorporates some errata
-- [FreeBSD SYSEXITS(3)][sysexits]
-  - while not truly standard, these are used by many projects
-- [Semantic Versioning v2.0.0][semver]
+- [_POSIX.1-2008_][posix].
+- [FreeBSD SYSEXITS(3)][sysexits].
+- [Semantic Versioning v2.0.0][semver].
+- [Inclusive Naming Initiative][inclusivenaming].
+
+_For more details see the common suite [documentation](./README.MD#standards)._
 
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
@@ -1366,8 +1375,11 @@ _POSIX.1 Terms_
     `ARGUMENT` as the associated `OPTION`
   - an optional `OPTION-ARGUMENT` can only be specified as part of the same
     string as the `OPTION`
-- `OPERAND`
+- `OPERAND`[^positional_argument]
   - an `ARGUMENT` that is not an `OPTION` or an `OPTION-ARGUMENT`
+
+[^positional_argument]: An `OPERAND` is the `ARGUMENT` type most frequently
+                        referred to with
 
 _Additional Terms_
 <!-- --------- -->
@@ -1452,6 +1464,12 @@ _Notes_
   is always explicitly named as such (when such a distinction matters).
 - A _simple_ `SWITCH-OPTION` is _NOT_ directly supported by `getargs` but
   can be emulated using the other types of `SWITCH-OPTION`.
+- An `OPERAND` is the `ARGUMENT` type most frequently referred to with an
+  alternate name with the terms `POSITIONAL-ARGUMENT` or `PARAMETER`
+  frequently used (among others). The term `POSITIONAL-ARGUMENT` or simply
+  `POSITIONAL` is used occasionally in this documentation (and related code),
+  for example, the `--positional` OPTION (alias for `--operands`). In all
+  cases this is synonymous with `OPERAND`.
 
 _Example Arguments_
 <!-- ---------- -->
@@ -1523,6 +1541,8 @@ options where they are noted to have a performance impact will also help
 (though to a lesser extent). Additionally, setting config using the provided
 [environment variables](#environment) rather than passing as options to
 `getargs` options, can make minor improvements.
+
+_For more details see the common suite [documentation](./README.MD#performance)._
 
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 

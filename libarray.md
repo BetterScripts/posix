@@ -1622,17 +1622,12 @@ _NOTES_
 
 ## STANDARDS
 
-- [_POSIX.1-2008_][posix]
-  - also known as:
-    - _The Open Group Base Specifications Issue 7_
-    - _IEEE Std 1003.1-2008_
-    - _The Single UNIX Specification Version 4 (SUSv4)_
-  - the more recent
-    [_POSIX.1-2017_][posix_2017]
-    is functionally identical to _POSIX.1-2008_, but incorporates some errata
-- [FreeBSD SYSEXITS(3)][sysexits]
-  - while not truly standard, these are used by many projects
-- [Semantic Versioning v2.0.0][semver]
+- [_POSIX.1-2008_][posix].
+- [FreeBSD SYSEXITS(3)][sysexits].
+- [Semantic Versioning v2.0.0][semver].
+- [Inclusive Naming Initiative][inclusivenaming].
+
+_For more details see the common suite [documentation](./README.MD#standards)._
 
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 

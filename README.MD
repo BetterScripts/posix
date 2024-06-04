@@ -42,9 +42,9 @@
 
 # BETTERSCRIPTS POSIX SUITE
 
-A suite of libraries which aim to make portable scripting easier, safer, and
-more efficient written for scripts written for "command interpretation services
-and common utility programs" as defined in the
+An ever growing suite of libraries which aim to make portable scripting easier,
+safer, and more efficient written for scripts written for "command
+interpretation services and common utility programs" as defined in the
 ["Shell and Utilities"][posix_shell_utils] volume of the
 [_POSIX.1-2008_][posix] standard.
 
@@ -56,10 +56,9 @@ more advanced features on top of the _POSIX.1_ standard, and providing
 workarounds for environments or utilities which can cause problems.
 
 To the extent possible, every library in the suite is self-contained and has no
-dependencies outside the library it's self and a compatible _POSIX.1_
-environment.
+dependencies outside the library except for a compatible _POSIX.1_ environment.
 
-While some libraries may provide for being directly executed (as
+While some libraries may provide for being directly executed (i.e. as
 indistinguishable from a binary command), most libraries are intended to be
 ["sourced"][posix_dot] into any script where the library commands will then
 be available.
@@ -76,7 +75,8 @@ be available.
 
 [`libgetargs.sh`](./libgetargs.md)
 
-- Argument processing made easy.
+- Argument processing made easy - like `getopt` or `getopts`
+  but much more powerful, while requiring less work.
 
 ------------------------------------------------------------
 
@@ -89,18 +89,34 @@ be available.
 
 ## ENVIRONMENT
 
-Several variables affect the libraries, some of these MUST be set to specific
-values for the suite to work as intended, while others determine suite settings.
+Several variables affect the libraries, some of these should be set to specific
+values for the suite to work as intended[^setting_variables], while others
+determine suite settings.
+
+[^setting_variables]: While it would be possible to set some environment
+                      variables to the required values when needed by a
+                      specific library (e.g. setting the `POSIX` locale), this
+                      is not always easy to do while avoiding changing the state
+                      for the invoker _and_ maintaining performance. Setting all
+                      variables as part of a command might be possible in many
+                      cases, but would require huge lines of code for each
+                      command, and setting variables may not even be possible
+                      (e.g. standard variables may be `readonly` in a restricted
+                      shell). Finally, setting these variables to the expected
+                      value assumes that other values do not work, which may not
+                      be true and may make some uses of the libraries
+                      impossible without any real need.
 
 ### SHELL CONFIGURATION
 
-All libraries expect the _POSIX.1_ defined default environment to be in effect.
+All libraries assume the _POSIX.1_ defined default environment is in effect.
+
+**Much of the _POSIX.1_ standard is _only_ defined for this environment.**
 
 #### `LC_ALL`
 
-- SHOULD be set to `C` or the equivalent `POSIX` (much of
-  the _POSIX.1_ standard is _only_ defined for this locale).
-  - Other values _may_ work, but are _not_ supported.
+- Should be set to `C` or the equivalent `POSIX`. (Other
+  values _may_ work, but are _not_ supported.)
 - Standards compliant shells and utilities will give
   `LC_ALL` precedence over other locale setting variables,
   however these additional locale variables may be
@@ -110,32 +126,40 @@ All libraries expect the _POSIX.1_ defined default environment to be in effect.
   and `LC_TIME`, with some platforms extending this further
   still.
 - Note that setting the locale to `C` or `POSIX` does _not_
-  preclude using characters outside that range, but _may_
-  affect how those characters are interpreted.
+  preclude using not in the locale, but _may_  affect how
+  those characters are interpreted.
 
 ------------------------------------------------------------
 
 #### `IFS`
 
-- MUST be the standard defined default of
+- Should be the standard defined default of
   ` \t\n` (`<space><tab><newline>`).
-- A number of fundamental shell operations are defined with
-  reference to the value(s) contained in `IFS`, but the
-  usage of any value for `IFS` that is not the default
-  value is _highly_ shell dependent and can _not_ be
-  used portably.
+- A number of shell operations are defined with reference
+  to the value contained in `IFS`, making it a powerful
+  tool, but also a source of many frustrations. While the
+  libraries in _the Suite_ attempt to avoid any dependence
+  on the value of `IFS`, it is near impossible to ensure
+  this is actually the case as the effects of `IFS` are
+  often somewhat hidden and can be easy to miss.
+- Although much better supported in modern environments,
+  traditionally the use of `IFS` was highly implementation
+  dependent. Less mainstream environments may still retain
+  quirks that make it difficult to use `IFS` portably.
 
 ------------------------------------------------------------
 
 #### `POSIXLY_CORRECT`
 
-- SHOULD be set IF any GNU tools are to be used.
+- _MUST_ be set if any GNU tools are to be used.
 - A non-standard environment variable used primarily by
   [GNU provided tools][gnu_non_gnu_stds], but may have been
   adopted by others. Tells these commands to more closely
   match the standard than they otherwise would.
 - Many GNU tools significantly deviate from the standard
-  unless this is set (regardless of the current locale).
+  unless this is set (regardless of the current locale) -
+  without this set it is highly likely that many errors will
+  occur.
 
 ------------------------------------------------------------
 
@@ -143,36 +167,39 @@ All libraries expect the _POSIX.1_ defined default environment to be in effect.
 
 A number of environment variables affect the functionality of each of the
 libraries. These include both variables that instruct the library to work-around
-specific platform issues, and variables that convey user preferences.
+specific platform issues, and variables that convey user preferences. (See also
+the information on [compatibility](#compatibility).)
 
 Where it is possible, platform specific issues are detected automatically, with
-the associated variables providing a way to force specific work-arounds if
-necessary. _Automatic detection should always be preferred_ - this detects use
-cases that are actually problematic and not more general issues.
+the associated variables providing a way to force enabling or disabling specific
+work-arounds if necessary. _Automatic detection should always be preferred_ -
+this detects use cases that are actually problematic and not more general
+issues.
 
 Each configuration variable belongs to a specific _CLASS_:
 
 - _CONSTANT_ - a configuration option that is read _only once_ when the library
   is first sourced and must not be set after this point (the `readonly` command
   may be used to enforce this).
-- _VARIABLE_ - a configuration option that can be modified at any point and may
-  affect the next command.
+- _VARIABLE_ - a configuration option that can be modified at any point and
+  _may_ affect the next command.
 
 Additionally, each configuration variable has to a specific _TYPE_:
 
-- _TEXT_ - has a value that is arbitrary text with constraints defined by
-  specific variables.
+- _TEXT_ - has a value that is arbitrary text with constraints defined by each
+  specific variable.
 - _FLAG_ - enables or disables specific functionality. The value `0` (`<zero>`)
   turns a flag _OFF_, while **_any_** other text will turn a flag _ON_, EXCEPT
   for flags where automatic detection is applicable where the value `A` is
   special and forces the use of automatic detection. _A flag that is unset_
-  _**or** set but null will use an appropriate default value._
+  **or** _set but null (i.e. empty) will use an appropriate default value._
 
 Configuration variables are never modified by a library.
 
 Many configuration variables can be set for all libraries with a single, suite
 wide variable. Where such a suite wide variable is available a library specific
-variable is always available in addition and has precedence.
+variable is always available in addition and has precedence. (Not all libraries
+use all suite wide settings.)
 
 Suite wide variables include:
 
@@ -328,6 +355,9 @@ Suite wide variables include:
 - Automatically enabled if _Z Shell_ is detected.
 - Any use of `setopt` is scoped as tightly as possible
   and should not affect other commands.
+- If _Z Shell_ is used and the current environment has
+  already been set to be _POSIX.1_ compliant, forcing this
+  _ON_ may improve performance.
 - _Z Shell_ has some defaults that cause non-standard
   behavior, however also provides `setopt` which can be
   tightly scoped to set options when required without
@@ -350,7 +380,7 @@ Suite wide variables include:
 Each library provides a number of variables that are set by the library to
 convey information outside of command invocation.
 
-These variables must not be set by external commands except where this is
+These variables must not be set by external commands except if this is
 _explicitly_ permitted. Variables may use the `readonly` command to enforce
 this.
 
@@ -448,6 +478,19 @@ provides a version of some standard variables:
 
 ------------------------------------------------------------
 
+### ADDITIONAL VARIABLES
+
+#### `BETTER_SCRIPTS_PATH`
+
+- Should be set to the location _the Suite_ is installed.
+- Multiple paths may be specified - formatted like the
+  standard variable `PATH`.
+- Useful for users if libraries are not installed in a
+  location that is available in `PATH`.
+- _Currently unused by libraries._
+
+------------------------------------------------------------
+
 ## STANDARDS
 
 - [_POSIX.1-2008_][posix]
@@ -456,18 +499,22 @@ provides a version of some standard variables:
     - _IEEE Std 1003.1-2008_
     - _The Single UNIX Specification Version 4 (SUSv4)_
   - The more recent [_POSIX.1-2017_][posix_2017] is functionally
-    identical to _POSIX.1-2008_, but incorporates some errata
+    identical to _POSIX.1-2008_, but incorporates some errata.
 - [FreeBSD SYSEXITS(3)][sysexits]
   - Although not a standard, the values specified by _SYSEXITS_ are
     widely used and are the only common exit codes generally available.
   - Libraries use these values wherever possible, however
     other exit codes may occur:
-    - Values returned by external commands are often propagated.
-    - The value `1` if used for `false` for commands that
+    - Values returned by external commands are propagated where possible
+      and appropriate.
+    - As per _POSIX.1_ the value `1` if used for `false` for commands that
       require reporting a non-success, non-error exit status.
 - [Semantic Versioning v2.0.0][semver]
-  - Each library has its own versioning, all of which
-    comply with Semantic Versioning v2.0.0.
+  - Each library has its own version number, each of which
+    complies with Semantic Versioning v2.0.0.
+  - Some libraries may provide version numbers for
+    additional purposes, these also follow Semantic
+    Versioning v2.0.0, but may not include all elements.
 - [Inclusive Naming Initiative][inclusivenaming].
 
 ## NOTES
@@ -508,7 +555,10 @@ libraries themselves, while `man` page documentation is generated from
 
 All `Markdown` documentation aims to be compatible with the original
 [`Markdown`][markdown] specification, with reference to
-[`CommonMark`][commonmark] to resolve any ambiguities.
+[`CommonMark`][commonmark] to resolve any ambiguities. Although an extension to
+the original standard, footnotes are used throughout the `Markdown`
+documentation as they are highly useful, widely supported, and acceptably
+rendered by `Markdown` flavors that do not support them.
 
 Documentation can be regenerated using the suite provided [Makefile](./Makefile).
 
@@ -538,10 +588,50 @@ Library commands document arguments with a tag indicating argument usage:
 
 ### COMPATIBILITY
 
-- All libraries support any _POSIX.1-2008_ compliant shell and utilities.
+The _Better Scripts POSIX Suite_ is supported in any environment that is
+compatible with the "command interpretation services and common utility
+programs" as defined in the ["Shell and Utilities"][posix_shell_utils] volume
+of the [_POSIX.1-2008_][posix] standard.
+
+_The number of environments that are at least partially POSIX.1 compliant is
+enormous - even if it were possible to test all of them, access to many is
+difficult as they are tied to proprietary/specialist systems. Therefore, much
+of the compatibility work for the Suite is based on resources such as
+["autoconf: Portable Shell Programming"][autoconf_portable]). While such
+resources are incredibly useful, they often omit details such as the specific
+platforms for which problems occur, or even dates for when the problem was
+discovered or last seen. The result is that it is highly likely some of the
+workarounds implemented are unnecessary._[^legacy_systems]
+
+[^legacy_systems]: Legacy systems and software can often be found in older
+                   organizations, especially where the organizations (and hence
+                   the associated systems) are somewhat specialized. While many
+                   of these systems are no longer actively maintained by the
+                   original manufactures, they continue to be used. Even those
+                   systems that are still maintained may contain long obsolete
+                   software. For example, _Oracle Solaris 11.4_ shipped in
+                   September 2023, yet contains a version of `ksh88` (i.e. the
+                   1988 version of KornShell) - although this shell is largely
+                   similar to more modern shells it does deviate somewhat, here
+                   it simply serves as an example of how even maintained systems
+                   can continue to support very old software. Where practicable,
+                   _the Suite_ is intended to support all such systems.
+
+Additionally:
+
+- The _POSIX.1_ standard has remained relative consistent between versions (as
+  relates to functionality required by _the Suite_), although the
+  [_POSIX.1-2008_][posix] version of the standard is the reference version used
+  for creating _the Suite_ it is likely that earlier versions will also be
+  supported.
 - Non-compliant shells and utilities may be supported by specific libraries, or
   specific commands within those libraries.
-- Commands are designed to be functionally equivalent regardless of the
+- A shell and/or utilities which are _not_ supported _may_ still be able to make
+  use of _the Suite_ - any such tool is termed _compatible_. The difference
+  between shells and utilities which are _supported_ and those which are
+  _compatible_ is that any erroneous behavior specific to the latter is not
+  technically a bug and unlikely to be addressed.
+- Commands are designed to be _functionally equivalent_ regardless of the
   value of any of the standard specified shell options (e.g. `errexit`,
   `nounset`, etc).
 - Where a shell or utility is known to deviate from the functionality required
@@ -559,7 +649,8 @@ Library commands document arguments with a tag indicating argument usage:
 ### PERFORMANCE
 
 - Libraries have been written to maximize performance without sacrificing
-  configurability, safety or utility.
+  configurability, safety or utility - with a general philosophy of "you don't
+  pay for what you don't use".
 - For _most_ use cases library performance should not be an issue and will
   likely be far outweighed by other factors.[^lite-mode]
 - Where library performance _is_ an issue, configuration of each library can
@@ -580,7 +671,8 @@ Library commands document arguments with a tag indicating argument usage:
               these versions would give the absolute best performance possible.
               This plan was ultimately abandoned as the resulting gains were
               surprisingly small despite the significant reduction in file
-              sizes - most of the expensive computation is unavoidable.
+              sizes and customization - most of the expensive computation is
+              unavoidable.
 
 ## CAVEATS
 
@@ -614,7 +706,9 @@ The standard specifies this as [`{ARG_MAX}`][posix_exec] and defines it as:
 
 The value for any particular environment can be queried using the command
 `getconf ARG_MAX`, though this value can only be used as a guide since it is
-impossible to know how many bytes any command will require in advance.
+impossible to know how many bytes any command will require in advance. For a
+modern system this value can be several million bytes, while older systems it
+can be significantly less.
 
 It _is_ possible to increase the available command line length for commands,
 by, for example, by:
@@ -622,8 +716,20 @@ by, for example, by:
 - reducing the number (and size) of exported variables;
 - avoiding characters that use more than a single byte.
 
-Importantly, any variable which is exported and also has it's contents used as
+Importantly, any variable which is exported and also has it's _contents_ used as
 an argument to a command will count **TWICE** towards this limit.
+
+It is recommended that variables containing library data are _not_ exported.
+
+### INTERNAL COMMANDS & VARIABLES
+
+All libraries require a number of internal commands and variables to provide
+the provided functionality, these are distinguishable from other values by a
+prefix: commands these are prefixed with `fn_bs_`; while variables are prefixed
+with `g_BS_`, `c_BS_`, or `i_BS`.
+
+These are **strictly** for internal usage and **must not** be invoked or
+referenced outside the library to which they belong.
 
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 <!-- %                                                                       -->

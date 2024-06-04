@@ -18,10 +18,10 @@
 .hy
 .SS BETTERSCRIPTS POSIX SUITE
 .PP
-A suite of libraries which aim to make portable scripting easier, safer,
-and more efficient written for scripts written for \[lq]command
-interpretation services and common utility programs\[rq] as defined in
-the \[lq]Shell and
+An ever growing suite of libraries which aim to make portable scripting
+easier, safer, and more efficient written for scripts written for
+\[lq]command interpretation services and common utility programs\[rq] as
+defined in the \[lq]Shell and
 Utilities\[rq] (https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/idx/xcu.html)
 volume of the
 \f[I]POSIX.1-2008\f[R] (https://pubs.opengroup.org/onlinepubs/9699919799.2008edition)
@@ -35,10 +35,10 @@ portability, by providing more advanced features on top of the
 or utilities which can cause problems.
 .PP
 To the extent possible, every library in the suite is self-contained and
-has no dependencies outside the library it\[cq]s self and a compatible
+has no dependencies outside the library except for a compatible
 \f[I]POSIX.1\f[R] environment.
 .PP
-While some libraries may provide for being directly executed (as
+While some libraries may provide for being directly executed (i.e.\ as
 indistinguishable from a binary command), most libraries are intended to
 be
 \[lq]sourced\[rq] (https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/utilities/V3_chap02.html#dot)
@@ -55,7 +55,8 @@ Emulated arrays for any shell.
 .PP
 \f[V]libgetargs.sh\f[R]
 .IP \[bu] 2
-Argument processing made easy.
+Argument processing made easy - like \f[V]getopt\f[R] or
+\f[V]getopts\f[R] but much more powerful, while requiring less work.
 .PP
    *   *   *   *   *
 .PP
@@ -67,22 +68,20 @@ needing to be sourced.
    *   *   *   *   *
 .SS ENVIRONMENT
 .PP
-Several variables affect the libraries, some of these MUST be set to
-specific values for the suite to work as intended, while others
+Several variables affect the libraries, some of these should be set to
+specific values for the suite to work as intended[1], while others
 determine suite settings.
 .SS SHELL CONFIGURATION
 .PP
-All libraries expect the \f[I]POSIX.1\f[R] defined default environment
-to be in effect.
+All libraries assume the \f[I]POSIX.1\f[R] defined default environment
+is in effect.
+.PP
+\f[B]Much of the \f[BI]POSIX.1\f[B] standard is \f[BI]only\f[B] defined
+for this environment.\f[R]
 .SS \f[V]LC_ALL\f[R]
 .IP \[bu] 2
-SHOULD be set to \f[V]C\f[R] or the equivalent \f[V]POSIX\f[R] (much of
-the \f[I]POSIX.1\f[R] standard is \f[I]only\f[R] defined for this
-locale).
-.RS 2
-.IP \[bu] 2
-Other values \f[I]may\f[R] work, but are \f[I]not\f[R] supported.
-.RE
+Should be set to \f[V]C\f[R] or the equivalent \f[V]POSIX\f[R].
+(Other values \f[I]may\f[R] work, but are \f[I]not\f[R] supported.)
 .IP \[bu] 2
 Standards compliant shells and utilities will give \f[V]LC_ALL\f[R]
 precedence over other locale setting variables, however these additional
@@ -94,24 +93,32 @@ The standard also defines \f[V]LANG\f[R], \f[V]LC_COLLATE\f[R],
 extending this further still.
 .IP \[bu] 2
 Note that setting the locale to \f[V]C\f[R] or \f[V]POSIX\f[R] does
-\f[I]not\f[R] preclude using characters outside that range, but
-\f[I]may\f[R] affect how those characters are interpreted.
+\f[I]not\f[R] preclude using not in the locale, but \f[I]may\f[R] affect
+how those characters are interpreted.
 .PP
    *   *   *   *   *
 .SS \f[V]IFS\f[R]
 .IP \[bu] 2
-MUST be the standard defined default of \f[V]\[rs]t\[rs]n\f[R]
+Should be the standard defined default of \f[V]\[rs]t\[rs]n\f[R]
 (\f[V]<space><tab><newline>\f[R]).
 .IP \[bu] 2
-A number of fundamental shell operations are defined with reference to
-the value(s) contained in \f[V]IFS\f[R], but the usage of any value for
-\f[V]IFS\f[R] that is not the default value is \f[I]highly\f[R] shell
-dependent and can \f[I]not\f[R] be used portably.
+A number of shell operations are defined with reference to the value
+contained in \f[V]IFS\f[R], making it a powerful tool, but also a source
+of many frustrations.
+While the libraries in \f[I]the Suite\f[R] attempt to avoid any
+dependence on the value of \f[V]IFS\f[R], it is near impossible to
+ensure this is actually the case as the effects of \f[V]IFS\f[R] are
+often somewhat hidden and can be easy to miss.
+.IP \[bu] 2
+Although much better supported in modern environments, traditionally the
+use of \f[V]IFS\f[R] was highly implementation dependent.
+Less mainstream environments may still retain quirks that make it
+difficult to use \f[V]IFS\f[R] portably.
 .PP
    *   *   *   *   *
 .SS \f[V]POSIXLY_CORRECT\f[R]
 .IP \[bu] 2
-SHOULD be set IF any GNU tools are to be used.
+\f[I]MUST\f[R] be set if any GNU tools are to be used.
 .IP \[bu] 2
 A non-standard environment variable used primarily by GNU provided
 tools (https://www.gnu.org/prep/standards/html_node/Non_002dGNU-Standards.html),
@@ -120,7 +127,8 @@ Tells these commands to more closely match the standard than they
 otherwise would.
 .IP \[bu] 2
 Many GNU tools significantly deviate from the standard unless this is
-set (regardless of the current locale).
+set (regardless of the current locale) - without this set it is highly
+likely that many errors will occur.
 .PP
    *   *   *   *   *
 .SS LIBRARY CONFIGURATION
@@ -129,10 +137,11 @@ A number of environment variables affect the functionality of each of
 the libraries.
 These include both variables that instruct the library to work-around
 specific platform issues, and variables that convey user preferences.
+(See also the information on compatibility.)
 .PP
 Where it is possible, platform specific issues are detected
 automatically, with the associated variables providing a way to force
-specific work-arounds if necessary.
+enabling or disabling specific work-arounds if necessary.
 \f[I]Automatic detection should always be preferred\f[R] - this detects
 use cases that are actually problematic and not more general issues.
 .PP
@@ -143,21 +152,21 @@ once\f[R] when the library is first sourced and must not be set after
 this point (the \f[V]readonly\f[R] command may be used to enforce this).
 .IP \[bu] 2
 \f[I]VARIABLE\f[R] - a configuration option that can be modified at any
-point and may affect the next command.
+point and \f[I]may\f[R] affect the next command.
 .PP
 Additionally, each configuration variable has to a specific
 \f[I]TYPE\f[R]:
 .IP \[bu] 2
 \f[I]TEXT\f[R] - has a value that is arbitrary text with constraints
-defined by specific variables.
+defined by each specific variable.
 .IP \[bu] 2
 \f[I]FLAG\f[R] - enables or disables specific functionality.
 The value \f[V]0\f[R] (\f[V]<zero>\f[R]) turns a flag \f[I]OFF\f[R],
 while \f[B]\f[BI]any\f[B]\f[R] other text will turn a flag \f[I]ON\f[R],
 EXCEPT for flags where automatic detection is applicable where the value
 \f[V]A\f[R] is special and forces the use of automatic detection.
-\f[I]A flag that is unset\f[R] \f[I]\f[BI]or\f[I] set but null will use
-an appropriate default value.\f[R]
+\f[I]A flag that is unset\f[R] \f[B]or\f[R] \f[I]set but null
+(i.e.\ empty) will use an appropriate default value.\f[R]
 .PP
 Configuration variables are never modified by a library.
 .PP
@@ -165,6 +174,7 @@ Many configuration variables can be set for all libraries with a single,
 suite wide variable.
 Where such a suite wide variable is available a library specific
 variable is always available in addition and has precedence.
+(Not all libraries use all suite wide settings.)
 .PP
 Suite wide variables include:
 .PP
@@ -363,9 +373,13 @@ Automatically enabled if \f[I]Z Shell\f[R] is detected.
 Any use of \f[V]setopt\f[R] is scoped as tightly as possible and should
 not affect other commands.
 .IP \[bu] 2
+If \f[I]Z Shell\f[R] is used and the current environment has already
+been set to be \f[I]POSIX.1\f[R] compliant, forcing this \f[I]ON\f[R]
+may improve performance.
+.IP \[bu] 2
 \f[I]Z Shell\f[R] has some defaults that cause non-standard behavior,
 however also provides \f[V]setopt\f[R] which can be tightly scoped to
-set options when required without impacting other platforms.[1]
+set options when required without impacting other platforms.[2]
 .PP
    *   *   *   *   *
 .SS LIBRARY INFORMATION
@@ -373,8 +387,8 @@ set options when required without impacting other platforms.[1]
 Each library provides a number of variables that are set by the library
 to convey information outside of command invocation.
 .PP
-These variables must not be set by external commands except where this
-is \f[I]explicitly\f[R] permitted.
+These variables must not be set by external commands except if this is
+\f[I]explicitly\f[R] permitted.
 Variables may use the \f[V]readonly\f[R] command to enforce this.
 .PP
 Along with any library only information variables, every library also
@@ -470,6 +484,20 @@ Also serves as a guard to avoid errors caused by sourcing a library
 multiple times.
 .PP
    *   *   *   *   *
+.SS ADDITIONAL VARIABLES
+.SS \f[V]BETTER_SCRIPTS_PATH\f[R]
+.IP \[bu] 2
+Should be set to the location \f[I]the Suite\f[R] is installed.
+.IP \[bu] 2
+Multiple paths may be specified - formatted like the standard variable
+\f[V]PATH\f[R].
+.IP \[bu] 2
+Useful for users if libraries are not installed in a location that is
+available in \f[V]PATH\f[R].
+.IP \[bu] 2
+\f[I]Currently unused by libraries.\f[R]
+.PP
+   *   *   *   *   *
 .SS STANDARDS
 .IP \[bu] 2
 \f[I]POSIX.1-2008\f[R] (https://pubs.opengroup.org/onlinepubs/9699919799.2008edition)
@@ -488,7 +516,7 @@ Also known as:
 The more recent
 \f[I]POSIX.1-2017\f[R] (https://pubs.opengroup.org/onlinepubs/9699919799)
 is functionally identical to \f[I]POSIX.1-2008\f[R], but incorporates
-some errata
+some errata.
 .RE
 .IP \[bu] 2
 FreeBSD SYSEXITS(3) (https://www.freebsd.org/cgi/man.cgi?sysexits(3))
@@ -501,18 +529,24 @@ Libraries use these values wherever possible, however other exit codes
 may occur:
 .RS 2
 .IP \[bu] 2
-Values returned by external commands are often propagated.
+Values returned by external commands are propagated where possible and
+appropriate.
 .IP \[bu] 2
-The value \f[V]1\f[R] if used for \f[V]false\f[R] for commands that
-require reporting a non-success, non-error exit status.
+As per \f[I]POSIX.1\f[R] the value \f[V]1\f[R] if used for
+\f[V]false\f[R] for commands that require reporting a non-success,
+non-error exit status.
 .RE
 .RE
 .IP \[bu] 2
 Semantic Versioning v2.0.0 (https://semver.org/)
 .RS 2
 .IP \[bu] 2
-Each library has its own versioning, all of which comply with Semantic
-Versioning v2.0.0.
+Each library has its own version number, each of which complies with
+Semantic Versioning v2.0.0.
+.IP \[bu] 2
+Some libraries may provide version numbers for additional purposes,
+these also follow Semantic Versioning v2.0.0, but may not include all
+elements.
 .RE
 .IP \[bu] 2
 Inclusive Naming Initiative (https://inclusivenaming.org/).
@@ -564,6 +598,10 @@ original
 specification, with reference to
 \f[V]CommonMark\f[R] (https://commonmark.org/) to resolve any
 ambiguities.
+Although an extension to the original standard, footnotes are used
+throughout the \f[V]Markdown\f[R] documentation as they are highly
+useful, widely supported, and acceptably rendered by \f[V]Markdown\f[R]
+flavors that do not support them.
 .PP
 Documentation can be regenerated using the suite provided Makefile.
 .SS COMMAND DOCUMENTATION
@@ -599,15 +637,51 @@ The use of \f[V]local\f[R] variables (as supported by many shells) will
 (\f[I]POSIX.1\f[R] has no concept of \f[V]local\f[R] variables.)
 .RE
 .SS COMPATIBILITY
+.PP
+The \f[I]Better Scripts POSIX Suite\f[R] is supported in any environment
+that is compatible with the \[lq]command interpretation services and
+common utility programs\[rq] as defined in the \[lq]Shell and
+Utilities\[rq] (https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/idx/xcu.html)
+volume of the
+\f[I]POSIX.1-2008\f[R] (https://pubs.opengroup.org/onlinepubs/9699919799.2008edition)
+standard.
+.PP
+\f[I]The number of environments that are at least partially POSIX.1
+compliant is enormous - even if it were possible to test all of them,
+access to many is difficult as they are tied to proprietary/specialist
+systems.
+Therefore, much of the compatibility work for the Suite is based on
+resources such as \[lq]autoconf: Portable Shell
+Programming\[rq] (https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Portable-Shell.html)).
+While such resources are incredibly useful, they often omit details such
+as the specific platforms for which problems occur, or even dates for
+when the problem was discovered or last seen.
+The result is that it is highly likely some of the workarounds
+implemented are unnecessary.\f[R][3]
+.PP
+Additionally:
 .IP \[bu] 2
-All libraries support any \f[I]POSIX.1-2008\f[R] compliant shell and
-utilities.
+The \f[I]POSIX.1\f[R] standard has remained relative consistent between
+versions (as relates to functionality required by \f[I]the Suite\f[R]),
+although the
+\f[I]POSIX.1-2008\f[R] (https://pubs.opengroup.org/onlinepubs/9699919799.2008edition)
+version of the standard is the reference version used for creating
+\f[I]the Suite\f[R] it is likely that earlier versions will also be
+supported.
 .IP \[bu] 2
 Non-compliant shells and utilities may be supported by specific
 libraries, or specific commands within those libraries.
 .IP \[bu] 2
-Commands are designed to be functionally equivalent regardless of the
-value of any of the standard specified shell options
+A shell and/or utilities which are \f[I]not\f[R] supported \f[I]may\f[R]
+still be able to make use of \f[I]the Suite\f[R] - any such tool is
+termed \f[I]compatible\f[R].
+The difference between shells and utilities which are
+\f[I]supported\f[R] and those which are \f[I]compatible\f[R] is that any
+erroneous behavior specific to the latter is not technically a bug and
+unlikely to be addressed.
+.IP \[bu] 2
+Commands are designed to be \f[I]functionally equivalent\f[R] regardless
+of the value of any of the standard specified shell options
 (e.g.\ \f[V]errexit\f[R], \f[V]nounset\f[R], etc).
 .IP \[bu] 2
 Where a shell or utility is known to deviate from the functionality
@@ -629,10 +703,11 @@ the platform will be fully supported.
 .SS PERFORMANCE
 .IP \[bu] 2
 Libraries have been written to maximize performance without sacrificing
-configurability, safety or utility.
+configurability, safety or utility - with a general philosophy of
+\[lq]you don\[cq]t pay for what you don\[cq]t use\[rq].
 .IP \[bu] 2
 For \f[I]most\f[R] use cases library performance should not be an issue
-and will likely be far outweighed by other factors.[2]
+and will likely be far outweighed by other factors.[4]
 .IP \[bu] 2
 Where library performance \f[I]is\f[R] an issue, configuration of each
 library can have a significant affect on performance.
@@ -660,7 +735,7 @@ invoked.
 Each implementation of the required utilities and command execution
 environment will have specific limitations that may be different to
 those in another implementation and may change between versions of the
-same utilities.[3]
+same utilities.[5]
 .PP
 For most use cases it is deemed unlikely that these limitations will be
 an issue, however, there will be cases where some limitations may cause
@@ -690,6 +765,8 @@ The value for any particular environment can be queried using the
 command \f[V]getconf ARG_MAX\f[R], though this value can only be used as
 a guide since it is impossible to know how many bytes any command will
 require in advance.
+For a modern system this value can be several million bytes, while older
+systems it can be significantly less.
 .PP
 It \f[I]is\f[R] possible to increase the available command line length
 for commands, by, for example, by:
@@ -699,13 +776,40 @@ reducing the number (and size) of exported variables;
 avoiding characters that use more than a single byte.
 .PP
 Importantly, any variable which is exported and also has it\[cq]s
-contents used as an argument to a command will count \f[B]TWICE\f[R]
-towards this limit.
+\f[I]contents\f[R] used as an argument to a command will count
+\f[B]TWICE\f[R] towards this limit.
+.PP
+It is recommended that variables containing library data are
+\f[I]not\f[R] exported.
+.SS INTERNAL COMMANDS & VARIABLES
+.PP
+All libraries require a number of internal commands and variables to
+provide the provided functionality, these are distinguishable from other
+values by a prefix: commands these are prefixed with \f[V]fn_bs_\f[R];
+while variables are prefixed with \f[V]g_BS_\f[R], \f[V]c_BS_\f[R], or
+\f[V]i_BS\f[R].
+.PP
+These are \f[B]strictly\f[R] for internal usage and \f[B]must not\f[R]
+be invoked or referenced outside the library to which they belong.
 .SS SEE ALSO
 .PP
 getarg(1), libgetargs(7), libarray(7)
 .SH NOTES
 .SS [1]
+.PP
+While it would be possible to set some environment variables to the
+required values when needed by a specific library (e.g.\ setting the
+\f[V]POSIX\f[R] locale), this is not always easy to do while avoiding
+changing the state for the invoker \f[I]and\f[R] maintaining
+performance.
+Setting all variables as part of a command might be possible in many
+cases, but would require huge lines of code for each command, and
+setting variables may not even be possible (e.g.\ standard variables may
+be \f[V]readonly\f[R] in a restricted shell).
+Finally, setting these variables to the expected value assumes that
+other values do not work, which may not be true and may make some uses
+of the libraries impossible without any real need.
+.SS [2]
 .PP
 Technically since the default configuration of \f[I]Z Shell\f[R] is
 non-standard it is not supported by the suite, however this work-around
@@ -715,16 +819,32 @@ Similar work-arounds for other environments are not always possible
 (e.g.\ the GNU specific
 \f[V]POSIXLY_CORRECT\f[R] (https://www.gnu.org/prep/standards/html_node/Non_002dGNU-Standards.html)
 environment variable can not so easily be dealt with).
-.SS [2]
+.SS [3]
+.PP
+Legacy systems and software can often be found in older organizations,
+especially where the organizations (and hence the associated systems)
+are somewhat specialized.
+While many of these systems are no longer actively maintained by the
+original manufactures, they continue to be used.
+Even those systems that are still maintained may contain long obsolete
+software.
+For example, \f[I]Oracle Solaris 11.4\f[R] shipped in September 2023,
+yet contains a version of \f[V]ksh88\f[R] (i.e.\ the 1988 version of
+KornShell) - although this shell is largely similar to more modern
+shells it does deviate somewhat, here it simply serves as an example of
+how even maintained systems can continue to support very old software.
+Where practicable, \f[I]the Suite\f[R] is intended to support all such
+systems.
+.SS [4]
 .PP
 Initially there was an alternative version of each library which
 excluded as much of the main version as possible, while leaving most
 functionality intact, with the intention being that these versions would
 give the absolute best performance possible.
 This plan was ultimately abandoned as the resulting gains were
-surprisingly small despite the significant reduction in file sizes -
-most of the expensive computation is unavoidable.
-.SS [3]
+surprisingly small despite the significant reduction in file sizes and
+customization - most of the expensive computation is unavoidable.
+.SS [5]
 .PP
 Many of these limitations are specified in the standard, with specific
 constraints, though generally the actual value is \[lq]implementation
