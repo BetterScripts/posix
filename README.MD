@@ -102,10 +102,11 @@ determine suite settings.
                       cases, but would require huge lines of code for each
                       command, and setting variables may not even be possible
                       (e.g. standard variables may be `readonly` in a restricted
-                      shell). Finally, setting these variables to the expected
-                      value assumes that other values do not work, which may not
-                      be true and may make some uses of the libraries
-                      impossible without any real need.
+                      shell, while utilities like `env` can not be used for
+                      shell builtins). Finally, setting these variables to the
+                      expected value assumes that other values do not work,
+                      which may not be true and may make some uses of the
+                      libraries impossible without any real need.
 
 ### SHELL CONFIGURATION
 
@@ -151,15 +152,15 @@ All libraries assume the _POSIX.1_ defined default environment is in effect.
 
 #### `POSIXLY_CORRECT`
 
-- _MUST_ be set if any GNU tools are to be used.
+- Should be set if any GNU tools are to be used.
 - A non-standard environment variable used primarily by
   [GNU provided tools][gnu_non_gnu_stds], but may have been
   adopted by others. Tells these commands to more closely
   match the standard than they otherwise would.
 - Many GNU tools significantly deviate from the standard
-  unless this is set (regardless of the current locale) -
-  without this set it is highly likely that many errors will
-  occur.
+  unless this is set (regardless of the current locale).
+  (Exactly which tools deviate and if it is actually an
+  issue is hard to determine in advance.)
 
 ------------------------------------------------------------
 

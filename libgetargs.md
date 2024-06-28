@@ -172,7 +172,7 @@ can be found with these variables.
 - Enable/\[Disable] requiring the use of `--` (`<hyphen><hyphen>`) to separate
   OPTIONs from OPERANDs.
 - Overrides [`BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`](#bs_libgetargs_config_strict_operands).
-- Can not be used with `--interleaved` or `--unmatched`.
+- Can not be used with `--interleaved`.
 
 `--[no-]unsafe`
 
@@ -186,12 +186,16 @@ can be found with these variables.
   OPTION-CONFIG and OPERAND-CONFIG.
 - Overrides [`BS_LIBGETARGS_CONFIG_AUTO_UNSET`](#bs_libgetargs_config_auto_unset)
 
-`--[no-]unmatched`
+`--[no-]unmatched`, `--unmatched=<VARIABLE>`
 
 - Enable/\[Disable] matching an unrecognized OPTION as an OPERAND.
 - Overrides [`BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED`](#bs_libgetargs_config_allow_unmatched).
-- Implies `--interleaved`.
-- Can not be used with `--strict`.
+- If `VARIABLE` **is not** specified: implies `--interleaved`; **all** unrecognized ARGUMENTs
+  will be treated as OPERANDs. Using an OPERAND type other than `[+]` is not likely to be useful.
+- If `VARIABLE` **is** specified: implies `--strict`; unrecognized ARGUMENTs before `--` are
+  stored in `VARIABLE`, while ARGUMENTs following `--` are treated as normal OPERANDs. This mode
+  can _not_ be set using
+  [`BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED`](#bs_libgetargs_config_allow_unmatched).
 
 _NOTES_
 <!-- -->
@@ -202,7 +206,8 @@ the standalone wrapper script `getarg`. When invoked as `getarg`:
 - `--script` is implied (and can not be specified again).
 - `--[no-]fatal[-errors]` is permitted, but is not useful.
 - `--auto-help` works as intended, but the output can not be stored in a
-   variable[^getarg-auto-help].
+   variable[^getarg-auto-help]. (Note that `--unmatched=<VARIABLE>` works
+   as normal in this mode.)
 
 [^getarg-auto-help]: Technically this is incorrect, the output from
                      `--auto-help` _can_ be stored in a variable, however
@@ -893,7 +898,7 @@ Configuration that CAN be overridden by OPTIONs.
 - Type:     FLAG
 - Class:    VARIABLE
 - Default:  _OFF_
-- Override: `--[no-]unmatched`
+- Override: `--[no-]unmatched`, `--unmatched=<VARIABLE>`
 - Enable/\[Disable] matching an unrecognized OPTION as an
   OPERAND.
 - _OFF_: any unrecognized OPTION is an error.
@@ -914,6 +919,8 @@ Configuration that CAN be overridden by OPTIONs.
   from the resulting array.
 - If using a VALIDATOR, any unmatched values will be
   sent to the VALIDATOR as OPERANDs.
+- `--unmatched=<VARIABLE>` provides functionality that is
+  beyond that available using this variable.
 - Implies
   [`BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS`](#bs_libgetargs_config_interleaved_operands).
 - Mutually exclusive with

@@ -159,7 +159,7 @@ Overrides \f[V]BS_LIBGETARGS_CONFIG_QUIET_ERRORS\f[R]
 Enable/[Disable] requiring the use of \f[V]--\f[R]
 (\f[V]<hyphen><hyphen>\f[R]) to separate OPTIONs from OPERANDs.
 Overrides \f[V]BS_LIBGETARGS_CONFIG_STRICT_OPERANDS\f[R].
-Can not be used with \f[V]--interleaved\f[R] or \f[V]--unmatched\f[R].
+Can not be used with \f[V]--interleaved\f[R].
 .TP
 \f[V]--[no-]unsafe\f[R]
 [Enable]/Disable escaping OPTIONs to avoid any erroneous results when
@@ -171,11 +171,20 @@ Enable/[Disable] automatic unsetting of all variables named in
 OPTION-CONFIG and OPERAND-CONFIG.
 Overrides \f[V]BS_LIBGETARGS_CONFIG_AUTO_UNSET\f[R]
 .TP
-\f[V]--[no-]unmatched\f[R]
+\f[V]--[no-]unmatched\f[R], \f[V]--unmatched=<VARIABLE>\f[R]
 Enable/[Disable] matching an unrecognized OPTION as an OPERAND.
 Overrides \f[V]BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED\f[R].
-Implies \f[V]--interleaved\f[R].
-Can not be used with \f[V]--strict\f[R].
+If \f[V]VARIABLE\f[R] \f[B]is not\f[R] specified: implies
+\f[V]--interleaved\f[R]; \f[B]all\f[R] unrecognized ARGUMENTs will be
+treated as OPERANDs.
+Using an OPERAND type other than \f[V][+]\f[R] is not likely to be
+useful.
+If \f[V]VARIABLE\f[R] \f[B]is\f[R] specified: implies
+\f[V]--strict\f[R]; unrecognized ARGUMENTs before \f[V]--\f[R] are
+stored in \f[V]VARIABLE\f[R], while ARGUMENTs following \f[V]--\f[R] are
+treated as normal OPERANDs.
+This mode can \f[I]not\f[R] be set using
+\f[V]BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED\f[R].
 .PP
 \f[I]NOTES\f[R]
 .PP
@@ -189,6 +198,8 @@ When invoked as \f[V]getarg\f[R]:
 .IP \[bu] 2
 \f[V]--auto-help\f[R] works as intended, but the output can not be
 stored in a variable[2].
+(Note that \f[V]--unmatched=<VARIABLE>\f[R] works as normal in this
+mode.)
 .SS OPTION-CONFIG
 .IP
 .nf
@@ -1226,7 +1237,7 @@ Class: VARIABLE
 .IP \[bu] 2
 Default: \f[I]OFF\f[R]
 .IP \[bu] 2
-Override: \f[V]--[no-]unmatched\f[R]
+Override: \f[V]--[no-]unmatched\f[R], \f[V]--unmatched=<VARIABLE>\f[R]
 .IP \[bu] 2
 Enable/[Disable] matching an unrecognized OPTION as an OPERAND.
 .IP \[bu] 2
@@ -1250,6 +1261,9 @@ the resulting array.
 .IP \[bu] 2
 If using a VALIDATOR, any unmatched values will be sent to the VALIDATOR
 as OPERANDs.
+.IP \[bu] 2
+\f[V]--unmatched=<VARIABLE>\f[R] provides functionality that is beyond
+that available using this variable.
 .IP \[bu] 2
 Implies \f[V]BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS\f[R].
 .IP \[bu] 2

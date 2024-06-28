@@ -1773,6 +1773,17 @@ ArrayCat=\[dq]${ArrayOne}${ArrayTwo}\[dq]
 .IP \[bu] 2
 Argument validation occurs where possible and (relatively) performant
 for all arguments to all commands.
+.IP \[bu] 2
+Arrays can be serialized (e.g.\ saved to, or loaded from, a file).
+However, each array is \f[I]only\f[R] supported by the library version
+used to created it - the internal format for an array \f[I]may\f[R]
+change between versions without notice.
+.IP \[bu] 2
+Arrays may contain other arrays, however this is likely to have
+performance implications (due to the need to escape values).
+Where possible storing a reference to another array is preferable
+(i.e.\ save the \f[I]name\f[R] of a variable that contains the second
+array).
 .SS CAVEATS
 .PP
 The maximum size of any array is limited by the environment in which it

@@ -675,7 +675,7 @@ fn_bs_libarray_readonly 'c_BS_LIBARRAY_CFG__find_fd_1' \
 #:
   BS_LIBARRAY_VERSION_MAJOR=1
   BS_LIBARRAY_VERSION_MINOR=0
-  BS_LIBARRAY_VERSION_PATCH=0
+  BS_LIBARRAY_VERSION_PATCH=1
 BS_LIBARRAY_VERSION_RELEASE=;
 
 fn_bs_libarray_readonly 'BS_LIBARRAY_VERSION_MAJOR'   \
@@ -957,27 +957,25 @@ fn_bs_libarray_error() { ## cSpell:Ignore BS_LAE_
   case $# in
   1)  : "${2:?'[libarray::fn_bs_libarray_error]: Internal Error: an error message is required'}" ;;
   2)  BS_LIBARRAY_LAST_ERROR="$2" ;;
-  *)  case ${IFS-} in
+  *)  shift
+      case ${IFS-} in
       ' '*) BS_LIBARRAY_LAST_ERROR="$*" ;;
-         *) BS_LIBARRAY_LAST_ERROR="$2"
-            shift; shift
-            BS_LIBARRAY_LAST_ERROR="${BS_LIBARRAY_LAST_ERROR}$(
-                printf ' %s' "$@"
-              )" ;;
+         *) BS_LIBARRAY_LAST_ERROR="$1"; shift
+            BS_LIBARRAY_LAST_ERROR="${BS_LIBARRAY_LAST_ERROR}$(printf ' %s' "$@")" ;;
       esac ;; #<: `case ${IFS-} in`
   esac #<: `case $# in`
 
+  # OUTPUT ERROR
   case ${BS_LIBARRAY_CONFIG_QUIET_ERRORS:-${BETTER_SCRIPTS_CONFIG_QUIET_ERRORS:-0}} in
-  0)  # OUTPUT ERROR
-      printf '[libarray::%s]: ERROR: %s\n' \
-            "${BS_LAE_Caller}"             \
-            "${BS_LIBARRAY_LAST_ERROR}"    >&2 ;;
+  0)  printf '[libarray::%s]: ERROR: %s\n' \
+             "${BS_LAE_Caller}"            \
+             "${BS_LIBARRAY_LAST_ERROR}"   >&2 ;;
   esac
 
+  # ERROR EXCEPTION
   case ${BS_LIBARRAY_CONFIG_FATAL_ERRORS:-${BETTER_SCRIPTS_CONFIG_FATAL_ERRORS:-0}} in
   0)  ;;
-  *)  # ERROR EXCEPTION
-      BS_LIBARRAY__FatalError=;
+  *)  BS_LIBARRAY__FatalError=;
       : "${BS_LIBARRAY__FatalError:?"[libarray::${BS_LAE_Caller}]: ERROR: ${BS_LIBARRAY_LAST_ERROR}"}" ;;
   esac
 }
@@ -5894,6 +5892,16 @@ fn_bs_libarray_readonly 'BS_LIBARRAY_SOURCED'
 #: - Argument validation occurs where possible and
 #:   (relatively) performant for all arguments to
 #:   all commands.
+#: - Arrays can be serialized (e.g. saved to, or loaded
+#:   from, a file). However, each array is _only_ supported
+#:   by the library version used to created it - the
+#:   internal format for an array _may_ change between
+#:   versions without notice.
+#: - Arrays may contain other arrays, however this is likely
+#:   to have performance implications (due to the need to
+#:   escape values). Where possible storing a reference to
+#:   another array is preferable (i.e. save the _name_ of
+#:   a variable that contains the second array).
 #:
 #: <!-- ------------------------------------------------ -->
 #:

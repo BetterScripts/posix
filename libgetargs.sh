@@ -231,7 +231,7 @@
 #: : Enable/\[Disable] requiring the use of `--` (`<hyphen><hyphen>`) to separate
 #:   OPTIONs from OPERANDs.
 #: : Overrides [`BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`](#bs_libgetargs_config_strict_operands).
-#: : Can not be used with `--interleaved` or `--unmatched`.
+#: : Can not be used with `--interleaved`.
 #:
 #: `--[no-]unsafe`
 #:
@@ -245,12 +245,16 @@
 #:   OPTION-CONFIG and OPERAND-CONFIG.
 #: : Overrides [`BS_LIBGETARGS_CONFIG_AUTO_UNSET`](#bs_libgetargs_config_auto_unset)
 #:
-#: `--[no-]unmatched`
+#: `--[no-]unmatched`, `--unmatched=<VARIABLE>`
 #:
 #: : Enable/\[Disable] matching an unrecognized OPTION as an OPERAND.
 #: : Overrides [`BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED`](#bs_libgetargs_config_allow_unmatched).
-#: : Implies `--interleaved`.
-#: : Can not be used with `--strict`.
+#: : If `VARIABLE` **is not** specified: implies `--interleaved`; **all** unrecognized ARGUMENTs
+#:   will be treated as OPERANDs. Using an OPERAND type other than `[+]` is not likely to be useful.
+#: : If `VARIABLE` **is** specified: implies `--strict`; unrecognized ARGUMENTs before `--` are
+#:   stored in `VARIABLE`, while ARGUMENTs following `--` are treated as normal OPERANDs. This mode
+#:   can _not_ be set using
+#:   [`BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED`](#bs_libgetargs_config_allow_unmatched).
 #:
 #: _NOTES_
 #: <!-- -->
@@ -261,7 +265,8 @@
 #: - `--script` is implied (and can not be specified again).
 #: - `--[no-]fatal[-errors]` is permitted, but is not useful.
 #: - `--auto-help` works as intended, but the output can not be stored in a
-#:    variable[^getarg-auto-help].
+#:    variable[^getarg-auto-help]. (Note that `--unmatched=<VARIABLE>` works
+#:    as normal in this mode.)
 #:
 #: [^getarg-auto-help]: Technically this is incorrect, the output from
 #:                      `--auto-help` _can_ be stored in a variable, however
@@ -1119,7 +1124,7 @@ fn_bs_lga_readonly 'c_BS_LGA_CFG_USE__expr_nested_captures'
 #: - Type:     FLAG
 #: - Class:    VARIABLE
 #: - Default:  _OFF_
-#: - Override: `--[no-]unmatched`
+#: - Override: `--[no-]unmatched`, `--unmatched=<VARIABLE>`
 #: - Enable/\[Disable] matching an unrecognized OPTION as an
 #:   OPERAND.
 #: - _OFF_: any unrecognized OPTION is an error.
@@ -1140,6 +1145,8 @@ fn_bs_lga_readonly 'c_BS_LGA_CFG_USE__expr_nested_captures'
 #:   from the resulting array.
 #: - If using a VALIDATOR, any unmatched values will be
 #:   sent to the VALIDATOR as OPERANDs.
+#: - `--unmatched=<VARIABLE>` provides functionality that is
+#:   beyond that available using this variable.
 #: - Implies
 #:   [`BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS`](#bs_libgetargs_config_interleaved_operands).
 #: - Mutually exclusive with
@@ -1382,7 +1389,7 @@ esac
 #:   etc, (a numerical suffix may also be appended).
 #:
   BS_LIBGETARGS_VERSION_MAJOR=1;
-  BS_LIBGETARGS_VERSION_MINOR=1;
+  BS_LIBGETARGS_VERSION_MINOR=2;
   BS_LIBGETARGS_VERSION_PATCH=0;
 BS_LIBGETARGS_VERSION_RELEASE=;
 
@@ -2064,8 +2071,7 @@ fn_bs_lga_error() { ## cSpell:Ignore BS_LGAE
   1)  BS_LIBGETARGS_LAST_ERROR="$1" ;;
   *)  case ${IFS-} in
       ' '*) BS_LIBGETARGS_LAST_ERROR="$*" ;;
-         *) BS_LIBGETARGS_LAST_ERROR="$1"
-            shift
+         *) BS_LIBGETARGS_LAST_ERROR="$1"; shift
             BS_LIBGETARGS_LAST_ERROR="${BS_LIBGETARGS_LAST_ERROR}$(printf ' %s' "$@")" ;;
       esac
   esac
@@ -3465,7 +3471,6 @@ fn_bs_lga_process_complex_option() { ## cSpell:Ignore BS_LGAPCO_
         #---------------------------------------------------
         break
     ;;
-
     esac #< `case ${BS_LGAPCO_Remaining:+1} in`
     #.......................................................
   done #< `while [ -n "${BS_LGAPCO_Option:+1}" ]`
@@ -3509,9 +3514,10 @@ fn_bs_lga_process_complex_option() { ## cSpell:Ignore BS_LGAPCO_
 #; - If
 #;   [`BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`](#bs_libgetargs_config_strict_operands)
 #;   is _ON_, then `TYPE` is always `--`.
-#; - Unmatched OPTIONs only occur if
-#;   [`BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED`](#bs_libgetargs_config_allow_unmatched)
-#;   is _ON_.
+#; - Unmatched OPTIONs only occur if `g_BS_LGA_CFG_AllowUnmatched` is _ON_. This
+#;   is related to
+#;   [`BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED`](#bs_libgetargs_config_allow_unmatched),
+#;   but has extended capabilities that can be enabled with `--unmatched=<VAR>`.
 #;
 #_______________________________________________________________________________
 fn_bs_lga_process_operand() { ## cSpell:Ignore BS_LGAPO_
@@ -3807,11 +3813,17 @@ fn_bs_lga_process_arguments() { ## cSpell:Ignore BS_LGAPA
             "${BS_LGAPA_OptArg}"
         } || {
           ec_fn_bs_lga_process_arguments=$?
-          case ${g_BS_LGA_CFG_AllowUnmatched:-0} in
-          1)  fn_bs_lga_process_operand        \
-                '-'                            \
-                "${g_BS_LGA__CurrentArgument}" || return $? ;;
-          *)  return ${ec_fn_bs_lga_process_arguments} ;;
+          case ${ec_fn_bs_lga_process_arguments}:${g_BS_LGA_CFG_AllowUnmatched:-0} in
+          "${c_BS_LGA__EX_DATAERR}:1")
+            fn_bs_lga_process_operand        \
+              '-'                            \
+              "${g_BS_LGA__CurrentArgument}" || return $? ;;
+
+          "${c_BS_LGA__EX_DATAERR}:2")
+            g_BS_LGA_Unmatched="${g_BS_LGA_Unmatched-}$(fn_bs_lga_create_array "${g_BS_LGA__CurrentArgument}")" ;;
+
+          *)
+            return ${ec_fn_bs_lga_process_arguments} ;;
           esac
         }
       ;;
@@ -3835,11 +3847,17 @@ fn_bs_lga_process_arguments() { ## cSpell:Ignore BS_LGAPA
                     "${BS_LGAPA_OptArg}"
         } || {
           ec_fn_bs_lga_process_arguments=$?
-          case ${g_BS_LGA_CFG_AllowUnmatched:-0} in
-          1)  fn_bs_lga_process_operand        \
-                '-'                            \
-                "${g_BS_LGA__CurrentArgument}" || return $? ;;
-          *) return ${ec_fn_bs_lga_process_arguments} ;;
+          case ${ec_fn_bs_lga_process_arguments}:${g_BS_LGA_CFG_AllowUnmatched:-0} in
+          "${c_BS_LGA__EX_DATAERR}:1")
+            fn_bs_lga_process_operand        \
+              '-'                            \
+              "${g_BS_LGA__CurrentArgument}" || return $? ;;
+
+          "${c_BS_LGA__EX_DATAERR}:2")
+            g_BS_LGA_Unmatched="${g_BS_LGA_Unmatched-}$(fn_bs_lga_create_array "${g_BS_LGA__CurrentArgument}")" ;;
+
+          *)
+            return ${ec_fn_bs_lga_process_arguments} ;;
           esac
         }
       ;;
@@ -3848,26 +3866,39 @@ fn_bs_lga_process_arguments() { ## cSpell:Ignore BS_LGAPA
       # Process OPERANDs
       *)
         #---------------------------------------------------
-        # In "strict" mode, OPERANDs must be preceded by
-        # the special ARGUMENT '--'
+        # "AllowUnmatched" implies "Strict" or "Interleaved"
+        # depending on the configuration (meaning this
+        # `case` could be simplified, however it's unlikely
+        # to make much difference in performance and the
+        # current implementation provides additional checks
+        # that everything is as expected).
+        #
+        # - In "strict" mode, OPERANDs must be preceded by
+        #   the special ARGUMENT '--'.
+        # - In "interleaved" mode, an ARGUMENT that does not
+        #   start with `-` (`<hyphen>`) is an OPERAND.
+        # - In "unmatched" mode, "interleaved" OPERANDs are
+        #   "unmatched", while "strict" OPERANDs are always
+        #   OPERANDs, the different "unmatched" modes
+        #   determine where the "unmatched" values are
+        #   stored: 1 - as OPERANDS, 2 - in a dedicated
+        #   variable.
+        # - If none of these modes is active an non-OPTION
+        #   ARGUMENT marks the end of OPTIONs and all
+        #   remaining ARGUMENTs are OPERANDS (regardless of
+        #   format).
         #---------------------------------------------------
-        case ${g_BS_LGA_CFG_StrictOperands:-0} in
-        1)  fn_bs_lga_error "Unexpected OPERAND: " "${g_BS_LGA__CurrentArgument}"
-            return "${c_BS_LGA__EX_DATAERR}" ;;
-        esac
-
-        #---------------------------------------------------
-        # If "interleaved" OPERANDs are _not_ enabled then
-        # the first OPERAND signals the end of OPTIONs and
-        # the start of OPERANDs. (For performance reasons,
-        # OPERANDs are processed together outside the
-        # OPTION processing loop when possible.)
-        #---------------------------------------------------
-        case ${g_BS_LGA_CFG_InterleavedOperands:-0} in
-        0) break ;;
-        1) fn_bs_lga_process_operand       \
-            "${BS_LGAPA_OperandOption}"    \
-            "${g_BS_LGA__CurrentArgument}" || return $? ;;
+        case ${g_BS_LGA_CFG_StrictOperands:-0}:${g_BS_LGA_CFG_InterleavedOperands:-0}:${g_BS_LGA_CFG_AllowUnmatched:-0} in
+        0:1:0)  fn_bs_lga_process_operand        \
+                  "${BS_LGAPA_OperandOption}"    \
+                  "${g_BS_LGA__CurrentArgument}" || return $? ;;
+        0:1:1)  fn_bs_lga_process_operand        \
+                  '-'                            \
+                  "${g_BS_LGA__CurrentArgument}" || return $? ;;
+        1:0:2)  g_BS_LGA_Unmatched="${g_BS_LGA_Unmatched-}$(fn_bs_lga_create_array "${g_BS_LGA__CurrentArgument}")" ;;
+        1:0:*)  fn_bs_lga_error "Unexpected OPERAND: " "${g_BS_LGA__CurrentArgument}"
+                return "${c_BS_LGA__EX_DATAERR}" ;;
+        0:0:*)  break ;;
         esac
       ;;
     esac #< `case ${BS_LGAPA_Option} in`
@@ -4476,9 +4507,11 @@ fn_bs_lga_auto_help() { ## cSpell:Ignore BS_LGAAH_
 
               g_aOptionData[g_idxOptionVariables++] = strVar
               g_aOptionData[strVar, "type"]         = strType
-              g_aOptionData[strVar, "options"]      = g_aOptionData[strVar, "options"] ?
-                                                        (g_aOptionData[strVar, "options"] "|" strOptions) :
-                                                        strOptions
+              if (g_aOptionData[strVar, "options"]) {
+                g_aOptionData[strVar, "options"] = g_aOptionData[strVar, "options"] "|" strOptions
+              } else {
+                g_aOptionData[strVar, "options"] = strOptions
+              }
             }
 
             # Help applies only to the last config variable
@@ -4503,16 +4536,13 @@ fn_bs_lga_auto_help() { ## cSpell:Ignore BS_LGAAH_
           strOptionHelp  = ""
           if (g_idxOptionVariables > 1) {
             strSynopsis = strSynopsis " <OPTIONS>"
-            strOptionHelp = bs_fn_get_option_help(g_idxOptionVariables,
-                                                  g_aOptionData)
+            strOptionHelp = bs_fn_get_option_help(g_idxOptionVariables, g_aOptionData)
           }
 
           strOperandHelp = ""
           if (g_idxOperandVariables > 1) {
             strSynopsis = strSynopsis " [--] <OPERANDS>"
-            strOperandHelp = bs_fn_get_operand_help(g_idxOperandVariables,
-                                                    g_aOperandData,
-                                                    g_aOptionData)
+            strOperandHelp = bs_fn_get_operand_help(g_idxOperandVariables, g_aOperandData, g_aOptionData)
           }
 
           strHelp = strSynopsis c_chNewLine
@@ -4675,7 +4705,7 @@ fn_bs_lga_generate_script() { ## cSpell:Ignore BS_LGA_GS_
     eval "
       case \${${BS_LGA_GS_refVariable}+1}:${g_BS_LGA_CFG_AutoUnset} in
       1:?) BS_LGA_GS_Script=\"\${BS_LGA_GS_Script}
-                              \${BS_LGA_GS_refVariable}=\$(fn_bs_lga_safe_quote \"\${${BS_LGA_GS_refVariable}}\");
+                              ${BS_LGA_GS_refVariable}=\$(fn_bs_lga_safe_quote \"\${${BS_LGA_GS_refVariable}}\");
                             \" ;;
       *:1) BS_LGA_GS_Script=\"\${BS_LGA_GS_Script}
                               ${BS_LGA_GS_refVariable}=;
@@ -4684,6 +4714,20 @@ fn_bs_lga_generate_script() { ## cSpell:Ignore BS_LGA_GS_
       esac
     " || return $?
   done
+
+  case ${g_BS_LGA_CFG_refUnmatched:+1} in
+  1) eval "
+      case \${g_BS_LGA_Unmatched:+1}:${g_BS_LGA_CFG_AutoUnset} in
+      1:?) BS_LGA_GS_Script=\"\${BS_LGA_GS_Script}
+                              ${g_BS_LGA_CFG_refUnmatched}=\$(fn_bs_lga_safe_quote \"\${g_BS_LGA_Unmatched}\");
+                            \" ;;
+      *:1) BS_LGA_GS_Script=\"\${BS_LGA_GS_Script}
+                              ${g_BS_LGA_CFG_refUnmatched}=;
+                              unset ${g_BS_LGA_CFG_refUnmatched};
+                            \" ;;
+      esac
+    " || return $? ;;
+  esac
 
   #---------------------------------------------------------
   # Output or save the script
@@ -4867,24 +4911,25 @@ getargs() { ## cSpell:Ignore BS_LGA_
   0) g_BS_LGA_CFG_AllowUnsafeOptions=0 ;;
   *) g_BS_LGA_CFG_AllowUnsafeOptions=1 ;;
   esac
-  # Unmatched Options [Default: _OFF_]
-  case ${BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED:-0} in
-  0) g_BS_LGA_CFG_AllowUnmatched=0 ;;
-  *) g_BS_LGA_CFG_AllowUnmatched=1 ;;
-  esac
   # Auto Unset [Default: _OFF_]
   case ${BS_LIBGETARGS_CONFIG_AUTO_UNSET:-0} in
   0) g_BS_LGA_CFG_AutoUnset=0 ;;
   *) g_BS_LGA_CFG_AutoUnset=1 ;;
   esac
 
-  #---------------------------------------------------------
-  # Early verification
-  #---------------------------------------------------------
-  case ${g_BS_LGA_CFG_StrictOperands:-0}${g_BS_LGA_CFG_InterleavedOperands:-0}${g_BS_LGA_CFG_AllowUnmatched:-0} in
-  11) fn_bs_lga_invalid_args 'BS_LIBGETARGS_CONFIG_STRICT_OPERANDS can not be used with BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS or BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED'
-      return "${c_BS_LGA__EX_CONFIG}" ;;
+  # Unmatched Options [Default: _OFF_]
+  g_BS_LGA_Unmatched=; g_BS_LGA_CFG_refUnmatched=;
+  unset 'g_BS_LGA_Unmatched' 'g_BS_LGA_CFG_refUnmatched'
+  case ${BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED:-0} in
+  0) g_BS_LGA_CFG_AllowUnmatched=0;  ;;
+  *) g_BS_LGA_CFG_AllowUnmatched=1; ;;
   esac
+
+  #---------------------------------------------------------
+  # Previously had early verification here, however this
+  # should not be done since it can be overridden with
+  # options.
+  #---------------------------------------------------------
 
   #---------------------------------------------------------
   # Modes
@@ -5120,6 +5165,29 @@ getargs() { ## cSpell:Ignore BS_LGA_
         g_BS_LGA_CFG_Script=; ;;
 
       #...................................................
+      # UNMATCHED
+      '--unmatched='*)
+        g_BS_LGA_CFG_AllowUnmatched=2
+        case ${g_BS_LGA_CFG_refUnmatched:+1} in
+        1)  fn_bs_lga_invalid_args "'${1%%=*}' specified multiple times"
+            return "${c_BS_LGA__EX_USAGE}" ;;
+        esac
+        BS_LGA__Arg="${1#-*=}"
+        case ${BS_LGA__Arg:+1} in
+        1)  g_BS_LGA_CFG_refUnmatched="${BS_LGA__Arg}" ;;
+        *)  fn_bs_lga_invalid_args "a value is required with '$1'"
+            return "${c_BS_LGA__EX_USAGE}" ;;
+        esac ;;
+
+      '--unmatched')
+        g_BS_LGA_CFG_AllowUnmatched=1
+        case ${g_BS_LGA_CFG_refUnmatched:+1} in
+        1) fn_bs_lga_invalid_args "'${1%%=*}' specified multiple times"
+            return "${c_BS_LGA__EX_USAGE}" ;;
+        esac
+        g_BS_LGA_CFG_refUnmatched=; ;;
+
+      #...................................................
       # ENVIRONMENT OVERRIDES
       '--interleaved'     | '--mixed'          ) g_BS_LGA_CFG_InterleavedOperands=1 ;;
       '--no-interleaved'  | '--no-mixed'       ) g_BS_LGA_CFG_InterleavedOperands=0 ;;
@@ -5138,8 +5206,6 @@ getargs() { ## cSpell:Ignore BS_LGA_
       '--no-check-config' ) g_BS_LGA_CFG_CheckConfig=0        ;;
       '--posix-long'      ) g_BS_LGA_CFG_AllowPOSIXLong=1     ;;
       '--no-posix-long'   ) g_BS_LGA_CFG_AllowPOSIXLong=0     ;;
-      '--unmatched'       ) g_BS_LGA_CFG_AllowUnmatched=1     ;;
-      '--no-unmatched'    ) g_BS_LGA_CFG_AllowUnmatched=0     ;;
       '--unsafe'          ) g_BS_LGA_CFG_AllowUnsafeOptions=1 ;;
       '--no-unsafe'       ) g_BS_LGA_CFG_AllowUnsafeOptions=0 ;;
       '--unset'           ) g_BS_LGA_CFG_AutoUnset=1          ;;
@@ -5157,8 +5223,9 @@ getargs() { ## cSpell:Ignore BS_LGA_
   #=========================================================
 
   # Allow Unmatched requires Interleaved Operands
-  case ${g_BS_LGA_CFG_AllowUnmatched:-0} in
+  case ${g_BS_LGA_CFG_AllowUnmatched} in
   1) g_BS_LGA_CFG_InterleavedOperands=1 ;;
+  2)      g_BS_LGA_CFG_StrictOperands=1 ;;
   esac
 
   #=========================================================
@@ -5178,7 +5245,7 @@ getargs() { ## cSpell:Ignore BS_LGA_
   #---------------------------------------------------------
 
   # Option Combinations
-  case ${g_BS_LGA_CFG_StrictOperands:-0}:${g_BS_LGA_CFG_InterleavedOperands:-0}${g_BS_LGA_CFG_AllowUnmatched:-0} in
+  case ${g_BS_LGA_CFG_StrictOperands:-0}:${g_BS_LGA_CFG_InterleavedOperands:-0} in
   1:*1*) fn_bs_lga_invalid_args '"--strict" can not be used with "--interleaved" or "--unmatched"'
          return "${c_BS_LGA__EX_CONFIG}" ;;
   esac
@@ -5234,6 +5301,11 @@ getargs() { ## cSpell:Ignore BS_LGA_
   # Verify Variable Names
   #---------------------------------------------------------
 
+  # Unmatched
+  case ${g_BS_LGA_CFG_refUnmatched:+1} in
+  1) fn_bs_lga_validate_name "${g_BS_LGA_CFG_refUnmatched}" || return $? ;;
+  esac
+
   # Script
   case ${g_BS_LGA_CFG_Script:+1}:${g_BS_LGA_CFG_Script-} in
   1:-) ;;
@@ -5260,6 +5332,10 @@ getargs() { ## cSpell:Ignore BS_LGA_
       # OPERAND-CONFIG Variables
       case ${g_BS_LGA__OperandConfig:+1} in
       1) fn_bs_lga_unset_from_config "${g_BS_LGA__OperandConfig}" ;;
+      esac
+
+      case ${g_BS_LGA_CFG_refUnmatched:+1} in
+      1) eval "${g_BS_LGA_CFG_refUnmatched}=; unset ${g_BS_LGA_CFG_refUnmatched}" || return $? ;;
       esac ;;
   esac
 
@@ -5319,6 +5395,13 @@ getargs() { ## cSpell:Ignore BS_LGA_
     esac
     return ${ec_getargs_proc_param}
   }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Save unmatched
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  case ${g_BS_LGA_CFG_refUnmatched:+1} in
+  1) eval "${g_BS_LGA_CFG_refUnmatched}=\"\${g_BS_LGA_Unmatched-}\"" || return $? ;;
+  esac
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Generate a script if required
@@ -5550,6 +5633,11 @@ fn_bs_lga_readonly 'BS_LIBGETARGS_SOURCED'
 #. <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #.
 #. ## VERSIONS
+#.
+#. v1.2.0          Added ability to specify a variable name with `--unmatched`,
+#.                 which will receive all unmatched OPTIONS and OPTION-ARGUMENTs
+#.                 allowing OPERANDs to be available (this automatically enables
+#.                 [`BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`](#bs_libgetargs_config_strict_operands).)
 #.
 #. v1.1.0          Optional OPTION-ARGUMENTs can now be separated from the
 #.                 OPTION if

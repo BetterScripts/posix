@@ -1677,6 +1677,16 @@ _For more details see the common suite [documentation](./README.MD#standards)._
 - Argument validation occurs where possible and
   (relatively) performant for all arguments to
   all commands.
+- Arrays can be serialized (e.g. saved to, or loaded
+  from, a file). However, each array is _only_ supported
+  by the library version used to created it - the
+  internal format for an array _may_ change between
+  versions without notice.
+- Arrays may contain other arrays, however this is likely
+  to have performance implications (due to the need to
+  escape values). Where possible storing a reference to
+  another array is preferable (i.e. save the _name_ of
+  a variable that contains the second array).
 
 <!-- ------------------------------------------------ -->
 

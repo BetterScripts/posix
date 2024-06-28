@@ -118,7 +118,7 @@ difficult to use \f[V]IFS\f[R] portably.
    *   *   *   *   *
 .SS \f[V]POSIXLY_CORRECT\f[R]
 .IP \[bu] 2
-\f[I]MUST\f[R] be set if any GNU tools are to be used.
+Should be set if any GNU tools are to be used.
 .IP \[bu] 2
 A non-standard environment variable used primarily by GNU provided
 tools (https://www.gnu.org/prep/standards/html_node/Non_002dGNU-Standards.html),
@@ -127,8 +127,9 @@ Tells these commands to more closely match the standard than they
 otherwise would.
 .IP \[bu] 2
 Many GNU tools significantly deviate from the standard unless this is
-set (regardless of the current locale) - without this set it is highly
-likely that many errors will occur.
+set (regardless of the current locale).
+(Exactly which tools deviate and if it is actually an issue is hard to
+determine in advance.)
 .PP
    *   *   *   *   *
 .SS LIBRARY CONFIGURATION
@@ -805,7 +806,8 @@ performance.
 Setting all variables as part of a command might be possible in many
 cases, but would require huge lines of code for each command, and
 setting variables may not even be possible (e.g.\ standard variables may
-be \f[V]readonly\f[R] in a restricted shell).
+be \f[V]readonly\f[R] in a restricted shell, while utilities like
+\f[V]env\f[R] can not be used for shell builtins).
 Finally, setting these variables to the expected value assumes that
 other values do not work, which may not be true and may make some uses
 of the libraries impossible without any real need.
