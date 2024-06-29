@@ -53,6 +53,18 @@ Emulated arrays for any shell.
 .PP
    *   *   *   *   *
 .PP
+\f[V]libdeque.sh\f[R]
+.IP \[bu] 2
+Emulated double ended queues, queues, and stacks for any shell.
+.IP \[bu] 2
+The use of these is recommended ahead of other data types
+(e.g.\ emulated arrays) wherever possible as they are much faster.
+.IP \[bu] 2
+Both queues and stacks are specializations of double ended queues and so
+are provided in the same library.
+.PP
+   *   *   *   *   *
+.PP
 \f[V]libgetargs.sh\f[R]
 .IP \[bu] 2
 Argument processing made easy - like \f[V]getopt\f[R] or
@@ -66,6 +78,16 @@ Wrapper for \f[V]libgetargs.sh\f[R] which allows invoking without
 needing to be sourced.
 .PP
    *   *   *   *   *
+.PP
+Additional libraries are under active development including:
+.IP \[bu] 2
+\f[V]libcommand.sh\f[R] - Commands for invoking other commands.
+.IP \[bu] 2
+\f[V]libmap.sh\f[R] - Emulated associative arrays.
+.IP \[bu] 2
+\f[V]libpath.sh\f[R] - Commands for processing paths.
+.IP \[bu] 2
+\f[V]libshell.sh\f[R] - Commands for general shell functionality.
 .SS ENVIRONMENT
 .PP
 Several variables affect the libraries, some of these should be set to
@@ -93,8 +115,8 @@ The standard also defines \f[V]LANG\f[R], \f[V]LC_COLLATE\f[R],
 extending this further still.
 .IP \[bu] 2
 Note that setting the locale to \f[V]C\f[R] or \f[V]POSIX\f[R] does
-\f[I]not\f[R] preclude using not in the locale, but \f[I]may\f[R] affect
-how those characters are interpreted.
+\f[I]not\f[R] preclude using characters outside the locale, but
+\f[I]may\f[R] affect how those characters are interpreted.
 .PP
    *   *   *   *   *
 .SS \f[V]IFS\f[R]
@@ -496,9 +518,18 @@ Multiple paths may be specified - formatted like the standard variable
 Useful for users if libraries are not installed in a location that is
 available in \f[V]PATH\f[R].
 .IP \[bu] 2
-\f[I]Currently unused by libraries.\f[R]
+Currently used only by test helper scripts.
 .PP
    *   *   *   *   *
+.SS VERSIONS
+.PP
+As each library in \f[I]the Suite\f[R] is designed to be independent
+versioning is on a per-library basis; there is no versioning for
+\f[I]the Suite\f[R] as a whole.
+.PP
+Bundled releases will be made available with major changes and will be
+versioned using the date of the release.
+This version is \f[I]not\f[R] available in the
 .SS STANDARDS
 .IP \[bu] 2
 \f[I]POSIX.1-2008\f[R] (https://pubs.opengroup.org/onlinepubs/9699919799.2008edition)

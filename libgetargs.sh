@@ -5634,17 +5634,21 @@ fn_bs_lga_readonly 'BS_LIBGETARGS_SOURCED'
 #.
 #. ## VERSIONS
 #.
-#. v1.2.0          Added ability to specify a variable name with `--unmatched`,
+#. v1.2.0        - [NEW] Added ability to specify a variable name with `--unmatched`,
 #.                 which will receive all unmatched OPTIONS and OPTION-ARGUMENTs
 #.                 allowing OPERANDs to be available (this automatically enables
 #.                 [`BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`](#bs_libgetargs_config_strict_operands).)
+#.               - [FIX] Fixed an issue that caused auto-help generation to fail in
+#.                 all cases (line continuation in `awk` was not dealt with
+#.                 correctly).
+#.               - [CHANGE] Removed some config checks that were not useful.
 #.
-#. v1.1.0          Optional OPTION-ARGUMENTs can now be separated from the
+#. v1.1.0        - [NEW] Optional OPTION-ARGUMENTs can now be separated from the
 #.                 OPTION if
 #.                 [`BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`](#bs_libgetargs_config_strict_operands)
 #.                 is enabled.
 #.
-#. v1.0.0          First Release
+#. v1.0.0        - First Release
 #.
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:

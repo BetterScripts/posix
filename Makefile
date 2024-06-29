@@ -436,9 +436,12 @@ man8ext		= .8
 #. : Only used when explicitly invoked using the `test` or
 #.   `check` targets.
 #.
-## cSpell:Ignore libgetargs getargs getarg libarray
+## cSpell:Ignore libgetargs getargs getarg libarray libdeque
+## cSpell:Ignore libarray
+## cSpell:Ignore libdeque
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-__list__LIBRARY_FILES	= libgetargs.sh	libarray.sh
+__list__LIBRARY_FILES	= libgetargs.sh	libarray.sh	\
+						  libdeque.sh
 __list__BINARY_FILES	= getarg
 
 __list__MAN_FILES		= $(__list__LIBRARY_FILES:.sh=.7) \
@@ -448,7 +451,8 @@ __list__MD_FILES		= $(__list__LIBRARY_FILES:.sh=.md) \
 						  README.MD getarg.md
 
 __list__TESTS			= tests/test_libgetargs.sh \
-						  tests/test_libarray.sh
+						  tests/test_libarray.sh \
+						  tests/test_libdeque.sh
 
 #===========================================================
 #. <!-- ------------------------------------------------ -->

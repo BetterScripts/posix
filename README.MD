@@ -37,7 +37,13 @@
 <!-- Public License v2.0.                                                    -->
 <!--                                                                         -->
 <!-- ----------------------------------------------------------------------- -->
-<!-- cSpell:Ignore libarray libgetargs getargs getarg                        -->
+<!-- cSpell:Ignore libarray                                                  -->
+<!-- cSpell:Ignore libcommand                                                -->
+<!-- cSpell:Ignore libdeque                                                  -->
+<!-- cSpell:Ignore libgetargs getargs getarg                                 -->
+<!-- cSpell:Ignore libmap                                                    -->
+<!-- cSpell:Ignore libpath                                                   -->
+<!-- cSpell:Ignore libshell                                                  -->
 <!-- ####################################################################### -->
 
 # BETTERSCRIPTS POSIX SUITE
@@ -73,6 +79,16 @@ be available.
 
 ------------------------------------------------------------
 
+[`libdeque.sh`](./libdeque.md)
+
+- Emulated double ended queues, queues, and stacks for any shell.
+- The use of these is recommended ahead of other data types (e.g. emulated
+  arrays) wherever possible as they are much faster.
+- Both queues and stacks are specializations of double ended queues and so are
+  provided in the same library.
+
+------------------------------------------------------------
+
 [`libgetargs.sh`](./libgetargs.md)
 
 - Argument processing made easy - like `getopt` or `getopts`
@@ -86,6 +102,13 @@ be available.
   needing to be sourced.
 
 ------------------------------------------------------------
+
+Additional libraries are under active development including:
+
+- `libcommand.sh` - Commands for invoking other commands.
+- `libmap.sh` - Emulated associative arrays.
+- `libpath.sh` - Commands for processing paths.
+- `libshell.sh` - Commands for general shell functionality.
 
 ## ENVIRONMENT
 
@@ -127,8 +150,8 @@ All libraries assume the _POSIX.1_ defined default environment is in effect.
   and `LC_TIME`, with some platforms extending this further
   still.
 - Note that setting the locale to `C` or `POSIX` does _not_
-  preclude using not in the locale, but _may_  affect how
-  those characters are interpreted.
+  preclude using characters outside the locale, but _may_
+  affect how those characters are interpreted.
 
 ------------------------------------------------------------
 
@@ -488,9 +511,17 @@ provides a version of some standard variables:
   standard variable `PATH`.
 - Useful for users if libraries are not installed in a
   location that is available in `PATH`.
-- _Currently unused by libraries._
+- Currently used only by test helper scripts.
 
 ------------------------------------------------------------
+
+## VERSIONS
+
+As each library in _the Suite_ is designed to be independent versioning is on a
+per-library basis; there is no versioning for _the Suite_ as a whole.
+
+Bundled releases will be made available with major changes and will be versioned
+using the date of the release. This version is _not_ available in the
 
 ## STANDARDS
 

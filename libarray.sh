@@ -5831,6 +5831,11 @@ fn_bs_libarray_readonly 'BS_LIBARRAY_SOURCED'
 #.
 #. ## VERSIONS
 #.
+#. v1.1.0          [FIX] Fixed error with `shift` in
+#.                 [`fn_bs_libarray_error`](#fn_bs_libarray_error) that would
+#.                 cause parameters to appear incorrectly in the error message
+#.                 (only affected calls with multiple parameters).
+#.
 #. v1.0.0          First Release
 #.
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
