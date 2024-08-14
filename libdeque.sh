@@ -69,12 +69,12 @@
 #:
 #: ## SYNOPSIS
 #:
-#: _Full synopsis, description, arguments, examples and other information is_
-#: _documented with each individual command._
+#: _Full synopsis, description, arguments, examples and other information is
+#:  documented with each individual command._
 #:
 #: ---------------------------------------------------------
 #:
-#: _DEQUE: Double-Ended Queue_
+#: `deque` - _Double-Ended Queue_
 #: <!-- ------------------ -->
 #:
 #: [`deque_push_front <DEQUE> <VALUE>...`](#deque_push_front)
@@ -107,8 +107,8 @@
 #:
 #: ---------------------------------------------------------
 #:
-#: _QUEUE: First In, First Out Queue._
-#: <!-- -------------------------- -->
+#: `queue` - First In, First Out Queue._
+#: <!-- ---------------------------- -->
 #:
 #: [`queue_push <QUEUE> <VALUE>...`](#queue_push)
 #:
@@ -122,8 +122,8 @@
 #:
 #: ---------------------------------------------------------
 #:
-#: STACK: Last In, First Out Stack._
-#: <!-- ------------------------ -->
+#: `stack` - Last In, First Out Stack._
+#: <!-- --------------------------- -->
 #:
 #: [`stack_push <STACK> <VALUE>...`](#stack_push)
 #:
@@ -329,6 +329,34 @@ esac
 
 fn_bs_libdeque_readonly 'c_BS_LIBDEQUE_CFG_USE__zsh_setopt'
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBDEQUE_CONFIG_NO_GREP_F`
+#:
+#: - Suite:    [`BETTER_SCRIPTS_CONFIG_NO_GREP_F`](./README.MD#better_scripts_config_no_grep_f)
+#: - Type:     FLAG
+#: - Class:    CONSTANT
+#: - Default:  \<automatic>
+#: - \[Disable]/Enable using the non-standard `fgrep`
+#:   instead of `grep -F`.
+#: - _OFF_: Use `grep -F`.
+#: - _ON_: Use `fgrep`.
+#: - While `grep -F` is standard, it is not always available
+#:   but in the cases it is not `fgrep` often is and
+#:   provides the required functionality.
+#:
+case ${BS_LIBDEQUE_CONFIG_NO_GREP_F:-${BETTER_SCRIPTS_CONFIG_NO_GREP_F:-A}} in
+A)  case $(printf '(TEST*)\n' | grep -F -e '(TEST*)' 2>&1 || echo 'FAILED') in
+    '(TEST*)') c_BS_LIBDEQUE_CFG_USE__grep_F=1 ;;
+            *) c_BS_LIBDEQUE_CFG_USE__grep_F=0 ;;
+    esac ;;
+0)  c_BS_LIBDEQUE_CFG_USE__grep_F=0 ;;
+*)  c_BS_LIBDEQUE_CFG_USE__grep_F=1 ;;
+esac
+
+fn_bs_libdeque_readonly 'c_BS_LIBDEQUE_CFG_USE__grep_F'
+
 #===========================================================
 #===========================================================
 #: <!-- ------------------------------------------------ -->
@@ -492,7 +520,7 @@ fn_bs_libdeque_readonly 'c_BS_LIBDEQUE_CFG_USE__SaferDeque'
 #:   etc, (a numerical suffix may also be appended).
 #:
   BS_LIBDEQUE_VERSION_MAJOR=1
-  BS_LIBDEQUE_VERSION_MINOR=0
+  BS_LIBDEQUE_VERSION_MINOR=1
   BS_LIBDEQUE_VERSION_PATCH=0
 BS_LIBDEQUE_VERSION_RELEASE=;
 
@@ -1037,7 +1065,7 @@ fn_bs_libdeque_quote() { ## cSpell:Ignore BS_LDQ_
     #   has to occur before either of the others!
     sed -e "s/'/'\\\\''/g
             1s/^/'/
-            \$s/\$/'/" -
+            \$s/\$/'/"
   }
 }
 
@@ -1127,7 +1155,7 @@ bs_fn_libdeque_push_impl() { ## cSpell:Ignore BS_LDPushImpl_
   # NOTES:
   #
   # - To try to maximize performance the loop is repeated
-  #   for each of the possible combinations of settings, 
+  #   for each of the possible combinations of settings,
   #   this is not ideal, but should be faster.
   #
   # TODO: This might be better split into one function per
@@ -1284,7 +1312,7 @@ bs_fn_libdeque_pop_impl() { ## cSpell:Ignore BS_LDPopImpl_
   # NOTES:
   #
   # - To try to maximize performance the loop is repeated
-  #   for each of the possible combinations of settings, 
+  #   for each of the possible combinations of settings,
   #   this is not ideal, but should be faster.
   #
   # TODO: This might be better split into one function per
@@ -1295,23 +1323,31 @@ bs_fn_libdeque_pop_impl() { ## cSpell:Ignore BS_LDPopImpl_
   # SC2295: Expansions inside ${..} need to be quoted
   #         separately, otherwise they will match as
   #         a pattern.
-  # EXCEPT: There are no pattern characters in the string
-  #         and some shells fail if the match is quoted
-  #         (currently `posh` is known to fail - this may
-  #          be due to the embedded `\n` (`<newline>`) as
-  #          other uses seem ok, note that `posh` is based
-  #          on `pdksh`).
+  # EXCEPT: `posh` fails when these are quoted in this
+  #         situation - for a prefix a `#` in the quoted
+  #         parameter makes it fail, while in a suffix a
+  #         `<newline>` is an issue. There is no known way
+  #         to avoid this while keeping these characters
+  #         (which have been chosen to be both as safe as
+  #          possible, while unlikely to appear in user
+  #          values).
+  # NOTE:   The use of `*` globs is not always required,
+  #         **except** that `ksh88` needs them or it fails
+  #         to match anything.
+  # TODO:   Have different code paths for this: use `expr`
+  #         for `posh` & `ksh88` since otherwise this is a
+  #         little unsafe.
   # shellcheck disable=SC2295
   {
     BS_LDPopImpl_Value=;
     case ${BS_LDPopImpl_Deque:+1}:${BS_LDPopImpl_PopFront} in
     1:1)  BS_LDPopImpl_Value="${BS_LDPopImpl_Deque%%${c_BS_LIBDEQUE__ValueSuffix}*}"
-          BS_LDPopImpl_Value="${BS_LDPopImpl_Value#${c_BS_LIBDEQUE__ValuePrefix}}"
+          BS_LDPopImpl_Value="${BS_LDPopImpl_Value#*${c_BS_LIBDEQUE__ValuePrefix}}"
 
           BS_LDPopImpl_Deque="${BS_LDPopImpl_Deque#*${c_BS_LIBDEQUE__ValueSuffix}}" ;;
 
     1:0)  BS_LDPopImpl_Value="${BS_LDPopImpl_Deque##*${c_BS_LIBDEQUE__ValuePrefix}}"
-          BS_LDPopImpl_Value="${BS_LDPopImpl_Value%${c_BS_LIBDEQUE__ValueSuffix}}"
+          BS_LDPopImpl_Value="${BS_LDPopImpl_Value%${c_BS_LIBDEQUE__ValueSuffix}*}"
 
           BS_LDPopImpl_Deque="${BS_LDPopImpl_Deque%${c_BS_LIBDEQUE__ValuePrefix}*}" ;;
 
@@ -1411,9 +1447,9 @@ bs_fn_libdeque_peek_impl() { ## cSpell:Ignore BS_LDPeekImpl_
   #
   #---------------------------------------------------------
   case $# in
-  1)  BS_LDPeekImpl_refQueue="$1"
+  1)  BS_LDPeekImpl_refDeque="$1"
       BS_LDPeekImpl_refValue='-' ;;
-  2)  BS_LDPeekImpl_refQueue="$1"
+  2)  BS_LDPeekImpl_refDeque="$1"
       BS_LDPeekImpl_refValue="$2"
       fn_bs_libdeque_validate_name_hyphen \
         "${BS_LDPeekImpl_Caller}"         \
@@ -1430,13 +1466,13 @@ bs_fn_libdeque_peek_impl() { ## cSpell:Ignore BS_LDPeekImpl_
   #---------------------------------------------------------
   fn_bs_libdeque_validate_name  \
     "${BS_LDPeekImpl_Caller}"   \
-    "${BS_LDPeekImpl_refQueue}" || return $?
+    "${BS_LDPeekImpl_refDeque}" || return $?
 
   #---------------------------------------------------------
   # Unpack
   #---------------------------------------------------------
-  BS_LDPeekImpl_Queue=;
-  eval "BS_LDPeekImpl_Queue=\"\${${BS_LDPeekImpl_refQueue}-}\""
+  BS_LDPeekImpl_Deque=;
+  eval "BS_LDPeekImpl_Deque=\"\${${BS_LDPeekImpl_refDeque}-}\""
 
   #---------------------------------------------------------
   # Peek
@@ -1444,21 +1480,29 @@ bs_fn_libdeque_peek_impl() { ## cSpell:Ignore BS_LDPeekImpl_
   # SC2295: Expansions inside ${..} need to be quoted
   #         separately, otherwise they will match as
   #         a pattern.
-  # EXCEPT: There are no pattern characters in the string
-  #         and some shells fail if the match is quoted
-  #         (currently `posh` is known to fail - this may
-  #          be due to the embedded `\n` (`<newline>`) as
-  #          other uses seem ok, note that `posh` is based
-  #          on `pdksh`).
+  # EXCEPT: `posh` fails when these are quoted in this
+  #         situation - for a prefix a `#` in the quoted
+  #         parameter makes it fail, while in a suffix a
+  #         `<newline>` is an issue. There is no known way
+  #         to avoid this while keeping these characters
+  #         (which have been chosen to be both as safe as
+  #          possible, while unlikely to appear in user
+  #          values).
+  # NOTE:   The use of `*` globs is not always required,
+  #         **except** that `ksh88` needs them or it fails
+  #         to match anything.
+  # TODO:   Have different code paths for this: use `expr`
+  #         for `posh` & `ksh88` since otherwise this is a
+  #         little unsafe.
   # shellcheck disable=SC2295
   {
     BS_LDPeekImpl_Value=;
-    case ${BS_LDPeekImpl_Queue:+1}:${BS_LDPeekImpl_PeekFront} in
-    1:1)  BS_LDPeekImpl_Value="${BS_LDPeekImpl_Queue%%${c_BS_LIBDEQUE__ValueSuffix}*}"
-          BS_LDPeekImpl_Value="${BS_LDPeekImpl_Value#${c_BS_LIBDEQUE__ValuePrefix}}" ;;
+    case ${BS_LDPeekImpl_Deque:+1}:${BS_LDPeekImpl_PeekFront} in
+    1:1)  BS_LDPeekImpl_Value="${BS_LDPeekImpl_Deque%%${c_BS_LIBDEQUE__ValueSuffix}*}"
+          BS_LDPeekImpl_Value="${BS_LDPeekImpl_Value#*${c_BS_LIBDEQUE__ValuePrefix}}" ;;
 
-    1:0)  BS_LDPeekImpl_Value="${BS_LDPeekImpl_Queue##*${c_BS_LIBDEQUE__ValuePrefix}}"
-          BS_LDPeekImpl_Value="${BS_LDPeekImpl_Value%${c_BS_LIBDEQUE__ValueSuffix}}" ;;
+    1:0)  BS_LDPeekImpl_Value="${BS_LDPeekImpl_Deque##*${c_BS_LIBDEQUE__ValuePrefix}}"
+          BS_LDPeekImpl_Value="${BS_LDPeekImpl_Value%${c_BS_LIBDEQUE__ValueSuffix}*}" ;;
 
     0:*)  return 1 ;;
     esac
@@ -1499,6 +1543,51 @@ bs_fn_libdeque_peek_front() { bs_fn_libdeque_peek_impl 1 ${1+"$@"};}
 #;
 #_______________________________________________________________________________
 bs_fn_libdeque_peek_back() { bs_fn_libdeque_peek_impl 0 ${1+"$@"};}
+
+#_______________________________________________________________________________
+## cSpell:Ignore fgrep
+#; ---------------------------------------------------------
+#;
+#; ### `bs_fn_libdeque_fgrep`
+#;
+#; Wrapper for either `grep -F` or `fgrep` depending on platform and config.
+#;
+#; _SYNOPSIS_
+#; <!-- - -->
+#;
+#;     bs_fn_libdeque_fgrep ...
+#;
+#; _ARGUMENTS_
+#; <!-- -- -->
+#;
+#; As `grep -F` or `fgrep` (appropriately).
+#;
+#; _NOTES_
+#; <!-- -->
+#;
+#; - There are very few options that are supported by `fgrep`: `-c`, `-l` and
+#;   `-q` may be all that are supported (and even they may not be guaranteed).
+#;
+#_______________________________________________________________________________
+#
+# 2024/07/25:-
+#
+# - Added as needed for better portability.
+# - Changes here were part of the portability work that resulted in changes
+#   across all libraries, much of which is the result of Solaris testing. In
+#   particular the default tools in Solaris (e.g. `awk`, `grep`, etc.) are
+#   significantly limited in functionality.
+#
+#...............................................................................
+case ${c_BS_LIBDEQUE_CFG_USE__grep_F:-0} in
+  1)
+    bs_fn_libdeque_fgrep() { grep -F ${1+"$@"}; } ;;
+  0)
+    # SC2197: fgrep is non-standard and deprecated. Use grep -F instead.
+    # EXCEPT: It's used here only when `grep -F` is not available.
+    # shellcheck disable=SC2197
+    bs_fn_libdeque_fgrep() { fgrep ${1+"$@"}; } ;;
+esac
 
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
@@ -1597,7 +1686,7 @@ bs_fn_libdeque_deque_size() { ## cSpell:Ignore BS_LDDSize_
           {
             printf '%s\n' "${BS_LDDSize_Deque}"
           } | {
-            grep -F -c -e "${c_BS_LIBDEQUE__Prefix}" -
+            bs_fn_libdeque_fgrep -c -e "${c_BS_LIBDEQUE__Prefix}"
           }
         )" || return $? ;;
   *)  BS_LDDSize_Size=0 ;;
@@ -2598,7 +2687,16 @@ fn_bs_libdeque_readonly 'BS_LIBDEQUE_SOURCED'
 #.
 #. ## VERSIONS
 #.
-#. v1.0.0          First Release
+#. v1.1.0        - [FIX] (PORTABILITY) Added workarounds for `grep` where '-F'
+#.                 is not available. (Assumes `fgrep` _is_ available in this
+#.                 case - this may change.) (New configuration variable:
+#.                 [`BS_LIBDEQUE_CONFIG_NO_GREP_F`](#bs_libdeque_config_no_grep_f))
+#.               - [FIX] (PORTABILITY) Removed `-` when used to indicate input
+#.                 is from `STDIN`.
+#.               - [FIX] (PORTABILITY) Minor changes to parameter expansion to
+#.                 avoid issues with ksh88 and posh.
+#.
+#. v1.0.0        - First Release
 #.
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:

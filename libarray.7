@@ -19,6 +19,9 @@
 .SS LIBARRAY
 .SS SYNOPSIS
 .PP
+\f[I]Full synopsis, description, arguments, examples and other
+information is documented with each individual command.\f[R]
+.PP
 \f[V]array_value <VALUE>\f[R]
 .PP
 \f[V]array_new [--reverse|--reversed|-r] <ARRAY> [<VALUE>...]\f[R]
@@ -63,8 +66,7 @@
 .PP
 \f[V]array_from_find_allow_print <ARRAY> [<DESC>] [--] [<ARGUMENT>...]\f[R]
 .PP
-\f[I]Full synopsis, description, arguments, examples and other
-information is\f[R] \f[I]documented with each individual command.\f[R]
+\f[V]array_is_array <ARRAY>\f[R]
 .SS DESCRIPTION
 .PP
 Provides commands to allow any \f[I]POSIX.1\f[R] compliant shell to use
@@ -221,6 +223,30 @@ not always possible (e.g.
 restricted shells generally forbid this), the alternative is to capture
 output (and ignore it) but this is much slower as it involves a
 subshell.
+.PP
+   *   *   *   *   *
+.SS \f[V]BS_LIBARRAY_CONFIG_NO_SED_SLASH_N_NEWLINE\f[R]
+.IP \[bu] 2
+Type: FLAG
+.IP \[bu] 2
+Class: CONSTANT
+.IP \[bu] 2
+Default: <automatic>
+.IP \[bu] 2
+[Disable]/Enable using \f[V]\[rs]n\f[R] (\f[V]<newline>\f[R]) as a
+replacement in a \f[V]sed\f[R] substitution command.
+.IP \[bu] 2
+\f[I]OFF\f[R]: Use \f[V]\[rs]n\f[R] (\f[V]<newline>\f[R]) as a
+replacement.
+.IP \[bu] 2
+\f[I]ON\f[R]: Avoid \f[V]\[rs]n\f[R] (\f[V]<newline>\f[R]) as a
+replacement, this requires significantly more work when required.
+.IP \[bu] 2
+Some implementations of \f[V]sed\f[R] interpret \f[V]\[rs]n\f[R] in the
+replacement portion of a substitution command as a literal \f[V]n\f[R].
+Unfortunately there seems to be no workaround using just a substitution;
+using a literal \f[V]<newline>\f[R] simply changes the issue without
+improving things.
 .SS USER PREFERENCE
 .PP
    *   *   *   *   *
@@ -1369,11 +1395,22 @@ Create an array by splitting text.
 .IP
 .nf
 \f[C]
-array_split [<ARRAY>] <TEXT> <SEPARATOR>
+array_split [<OPTION>] [--] [<ARRAY>] <TEXT> <SEPARATOR>
 \f[R]
 .fi
 .PP
 \f[I]ARGUMENTS\f[R]
+.TP
+\f[V]-E\f[R], \f[V]--ere\f[R], \f[V]--extended-regexp\f[R] [in]
+Interpret \f[V]SEPARATOR\f[R] as an \[lq]Extended Regular
+Expression\[rq].
+This is the default.
+.TP
+\f[V]-F\f[R], \f[V]--fixed-strings\f[R] [in]
+Interpret \f[V]SEPARATOR\f[R] as a fixed string.
+.TP
+\f[V]-G\f[R], \f[V]--bre\f[R], \f[V]--basic-regexp\f[R] [in]
+Interpret \f[V]SEPARATOR\f[R] as a \[lq]Basic Regular Expression\[rq].
 .TP
 \f[V]ARRAY\f[R] [out:ref]
 Variable that will contain the new array.
@@ -1404,32 +1441,33 @@ Is used with the \f[V]awk\f[R] command \f[V]split\f[R].
 .nf
 \f[C]
 array_split \[aq]Array\[aq] \[dq]$PATH\[dq] \[aq]:\[aq]
-Array=\[dq]$(array_split \[dq]$PATH\[dq] \[aq]:\[aq])\[dq]
+Array=\[dq]$(array_split -F \[dq]$PATH\[dq] \[aq]:\[aq])\[dq]
 Array=\[dq]$(array_split - \[dq]$PATH\[dq] \[aq]:\[aq])\[dq]
 \f[R]
 .fi
 .PP
+\f[I]CAVEATS\f[R]
+.IP \[bu] 2
+\[lq]Enhanced Regular Expression\[rq] mode (the default if no mode is
+specified) is provided by the \f[V]split\f[R] function from
+\f[V]awk\f[R].
+This requires a version of \f[V]awk\f[R] that is \[lq]new awk\[rq] (or
+\[lq]nawk\[rq]) like - \[lq]traditional\[rq] \f[V]awk\f[R] is
+\f[I]not\f[R] supported.
+(Notably, even as of 2024 this affects the default version of
+\f[V]awk\f[R] in Oracle Solaris.)
+.PP
 \f[I]NOTES\f[R]
 .IP \[bu] 2
-The \f[V]awk\f[R] command \f[V]split\f[R] is used to split text, so both
-\f[V]TEXT\f[R] and \f[V]SEPARATOR\f[R] are subject to the general
-\f[V]awk\f[R] requirements and any specific \f[V]split\f[R]
-requirements.
-Whether or not \[lq]empty\[rq] elements are created, may also be
-dependent on how \f[V]split\f[R] operates.
+The default mode is \[lq]Enhanced Regular Expression\[rq] mode as this
+was the only mode offered by the first version of this command.
 .IP \[bu] 2
-If the separator text is intended to be a simple string longer than a
-single character, any regular expression commands MUST be escaped.
-Importantly, this includes \f[V].\f[R] (\f[V]<period>\f[R])) which will
-match \f[B]any\f[R] character if not escaped.
+\[lq]Basic Regular Expression\[rq] mode is likely to be the most
+performant of the options available.
 .IP \[bu] 2
-Requires \f[V]awk\f[R] supports the \f[V]ENVIRON\f[R] array which was
-added in 1989, but is not part of the traditional \f[V]awk\f[R]
-specification and may be omitted in some implementations.
-(This is due to how strings are processed when passed to \f[V]awk\f[R]
-as arguments: not only do these have to be escaped in ways that are hard
-to do correctly, but they may not contain embedded newline characters.
-The \f[V]ENVIRON\f[R] array has neither restriction.)
+Manually ensuring any regular expression characters are correctly
+escaped can be used in place of \[lq]Fixed String\[rq] mode.
+This may offer better performance.
 .PP
    *   *   *   *   *
 .SS \f[V]array_printf\f[R]
@@ -1694,6 +1732,41 @@ The \f[I]POSIX.1\f[R] standard \f[I]allows\f[R] for multi-digit file
 descriptors, however only \f[I]requires\f[R] support for single-digit
 descriptors and at least some common implementations do not support
 multi-digit file descriptors, so they are not permitted for use here.
+.PP
+   *   *   *   *   *
+.SS \f[V]array_is_array\f[R]
+.PP
+Determine if a variable looks like it contains array like data.
+.PP
+\f[I]SYNOPSIS\f[R]
+.IP
+.nf
+\f[C]
+array_is_array <ARRAY>
+\f[R]
+.fi
+.PP
+\f[I]ARGUMENTS\f[R]
+.TP
+\f[V]ARRAY\f[R] [in:ref]
+Variable that may contain a array.
+MUST be a valid \f[I]POSIX.1\f[R] name.
+.PP
+\f[I]EXAMPLES\f[R]
+.IP
+.nf
+\f[C]
+if array_is_array \[aq]Var\[aq]; then ...; fi
+\f[R]
+.fi
+.PP
+\f[I]NOTES\f[R]
+.IP \[bu] 2
+An empty or unset \f[V]ARRAY\f[R] is \f[I]not\f[R] a valid map.
+.IP \[bu] 2
+Exit status will be \f[V]0\f[R] (\f[V]<zero>\f[R]) if \f[V]ARRAY\f[R]
+appears to be a valid map, while the exit status will be \f[V]1\f[R]
+(\f[V]<one>\f[R]) in all other (non-error) cases.
 .SS STANDARDS
 .IP \[bu] 2
 \f[I]POSIX.1-2008\f[R] (https://pubs.opengroup.org/onlinepubs/9699919799.2008edition).

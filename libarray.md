@@ -10,6 +10,9 @@
 
 ## SYNOPSIS
 
+_Full synopsis, description, arguments, examples and other information is
+ documented with each individual command._
+
 [`array_value <VALUE>`](#array_value)
 
 [`array_new [--reverse|--reversed|-r] <ARRAY> [<VALUE>...]`](#array_new)
@@ -54,8 +57,7 @@
 
 [`array_from_find_allow_print <ARRAY> [<DESC>] [--] [<ARGUMENT>...]`](#array_from_find_allow_print)
 
-_Full synopsis, description, arguments, examples and other information is_
-_documented with each individual command._
+[`array_is_array <ARRAY>`](#array_is_array)
 
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
@@ -187,6 +189,25 @@ _For more details see the common suite [documentation](./README.MD#environment).
   restricted shells generally forbid this), the
   alternative is to capture output (and ignore it)
   but this is much slower as it involves a subshell.
+
+---------------------------------------------------------
+
+#### `BS_LIBARRAY_CONFIG_NO_SED_SLASH_N_NEWLINE`
+
+- Type:     FLAG
+- Class:    CONSTANT
+- Default:  \<automatic>
+- \[Disable]/Enable using `\n` (`<newline>`) as a
+  replacement in a `sed` substitution command.
+- _OFF_: Use `\n` (`<newline>`) as a replacement.
+- _ON_: Avoid `\n` (`<newline>`) as a replacement, this
+  requires significantly more work when required.
+- Some implementations of `sed` interpret `\n` in the
+  replacement portion of a substitution command as a
+  literal `n`. Unfortunately there seems to be no
+  workaround using just a substitution; using a literal
+  `<newline>` simply changes the issue without improving
+  things.
 
 <!-- ------------------------------------------------ -->
 
@@ -1314,10 +1335,23 @@ Create an array by splitting text.
 _SYNOPSIS_
 <!-- - -->
 
-    array_split [<ARRAY>] <TEXT> <SEPARATOR>
+    array_split [<OPTION>] [--] [<ARRAY>] <TEXT> <SEPARATOR>
 
 _ARGUMENTS_
 <!-- -- -->
+
+`-E`, `--ere`, `--extended-regexp` \[in]
+
+- Interpret `SEPARATOR` as an "Extended Regular Expression".
+- This is the default.
+
+`-F`, `--fixed-strings` \[in]
+
+- Interpret `SEPARATOR` as a fixed string.
+
+`-G`, `--bre`, `--basic-regexp` \[in]
+
+- Interpret `SEPARATOR` as a "Basic Regular Expression".
 
 `ARRAY` \[out:ref]
 
@@ -1349,26 +1383,28 @@ _EXAMPLES_
 <!-- - -->
 
     array_split 'Array' "$PATH" ':'
-    Array="$(array_split "$PATH" ':')"
+    Array="$(array_split -F "$PATH" ':')"
     Array="$(array_split - "$PATH" ':')"
+
+_CAVEATS_
+<!-- - -->
+
+- "Enhanced Regular Expression" mode (the default if no mode is specified)
+  is provided by the `split` function from `awk`. This requires a version of
+  `awk` that is "new awk" (or "nawk") like - "traditional" `awk` is _not_
+  supported. (Notably, even as of 2024 this affects the default version of
+  `awk` in Oracle Solaris.)
 
 _NOTES_
 <!-- -->
 
-- The `awk` command `split` is used to split text, so both `TEXT` and
-  `SEPARATOR` are subject to the general `awk` requirements and any
-  specific `split` requirements. Whether or not "empty" elements are
-  created, may also be dependent on how `split` operates.
-- If the separator text is intended to be a simple string longer than a
-  single character, any regular expression commands MUST be escaped.
-  Importantly, this includes `.` (`<period>`)) which will match **any**
-  character if not escaped.
-- Requires `awk` supports the `ENVIRON` array which was added in 1989, but
-  is not part of the traditional `awk` specification and may be omitted in
-  some implementations. (This is due to how strings are processed when passed
-  to `awk` as arguments: not only do these have to be escaped in ways
-  that are hard to do correctly, but they may not contain embedded newline
-  characters. The `ENVIRON` array has neither restriction.)
+- The default mode is "Enhanced Regular Expression" mode as this was the only
+  mode offered by the first version of this command.
+- "Basic Regular Expression" mode is likely to be the most performant of the
+  options available.
+- Manually ensuring any regular expression characters are correctly escaped
+  can be used in place of "Fixed String" mode. This may offer better
+  performance.
 
 ---------------------------------------------------------
 
@@ -1617,6 +1653,37 @@ _NOTES_
   only _requires_ support for single-digit descriptors and at least some
   common implementations do not support multi-digit file descriptors, so
   they are not permitted for use here.
+
+---------------------------------------------------------
+
+### `array_is_array`
+
+Determine if a variable looks like it contains array like data.
+
+_SYNOPSIS_
+<!-- - -->
+
+    array_is_array <ARRAY>
+
+_ARGUMENTS_
+<!-- -- -->
+
+`ARRAY` \[in:ref]
+
+- Variable that may contain a array.
+- MUST be a valid _POSIX.1_ name.
+
+_EXAMPLES_
+<!-- - -->
+
+    if array_is_array 'Var'; then ...; fi
+
+_NOTES_
+<!-- -->
+
+- An empty or unset `ARRAY` is _not_ a valid map.
+- Exit status will be `0` (`<zero>`) if `ARRAY` appears to be a valid map,
+  while the exit status will be `1` (`<one>`) in all other (non-error) cases.
 
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 

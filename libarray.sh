@@ -67,6 +67,9 @@
 #:
 #: ## SYNOPSIS
 #:
+#: _Full synopsis, description, arguments, examples and other information is
+#:  documented with each individual command._
+#:
 #: [`array_value <VALUE>`](#array_value)
 #:
 #: [`array_new [--reverse|--reversed|-r] <ARRAY> [<VALUE>...]`](#array_new)
@@ -111,8 +114,7 @@
 #:
 #: [`array_from_find_allow_print <ARRAY> [<DESC>] [--] [<ARGUMENT>...]`](#array_from_find_allow_print)
 #:
-#: _Full synopsis, description, arguments, examples and other information is_
-#: _documented with each individual command._
+#: [`array_is_array <ARRAY>`](#array_is_array)
 #:
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
@@ -380,7 +382,7 @@ A)  case $(
               BS_LA_expr_match3="$(expr '0000000100' : '.*\(.....\)')" || echo 'FAILED'
               # Mac OS X 10.4: [^-] problems
               BS_LA_expr_match4="$(expr 'Expr-Test-Successful' : '[^-]*-[^-]*-\(.*\)')" || echo 'FAILED'
-              printf '%s%s %s%% %s'           \
+              printf '%s%s %s%% %s\n'         \
                       "${BS_LA_expr_match1-}" \
                       "${BS_LA_expr_match2-}" \
                       "${BS_LA_expr_match3-}" \
@@ -431,6 +433,45 @@ A)  case $( ( echo 'TEST' >/dev/null ) 2>&1 && echo 'SUCCESS') in
 esac
 
 fn_bs_libarray_readonly 'c_BS_LIBARRAY_CFG_USE__dev_null'
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBARRAY_CONFIG_NO_SED_SLASH_N_NEWLINE`
+#:
+#: - Type:     FLAG
+#: - Class:    CONSTANT
+#: - Default:  \<automatic>
+#: - \[Disable]/Enable using `\n` (`<newline>`) as a
+#:   replacement in a `sed` substitution command.
+#: - _OFF_: Use `\n` (`<newline>`) as a replacement.
+#: - _ON_: Avoid `\n` (`<newline>`) as a replacement, this
+#:   requires significantly more work when required.
+#: - Some implementations of `sed` interpret `\n` in the
+#:   replacement portion of a substitution command as a
+#:   literal `n`. Unfortunately there seems to be no
+#:   workaround using just a substitution; using a literal
+#:   `<newline>` simply changes the issue without improving
+#:   things.
+#:
+#
+#-----------------------------------------------------------
+# SC2312: Consider invoking this command separately to avoid
+#         masking its return value.
+# EXCEPT: The return value doesn't matter here.
+# shellcheck disable=SC2312
+case ${BS_LIBARRAY_CONFIG_NO_SED_SLASH_N_NEWLINE:-A} in
+A)  if test "_$(echo 'TEST' | sed 's/E/\n/')" = "_$(printf 'T\nST\n')"
+    then
+      c_BS_LIBARRAY_CFG_USE__sed_slash_n=1
+    else
+      c_BS_LIBARRAY_CFG_USE__sed_slash_n=0
+    fi ;;
+0)  c_BS_LIBARRAY_CFG_USE__sed_slash_n=1 ;;
+*)  c_BS_LIBARRAY_CFG_USE__sed_slash_n=0 ;;
+esac
+
+fn_bs_libarray_readonly 'c_BS_LIBARRAY_CFG_USE__sed_slash_n'
 
 #===========================================================
 #===========================================================
@@ -556,7 +597,7 @@ case ${BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1:+1} in
 1)  case ${BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1} in
     [3456789]) : ;;
     *) BS_LIBARRAY__ConfigError=;
-      : "${BS_LIBARRAY__ConfigError:?"[libarray]: CONFIG ERROR: BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1 (${BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1}) must be an integer > 2."}" ;;
+      : "${BS_LIBARRAY__ConfigError:?"[libarray]: CONFIG ERROR: BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1 '${BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1}' must be an integer > 2."}" ;;
     esac
     c_BS_LIBARRAY_CFG__find_fd_1="${BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1}" ;;
 *)  c_BS_LIBARRAY_CFG__find_fd_1=3 ;;
@@ -590,7 +631,7 @@ case ${BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2:+1} in
 1)  case ${BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2} in
     [3456789]) : ;;
     *) BS_LIBARRAY__ConfigError=;
-      : "${BS_LIBARRAY__ConfigError:?"[libarray]: CONFIG ERROR: BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2 (${BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2}) must be an integer > 2."}" ;;
+      : "${BS_LIBARRAY__ConfigError:?"[libarray]: CONFIG ERROR: BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2 '${BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2}' must be an integer > 2."}" ;;
     esac
     c_BS_LIBARRAY_CFG__find_fd_2="${BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2}" ;;
 *)  # FD_2 = FD_1 + 1, but kept in set [3456789] so that 10->3:
@@ -610,7 +651,7 @@ esac
 # [`BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2`](#bs_libarray_config_find_redirect_fd_2)
 case $((c_BS_LIBARRAY_CFG__find_fd_1 - c_BS_LIBARRAY_CFG__find_fd_2)) in
 0) BS_LIBARRAY__ConfigError=;
-   : "${BS_LIBARRAY__ConfigError:?"[libarray]: CONFIG ERROR: BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1 (${c_BS_LIBARRAY_CFG__find_fd_1}) and BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2 (${c_BS_LIBARRAY_CFG__find_fd_2}) must be different."}" ;;
+   : "${BS_LIBARRAY__ConfigError:?"[libarray]: CONFIG ERROR: BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1 '${c_BS_LIBARRAY_CFG__find_fd_1}' and BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2 '${c_BS_LIBARRAY_CFG__find_fd_2}' must be different."}" ;;
 esac
 
 fn_bs_libarray_readonly 'c_BS_LIBARRAY_CFG__find_fd_1' \
@@ -674,8 +715,8 @@ fn_bs_libarray_readonly 'c_BS_LIBARRAY_CFG__find_fd_1' \
 #:   etc, (a numerical suffix may also be appended).
 #:
   BS_LIBARRAY_VERSION_MAJOR=1
-  BS_LIBARRAY_VERSION_MINOR=0
-  BS_LIBARRAY_VERSION_PATCH=1
+  BS_LIBARRAY_VERSION_MINOR=2
+  BS_LIBARRAY_VERSION_PATCH=0
 BS_LIBARRAY_VERSION_RELEASE=;
 
 fn_bs_libarray_readonly 'BS_LIBARRAY_VERSION_MAJOR'   \
@@ -862,36 +903,56 @@ fn_bs_libarray_readonly 'c_BS_LIBARRAY__EX_USAGE'
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #. <!-- ................................................ -->
 #.
-#. #### `c_BS_LIBARRAY__awk_match`
+#. #### `c_BS_LIBARRAY__sed_sort_unescape`
 #.
-#. - script used for making
-#.   ["Extended Regular Expression"][posix_ere] matches
-#.   using `awk`
-#. - used for [`array_search`][#array_search] and
-#.   [`array_contains`][#array_contains]
-#. - Requires `awk` supports the `ENVIRON` array which was
-#.   added in 1989, but is not part of the traditional `awk`
-#.   specification and may be omitted in some
-#.   implementations. (This is required due to how strings
-#.   are processed when passed to `awk` as arguments: not
-#.   only do these have to be escaped in ways that are hard
-#.   to do correctly, but they may not contain embedded
-#.   newline characters. The `ENVIRON` array has neither
-#.   restriction.)
+#. - The script used with `sed` in
+#.   [`array_sort`](#array_sort) to undo the escaping that
+#.   is needed for `sort` to be able to act on the array.
+#. - When `\n` can be used in a substitution command
+#.   replacement the script is simple, when this is not
+#.   possible the script makes use of the `sed` "hold space"
+#.   and iterates over input, effectively splitting it in to
+#.   segments where each requires a trailing `<newline>`.
 #.
-c_BS_LIBARRAY__awk_match='
-  BEGIN {
-    MatchString=ENVIRON["BS_ENV__AWK_MATCH__STRING"];
-    MatchRegExp=ENVIRON["BS_ENV__AWK_MATCH__ERE"];
-    if (match(MatchString, MatchRegExp)>0) {
-      exit 0;
-    } else {
-      exit 1;
-    }
-  }
-'
+#. _IMPLEMENTATION NOTES_
+#.
+#. - `sed` matches are always "greedy", which can cause
+#.   unexpected issues when trying to split a line into
+#.   multiple sections - it is very easy to accidentally
+#.   lose data.
+#. - Some versions of `sed` (e.g. Solaris, FreeBSD, OpenBSD):
+#.   - require short names for `sed` branch labels
+#.   - characters following branch labels will become part
+#.     of the branch label, when other implementations will
+#.     parse them as expected. For example, opening a block
+#.     on the same line as the label (using `{`) will be
+#.     instead interpreted as part of the label.
+#.
+case ${c_BS_LIBARRAY_CFG_USE__sed_slash_n:-0} in
+  1)  c_BS_LIBARRAY__sed_sort_unescape="
+        s/'/'\\\\''/g
+        s/^/'/
+        s/\$/' \\\\/
+        s/ \\\\n/\n/g
+        s/\\\\\\\\/\\\\/g" ;;
 
-fn_bs_libarray_readonly 'c_BS_LIBARRAY__awk_match'
+  0)  c_BS_LIBARRAY__sed_sort_unescape="
+        s/'/'\\\\''/g
+        s/^/'/
+        s/\$/' \\\\/
+        :LOOP
+          / \\\\n/{
+            h
+            s/^.* \\\\n\(.*\)$/\1/
+            x
+            s/^\(.*\) \\\\n.*$/\1/
+            G
+            / \\\\n/b LOOP
+          }
+        s/\\\\\\\\/\\\\/g" ;;
+esac
+
+fn_bs_libarray_readonly 'c_BS_LIBARRAY__sed_sort_unescape'
 
 #===============================================================================
 #===============================================================================
@@ -1765,10 +1826,9 @@ case ${c_BS_LIBARRAY_CFG_USE__expr_bre_match:-0} in
           {
             printf '%s\n' "${BS_LAMBRE_Value}"
           } | {
-            sed -n -e " :NEWLINE {
+            sed -n -e " :LOOP
                           \$!N
-                          \$!b NEWLINE
-                        }
+                          \$!b LOOP
                         /^${BS_LAMBRE_Expr#^}/p"
           }
         )" || return $?
@@ -1818,73 +1878,46 @@ esac #<: `case ${c_BS_LIBARRAY_CFG_USE__expr_bre_match:-0} in`
 #.   `grep`. However, `grep` can not be used for the same reasons it can't
 #.   be used to match "Basic Regular Expressions" (see
 #.   [`fn_bs_libarray_match_bre`](#fn_bs_libarray_match_bre)).
-#.   Unfortunately, not all implementations of `awk` support the `match`
-#.   command required to match an _ERE_. This includes the base version of
-#.   `awk` on 'Solaris 10', for example. Unless an alternative version of `awk`
-#.   is available there is no way for this to work.
-#. - Most `awk` portability issues do not apply to the simple script used here,
-#.   but the following do:
-#.   - _HP-UX 11_ (and others?) may mishandle anchors;
-#.     [`autoconf`: Portable Shell Programming][autoconf_portable]
-#.     suggest brackets to avoid this (this should not
-#.     change how the _ERE_ is matched)
-#.   - _Solaris 10_ (and other traditional `awk`
-#.     implementations) attempt to read from `STDIN`,
-#.     even when the standard says it should not.
-#.     This can be dealt with by providing some
-#.     arbitrary input (here, `/dev/null` or output from
-#.     `echo`), unfortunately these implementations may
-#.     also not support `match`
+#. - On some platforms (e.g. Solaris) the default version of `awk` is extremely
+#.   limited and supports very little of the standard.
 #.
-#_______________________________________________________________________________
-case ${c_BS_LIBARRAY_CFG_USE__dev_null:-0} in
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  #> `case ${c_BS_LIBARRAY_CFG_USE__dev_null:-0} in`
-  #> -----------------------------------------------
-  #
-  # `/dev/null` AVAILABLE
-  1)
-    fn_bs_libarray_match_ere() { ## cSpell:Ignore BS_LAMERE_
-      BS_LAMERE_Value="${1?'[libarray::fn_bs_libarray_match_ere]: Internal Error: a value is required'}"
-       BS_LAMERE_Expr="${2:?'[libarray::fn_bs_libarray_match_ere]: Internal Error: an expression is required'}"
-      ec_fn_bs_libarray_match_ere=0
-      {
-        BS_ENV__AWK_MATCH__STRING="${BS_LAMERE_Value}"
-           BS_ENV__AWK_MATCH__ERE="^(${BS_LAMERE_Expr#^})"
-        export 'BS_ENV__AWK_MATCH__STRING' \
-               'BS_ENV__AWK_MATCH__ERE'
-        awk "${c_BS_LIBARRAY__awk_match}" </dev/null
-      } || ec_fn_bs_libarray_match_ere=$?
-      #  Undo the `export` above
-      unset 'BS_ENV__AWK_MATCH__STRING' \
-            'BS_ENV__AWK_MATCH__ERE'
-      return "${ec_fn_bs_libarray_match_ere}"
-    }
-  ;;
+#...............................................................................
+fn_bs_libarray_match_ere() { ## cSpell:Ignore BS_LAMERE_
+  BS_LAMERE_Value="${1?'[libarray::fn_bs_libarray_match_ere]: Internal Error: a value is required'}"
+   BS_LAMERE_Expr="${2:?'[libarray::fn_bs_libarray_match_ere]: Internal Error: an expression is required'}"
 
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  #> `case ${c_BS_LIBARRAY_CFG_USE__dev_null:-0} in`
-  #> -----------------------------------------------
-  #
-  # `/dev/null` UNAVAILABLE
-  0)
-    fn_bs_libarray_match_ere() { ## cSpell:Ignore BS_LAMERE_
-      BS_LAMERE_Value="${1?'[libarray::fn_bs_libarray_match_ere]: Internal Error: a value is required'}"
-       BS_LAMERE_Expr="${2:?'[libarray::fn_bs_libarray_match_ere]: Internal Error: an expression is required'}"
-      {
-        echo ' '
-      } | {
-        # The pipe means this is a subshell and all
-        # exports will be local to that subshell
-        BS_ENV__AWK_MATCH__STRING="${BS_LAMERE_Value}"
-           BS_ENV__AWK_MATCH__ERE="^(${BS_LAMERE_Expr#^})"
-        export 'BS_ENV__AWK_MATCH__STRING' \
-               'BS_ENV__AWK_MATCH__ERE'
-        awk "${c_BS_LIBARRAY__awk_match}"
-      }
-    }
-  ;;
-esac #<: `case ${c_BS_LIBARRAY_CFG_USE__dev_null:-0} in`
+  {
+    printf '%s\n' "${BS_LAMERE_Value}_"
+  } | {
+    awk "
+        {
+          BS_LA_FullTxt = BS_LA_FullTxt sprintf(\"%s\n\", \$0)
+        }
+
+        END {
+          # An additional newline will have been added to
+          # the text that is **not** from the initial
+          # text, so this is removed here.
+          BS_LA_TextLen = length(BS_LA_FullTxt) - 2
+          BS_LA_FullTxt = substr(BS_LA_FullTxt, 1, BS_LA_TextLen)
+
+
+          # The expression is embedded in the script here
+          # rather than passed to awk in a more traditional
+          # way as it turns out to be _very_ difficult to
+          # do that in a portable way.
+          #
+          # WARNING: Could be an 'injection attack' target.
+          #
+          if (BS_LA_FullTxt ~ /^(${BS_LAMERE_Expr#^})/) {
+            exit 0
+          } else {
+            exit 1
+          }
+        }
+      "
+  }
+}
 
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
@@ -1945,7 +1978,7 @@ fn_bs_libarray_as_safe_case_pattern() { ## cSpell:Ignore BS_LAASCP_
   *[!-*?\\\|[_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789]*)
     BS_LAASCP_Pattern="$(
         {
-          printf '%s' "${BS_LAASCP_Pattern}"
+          printf '%s\n' "${BS_LAASCP_Pattern}"
         } | {
           sed -e 's/[^-*?\\|[_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789]/\\&/g
                   s/\\]/]/g
@@ -2036,10 +2069,9 @@ fn_bs_libarray_escape_newlines() { ## cSpell:Ignore BS_LAEN_
         {
           printf '%s\n' "${BS_LAEN_Value}"
         } | {
-          sed -e ':NEWLINE {
+          sed -e ':LOOP
                     $!N
-                    $!b NEWLINE
-                  }
+                    $!b LOOP
                   s/\\/\\\\/g
                   s/\n/ \\n/g'
         } ;;
@@ -2387,9 +2419,7 @@ fn_bs_libarray_create_from_unfiltered() { ## cSpell:Ignore BS_LACFU_
   # elements as this allows the final array variable to
   # be null and easier to check if empty (otherwise the
   # variable will always contain at least whitespace)
-  case ${BS_LACFU_HaveElements} in
-  1) echo ' '
-  esac
+  case ${BS_LACFU_HaveElements} in 1) echo ' ' ;; esac
 }
 
 #_______________________________________________________________________________
@@ -2731,8 +2761,9 @@ fn_bs_libarray_find_index() { ## cSpell:Ignore BS_LAFI_
               ${BS_LAFI_Expression:-''})
                 BS_LAFI_Found=\"\${BS_LAFI_Index}\"
                 break ;;
+              *)
+                BS_LAFI_Index=\$((BS_LAFI_Index + 1)) ;;
               esac
-              BS_LAFI_Index=\$((BS_LAFI_Index + 1))
             done" || return $?
     ;;
 
@@ -2749,9 +2780,10 @@ fn_bs_libarray_find_index() { ## cSpell:Ignore BS_LAFI_
               ${BS_LAFI_Expression:-''})
                 BS_LAFI_Index=\$((BS_LAFI_Index + 1))
                 continue ;;
+              *)
+                BS_LAFI_Found=\"\${BS_LAFI_Index}\"
+                break ;;
               esac
-              BS_LAFI_Found=\"\${BS_LAFI_Index}\"
-              break
             done" || return $?
     ;;
 
@@ -2849,8 +2881,8 @@ fn_bs_libarray_find_index() { ## cSpell:Ignore BS_LAFI_
         "${BS_LAFI_Expression}")
           BS_LAFI_Found="${BS_LAFI_Index}"
           break ;;
+        *) BS_LAFI_Index=$((BS_LAFI_Index + 1)) ;;
         esac
-        BS_LAFI_Index=$((BS_LAFI_Index + 1))
       done
     ;;
 
@@ -2866,9 +2898,10 @@ fn_bs_libarray_find_index() { ## cSpell:Ignore BS_LAFI_
         "${BS_LAFI_Expression}")
           BS_LAFI_Index=$((BS_LAFI_Index + 1))
           continue ;;
+        *)
+          BS_LAFI_Found="${BS_LAFI_Index}"
+          break ;;
         esac
-        BS_LAFI_Found="${BS_LAFI_Index}"
-        break
       done
     ;;
 
@@ -4500,7 +4533,7 @@ array_sort() { ## cSpell:Ignore BS_LASort_
               'array_sort'                      \
               "${BS_LASort_refSorted}"          || return $?
             shift
-            case ${1-} in --) shift; esac ;;
+            case ${1-} in --) shift ;; esac ;;
       esac #<: `case $1 in`
     ;;
   esac #<: `case $# in`
@@ -4553,11 +4586,7 @@ array_sort() { ## cSpell:Ignore BS_LASort_
       } | {
         # Undo the conversion and turn each
         # value back into an array value
-        sed -e "s/'/'\\\\''/g
-                s/^/'/
-                s/\$/' \\\\/
-                s/ \\\\n/\n/g
-                s/\\\\\\\\/\\\\/g"
+        sed -e "${c_BS_LIBARRAY__sed_sort_unescape}"
       }
       echo ' '
     )"
@@ -5023,7 +5052,7 @@ array_join() { ## cSpell:Ignore BS_LAJoin_ Delim
   case ${BS_LAJoin_Delim} in
   *'%'*)  BS_LAJoin_Delim="$(
               {
-                printf '%s_' "${BS_LAJoin_Delim}"
+                printf '%s_\n' "${BS_LAJoin_Delim}"
               } | {
                 sed -e 's/%/%%/g'
               }
@@ -5072,10 +5101,23 @@ array_join() { ## cSpell:Ignore BS_LAJoin_ Delim
 #: _SYNOPSIS_
 #: <!-- - -->
 #:
-#:     array_split [<ARRAY>] <TEXT> <SEPARATOR>
+#:     array_split [<OPTION>] [--] [<ARRAY>] <TEXT> <SEPARATOR>
 #:
 #: _ARGUMENTS_
 #: <!-- -- -->
+#:
+#: `-E`, `--ere`, `--extended-regexp` \[in]
+#:
+#: : Interpret `SEPARATOR` as an "Extended Regular Expression".
+#: : This is the default.
+#:
+#: `-F`, `--fixed-strings` \[in]
+#:
+#: : Interpret `SEPARATOR` as a fixed string.
+#:
+#: `-G`, `--bre`, `--basic-regexp` \[in]
+#:
+#: : Interpret `SEPARATOR` as a "Basic Regular Expression".
 #:
 #: `ARRAY` \[out:ref]
 #:
@@ -5107,29 +5149,50 @@ array_join() { ## cSpell:Ignore BS_LAJoin_ Delim
 #: <!-- - -->
 #:
 #:     array_split 'Array' "$PATH" ':'
-#:     Array="$(array_split "$PATH" ':')"
+#:     Array="$(array_split -F "$PATH" ':')"
 #:     Array="$(array_split - "$PATH" ':')"
+#:
+#: _CAVEATS_
+#: <!-- - -->
+#:
+#: - "Enhanced Regular Expression" mode (the default if no mode is specified)
+#:   is provided by the `split` function from `awk`. This requires a version of
+#:   `awk` that is "new awk" (or "nawk") like - "traditional" `awk` is _not_
+#:   supported. (Notably, even as of 2024 this affects the default version of
+#:   `awk` in Oracle Solaris.)
 #:
 #: _NOTES_
 #: <!-- -->
 #:
-#: - The `awk` command `split` is used to split text, so both `TEXT` and
-#:   `SEPARATOR` are subject to the general `awk` requirements and any
-#:   specific `split` requirements. Whether or not "empty" elements are
-#:   created, may also be dependent on how `split` operates.
-#: - If the separator text is intended to be a simple string longer than a
-#:   single character, any regular expression commands MUST be escaped.
-#:   Importantly, this includes `.` (`<period>`)) which will match **any**
-#:   character if not escaped.
-#: - Requires `awk` supports the `ENVIRON` array which was added in 1989, but
-#:   is not part of the traditional `awk` specification and may be omitted in
-#:   some implementations. (This is due to how strings are processed when passed
-#:   to `awk` as arguments: not only do these have to be escaped in ways
-#:   that are hard to do correctly, but they may not contain embedded newline
-#:   characters. The `ENVIRON` array has neither restriction.)
+#: - The default mode is "Enhanced Regular Expression" mode as this was the only
+#:   mode offered by the first version of this command.
+#: - "Basic Regular Expression" mode is likely to be the most performant of the
+#:   options available.
+#: - Manually ensuring any regular expression characters are correctly escaped
+#:   can be used in place of "Fixed String" mode. This may offer better
+#:   performance.
 #:
+#. _IMPLEMENTATION NOTES_
+#. <!-- ------------- -->
+#.
+#. - Option names are taken from GNU `grep` since these are likely widely known
+#.   and are extensions of the standard `grep` options.
+#.
 #_______________________________________________________________________________
 array_split() { ## cSpell:Ignore BS_LASplit_ gsub
+  # Check for options
+  BS_LASplit_Mode=;
+  case ${1-} in
+  '-G' | '--bre'  | '--basic-regexp'   ) BS_LASplit_Mode=G; shift ;;
+  '-E' | '--ere'  | '--extended-regexp') BS_LASplit_Mode=E; shift ;;
+  '-F' | '--text' | '--fixed-strings'  ) BS_LASplit_Mode=F; shift ;;
+                                      *) BS_LASplit_Mode=E ;;
+  esac
+
+  # Skip any option delimiter
+  case ${1-} in --) shift ;; esac
+
+  # Process operands
   case $# in
   2)   BS_LASplit_refArray='-'
            BS_LASplit_Text="$1"
@@ -5143,69 +5206,150 @@ array_split() { ## cSpell:Ignore BS_LASplit_ gsub
            BS_LASplit_Text="$2"
       BS_LASplit_Separator="$3" ;;
 
-  *)  fn_bs_libarray_expected \
-        'array_split'         \
-        'an array variable'   \
-        'input text'          \
+  *)  fn_bs_libarray_expected          \
+        'array_split'                  \
+        'one of -B|--bre|--basic-regexp, -E|--ere|--extended-regexp, or -F|--text|--fixed-strings (optional)' \
+        'an array variable (optional)' \
+        'input text'                   \
         'a separator'
       return "${c_BS_LIBARRAY__EX_USAGE}" ;;
   esac #<: `case $# in`
 
-  case ${BS_LASplit_Separator:+1} in
-  1) ;; *)  fn_bs_libarray_invalid_args \
-            'array_split'               \
-            'split separator can not be null'
-          return "${c_BS_LIBARRAY__EX_USAGE}" ;;
+  # Check for null input:
+  #  - null SEPARATOR is an error
+  #  - early out for null TEXT
+  case ${BS_LASplit_Separator:+1}:${BS_LASplit_Text:+1} in
+  1:1)  ;;
+  1: )  case ${BS_LASplit_refArray} in
+        -) echo ;;                            #< OUTPUT (EMPTY)
+        *) eval "${BS_LASplit_refArray}=;" ;; #< SAVE (EMPTY)
+        esac
+        return ;;
+   :*)  fn_bs_libarray_invalid_args \
+          'array_split'             \
+          'split separator can not be null'
+        return "${c_BS_LIBARRAY__EX_USAGE}" ;;
   esac
 
-  # Early out for null TEXT
-  case ${BS_LASplit_Text:+1} in
-  1) ;; *)  case ${BS_LASplit_refArray} in
-            -) echo ;;                            #< OUTPUT (EMPTY)
-            *) eval "${BS_LASplit_refArray}=;" ;; #< SAVE (EMPTY)
-            esac
-            return ;;
+  # Escape SEPARATOR if/when required:
+  #  - BRE and Fixed use `sed`, which escapes `'` characters
+  #    in the input text _before_ the split is done, as it
+  #    allows the script to be simpler, but means that
+  #    those characters in the split text need to also be
+  #    escaped or they won't match as expected.
+  #  - Fixed strings also escape BRE special characters.
+  case ${BS_LASplit_Mode}:${BS_LASplit_Separator-} in
+  G:*"'"*)
+    BS_LASplit_Separator="$(
+      {
+        printf '%s_\n' "${BS_LASplit_Separator}"
+      } | {
+        sed "s/'/'\\\\\\\\''/g"
+      }
+    )" 
+    BS_LASplit_Separator="${BS_LASplit_Separator%?_}" ;;
+
+  F:*[.[\\*$^\']*)
+    BS_LASplit_Separator="$(
+        {
+          printf '%s_\n' "${BS_LASplit_Separator}"
+        } | {
+          sed "s/'/'\\\\''/g
+               s/[.[\\*$]/[&]/g
+               s/\^/\\\^/g"
+        }
+      )" 
+    BS_LASplit_Separator="${BS_LASplit_Separator%?_}" ;;
   esac
 
   # Split
-  #
-  # To avoid problems with how `awk` interprets strings the
-  # strings are passed in as environment variables (this
-  # skips some of `awk` string processing and also seems to
-  # permit values that _POSIX.1_ disallows if accessed in
-  # other ways, e.g. values that contain embedded
-  # `<newline>` characters).
-  #
-  # In addition to splitting the given text the script
-  # generates array values in the same way the `sed` script
-  # used with [`array_value`](#array_value) does.
-  #
-  # Despite the script here not using input, according to
-  # the `autoconf` portability documentation some `awk`
-  # implementations try to read (and discard) input so
-  # ensure there is some to read (`autoconf` suggests
-  # redirecting input from `/dev/null`, but this will fail
-  # in restricted shells)
-  BS_LASplit_Array="$(
-      {
+  case ${BS_LASplit_Mode} in
+  [GF])
+    case ${c_BS_LIBARRAY_CFG_USE__sed_slash_n:-0} in
+    1)  BS_LASplit_Script="
+          :INPUT
+            \$!N
+            \$!b INPUT
+          s/'/'\\\\''/g
+          s/^/'/
+          s/\$/' \\\\/
+          s/${BS_LASplit_Separator}/' \\\\\n'/g" ;;
+
+    0)  BS_LASplit_Script="
+          :INPUT
+            \$!N
+            \$!b INPUT
+          s/'/'\\\\''/g
+          s/^/'/
+          s/\$/' \\\\/
+          :SPLIT
+            /${BS_LASplit_Separator}/{
+              h
+              s/^.*${BS_LASplit_Separator}\(.*\)$/'\1/
+              x
+              s/^\(.*\)${BS_LASplit_Separator}.*$/\1' \\\\/
+              G
+              /${BS_LASplit_Separator}/b SPLIT
+            }" ;;
+    esac
+
+    BS_LASplit_Array="$(
+        {
+          printf '%s\n' "${BS_LASplit_Text}"
+        } | {
+          sed "${BS_LASplit_Script}"
+        }
         echo ' '
+      )" || return $?
+
+    BS_LASplit_Array="${BS_LASplit_Array%\'}" ;;
+
+  *)
+    BS_LASplit_Array="$(
+      {
+        printf '%s\n' "${BS_LASplit_Text}_"
       } | {
-        export BS_LASplit_Text
-        export BS_LASplit_Separator
-        awk ' BEGIN {
-                   ENV_Source=ENVIRON["BS_LASplit_Text"];
-                ENV_Separator=ENVIRON["BS_LASplit_Separator"];
-                ORS="'\'' \\\n";
-                iSplitCount=split(ENV_Source, aSplitText, ENV_Separator);
-                for (iIndex=1; iIndex<=iSplitCount; ++iIndex) {
-                  gsub("'\''", "'\'''\\\\\'''\''", aSplitText[iIndex]);
-                  print "'\''" aSplitText[iIndex];
-                }
-              }
-            '
+        # This script does not work with traditional `awk`:
+        #
+        #  - `gsub` is not available in traditional `awk` (although the use here
+        #    can be replaced with a manually coded replacement that _does_ work)
+        #  - `split` in traditional `awk` does not support more than a single
+        #    character for the split value, and does not support ERE.
+        #
+        # In Solaris 11.4 (2023) the default `awk` does not support this,
+        # although a more functional version of `awk` _is_ available on the
+        # system.
+        awk "
+          {
+            BS_LA_FullTxt = BS_LA_FullTxt sprintf(\"%s\n\", \$0)
+          }
+
+          END {
+            # An additional newline will have been added to
+            # the text that is **not** from the initial
+            # text, so this is removed here.
+            BS_LA_TextLen = length(BS_LA_FullTxt) - 2
+            BS_LA_FullTxt = substr(BS_LA_FullTxt, 1, BS_LA_TextLen)
+
+            # The expression is embedded in the script here
+            # rather than passed to awk in a more
+            # traditional way as it turns out to be _very_
+            # difficult to do that in a portable way.
+            #
+            # WARNING: Could be an 'injection attack' target.
+            #
+            iSplitCount = split(BS_LA_FullTxt, BS_LA_aSplitText, /${BS_LASplit_Separator}/)
+            for (i = 1; i <= iSplitCount; i = i + 1) {
+              gsub(\"'\", \"'\\\\''\", BS_LA_aSplitText[i])
+              printf(\"'%s' \\\\\n\", BS_LA_aSplitText[i])
+            }
+
+            printf(\" \n\")
+          }
+        "
       }
-      echo ' '
-    )" || return $?
+    )" || return $? ;;
+  esac
 
   case ${BS_LASplit_refArray} in
   -) printf '%s\n' "${BS_LASplit_Array}" ;;                    #< OUTPUT
@@ -5281,7 +5425,7 @@ array_printf() { ## cSpell:Ignore BS_LAPrintf_
   #         the format themselves
   # shellcheck disable=SC2059
   case $# in
-  0) echo ;;                                #< OUTPUT (EMPTY)
+  0) echo '' ;;                             #< OUTPUT (EMPTY)
   *) printf "${BS_LAPrintf_Format}" "$@" ;; #< OUTPUT
   esac
 }
@@ -5600,7 +5744,7 @@ array_from_find() { ## cSpell:Ignore BS_LAFF_
               'array_from_find'                 \
               "${BS_LAFF_refArray}"             || return $?
             shift
-            case ${1-} in --) shift; esac ;;
+            case ${1-} in --) shift ;; esac ;;
       esac
 
       # Check for prohibited predicates in the
@@ -5809,6 +5953,69 @@ array_from_find_allow_print() { ## cSpell:Ignore BS_LAFFAP_
   #.........................................................
 }
 
+#_______________________________________________________________________________
+#: ---------------------------------------------------------
+#:
+#: ### `array_is_array`
+#:
+#: Determine if a variable looks like it contains array like data.
+#:
+#: _SYNOPSIS_
+#: <!-- - -->
+#:
+#:     array_is_array <ARRAY>
+#:
+#: _ARGUMENTS_
+#: <!-- -- -->
+#:
+#: `ARRAY` \[in:ref]
+#:
+#: : Variable that may contain a array.
+#: : MUST be a valid _POSIX.1_ name.
+#:
+#: _EXAMPLES_
+#: <!-- - -->
+#:
+#:     if array_is_array 'Var'; then ...; fi
+#:
+#: _NOTES_
+#: <!-- -->
+#:
+#: - An empty or unset `ARRAY` is _not_ a valid map.
+#: - Exit status will be `0` (`<zero>`) if `ARRAY` appears to be a valid map,
+#:   while the exit status will be `1` (`<one>`) in all other (non-error) cases.
+#:
+#_______________________________________________________________________________
+array_is_array() { ## cSpell:Ignore BS_LAAIA_
+  case $# in
+  1)  BS_LAAIA_refArray="$1" ;;
+  *)  fn_bs_libarray_expected \
+        'array_is_array'      \
+        'an array variable'
+      return "${c_BS_LIBARRAY__EX_USAGE}" ;;
+  esac #<: `case $# in`
+
+  #---------------------------------------------------------
+  # Validate
+  #---------------------------------------------------------
+  fn_bs_libarray_validate_name \
+    'array_is_array'           \
+    "${BS_LAAIA_refArray}"     || return $?
+
+  #---------------------------------------------------------
+  # Unpack
+  #---------------------------------------------------------
+  eval "BS_LAAIA_Array=\"\${${BS_LAAIA_refArray}-}\"" || return $?
+
+  #---------------------------------------------------------
+  #
+  #---------------------------------------------------------
+  case ${BS_LAAIA_Array-} in
+  "'"*"' \\${c_BS_LIBARRAY__newline} ") return 0 ;;
+                                     *) return 1 ;;
+  esac
+} #< `array_is_array()`
+
 #===============================================================================
 #===============================================================================
 # SOURCE GUARD
@@ -5831,12 +6038,39 @@ fn_bs_libarray_readonly 'BS_LIBARRAY_SOURCED'
 #.
 #. ## VERSIONS
 #.
-#. v1.1.0          [FIX] Fixed error with `shift` in
+#. v1.2.0        - [NEW] Added [`array_is_array`](#array_is_array).
+#.               - [NEW] [`array_split`](#array_split) now has multiple ways of
+#.                 splitting text.
+#.               - [FIX] (PORTABILITY) Added trailing '\n' to `printf` - without
+#.                 it some implementations will effectively discard the last
+#.                 line of data.
+#.               - [FIX] (PORTABILITY) Rewrote `awk` scripts to better match
+#.                 platform capabilities. (All `awk` usage has changed
+#.                 considerably.)
+#.               - [FIX] (PORTABILITY) Added workarounds for `sed` where '\n'
+#.                 in a replacement expression does not result in a `<newline>`.
+#.                 (New configuration variable:
+#.                 [`BS_LIBARRAY_CONFIG_NO_SED_SLASH_N_NEWLINE`](#bs_libarray_config_no_sed_slash_n_newline))
+#.               - [FIX] (PORTABILITY) Changed `sed` scripts to avoid long
+#.                 label names and remove grouping with `{` when not required.
+#.               - [FIX] (PORTABILITY) Minor changes to some `case` statements
+#.                 which should now be more portable, though never showed any
+#.                 issues (e.g. add `;;` to some statements where it was missing
+#.                 even though this was permitted.)
+#.               - [FIX] (PORTABILITY) Use null string instead of no arguments
+#.                 for `echo` when intent is only to output a `<newline>`.
+#.               - [FIX] (PORTABILITY) Minor changes to parameter expansion to
+#.                 avoid issues with ksh88.
+#.
+#. v1.0.1        - [FIX] Fixed error with `shift` in
 #.                 [`fn_bs_libarray_error`](#fn_bs_libarray_error) that would
 #.                 cause parameters to appear incorrectly in the error message
 #.                 (only affected calls with multiple parameters).
 #.
-#. v1.0.0          First Release
+#. v1.0.0        - First Release
+#.
+#. ### VERSION 1.2.0: PORTABILITY
+#.
 #.
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:

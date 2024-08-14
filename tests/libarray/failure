@@ -2111,7 +2111,7 @@ fn_bs_latf_array_split() {
 
       #.................................
 
-      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_split*expected an array variable, input text, and a separator*' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_split*an array variable (optional), input text, and a separator*' || return $?
     }
 
     #-----------------------------------
@@ -2128,7 +2128,7 @@ fn_bs_latf_array_split() {
       #.................................
 
       test_assert ${LINENO:+"@${LINENO}"} -z "${TestArray+1}" || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_split*expected an array variable, input text, and a separator*' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput-}" -like '_*array_split*an array variable (optional), input text, and a separator*' || return $?
     }
   }
 

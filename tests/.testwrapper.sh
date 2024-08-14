@@ -672,11 +672,11 @@ fn_bs_tw_escape_glob() { ## cSpell:Ignore BS_TWEG_
     #+    immediately afterwards.
     BS_TWEG_Glob="$(
         {
-          printf '%s' "${BS_TWEG_Glob}"
+          printf '%s\n' "${BS_TWEG_Glob}"
         } | {
           sed -e 's/[^-*?[_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\\]/\\&/g
                   s/\\]/]/g
-                  s/\[\\!/[!/g' -
+                  s/\[\\!/[!/g'
         }
       )"
 
@@ -984,7 +984,7 @@ test_run_unit() { ## cSpell:Ignore BS_TRU_
   #---------------------------------------------------------
   #
   #---------------------------------------------------------
-  fn_bs_tw_printf_indent '%s......' "${BS_TRU_Name:-"Unit: ${1-}"}"
+  fn_bs_tw_printf_indent '%s......' "${BS_TRU_Name:-<unknown>}"
 
   # Run test (output captured)
   if BS_TRU_Output="$("$@" 2>&1)"; then

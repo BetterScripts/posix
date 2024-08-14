@@ -399,6 +399,22 @@ Suite wide variables include:
 
 ------------------------------------------------------------
 
+#### `BETTER_SCRIPTS_CONFIG_NO_GREP_F`
+
+- Type:     FLAG
+- Class:    CONSTANT
+- Default:  \<automatic>
+- \[Disable]/Enable using the non-standard `fgrep`
+   instead of `grep -F`.
+- _OFF_: Use `grep -F`.
+- _ON_: Use `fgrep`.
+- Automatically enabled if _Z Shell_ is detected.
+- While `grep -F` is standard, it is not always supported -
+  implementations that do not support it usually provide
+  the non-standard `fgrep` instead.
+
+------------------------------------------------------------
+
 ### LIBRARY INFORMATION
 
 Each library provides a number of variables that are set by the library to
@@ -620,7 +636,7 @@ Library commands document arguments with a tag indicating argument usage:
 
 ### COMPATIBILITY
 
-The _Better Scripts POSIX Suite_ is supported in any environment that is
+The _BetterScripts POSIX Suite_ is supported in any environment that is
 compatible with the "command interpretation services and common utility
 programs" as defined in the ["Shell and Utilities"][posix_shell_utils] volume
 of the [_POSIX.1-2008_][posix] standard.
@@ -678,6 +694,20 @@ Additionally:
   individual libraries. Still, if tests run successfully for a specific
   platform it is likely the platform will be fully supported.
 
+> _The Suite_ has been tested in multiple operating systems including _Ubuntu_,
+> _Oracle Solaris_, _FreeBSD_, _OpenBSD_, and _Windows Subsystem for Linux_.
+>
+> Multiple implementations of "Shells and Utilities" have also been tested
+> including: `sh`[^native_sh], `bash`, `busybox`, `dash`, `ksh88`, `ksh93`,
+> `mksh`, `oksh`, `pdksh`, `posh`, `yash`, and `zsh` (including "restricted"
+> versions of these shells where known to exist) - all shells are tested in
+> "default" mode along with any _POSIX.1_ compatibility mode.
+>
+> Various implementations of utilities have also been tested.
+
+[^native_sh]: While `sh` is often simply a link to another shell, this is not
+              always true - for some platforms it is a unique shell.
+
 ### PERFORMANCE
 
 - Libraries have been written to maximize performance without sacrificing
@@ -696,6 +726,13 @@ Additionally:
     significantly better for all suite libraries.
   - Utilities like `sed`, `grep`, `awk`, etc. are available in multiple
     implementations, each of which has it's own performance characteristics.
+- Many libraries in _the Suite_ provide emulated versions of data structures
+  that are not normally available. These are stored in in a standard shell
+  variable which is manipulated using standard utilities or the shell command
+  language. **Performance of these data structures is highly dependent on the
+  size of the data stored.** Although implementation dependent, shells tend to
+  be optimized for processing _short_ strings, with strings that may be
+  hundreds or thousands of characters long performance can rapidly decrease.
 
 [^lite-mode]: Initially there was an alternative version of each library
               which excluded as much of the main version as possible, while

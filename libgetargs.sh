@@ -844,7 +844,7 @@ case ${BS_LIBGETARGS_CONFIG_NO_EXPR_NESTED_CAPTURES:-${BETTER_SCRIPTS_CONFIG_NO_
 A)  case $(
             {
               i_BS_LGA_expr_match="$(expr 'Test Value' : '\(Te\(st\)\)')" &&
-                printf '%s Success' "${i_BS_LGA_expr_match-}"
+                printf '%s Success\n' "${i_BS_LGA_expr_match-}"
             } 2>&1
           ) in
     'Test Success') c_BS_LGA_CFG_USE__expr_nested_captures=1 ;;
@@ -1389,7 +1389,7 @@ esac
 #:   etc, (a numerical suffix may also be appended).
 #:
   BS_LIBGETARGS_VERSION_MAJOR=1;
-  BS_LIBGETARGS_VERSION_MINOR=2;
+  BS_LIBGETARGS_VERSION_MINOR=3;
   BS_LIBGETARGS_VERSION_PATCH=0;
 BS_LIBGETARGS_VERSION_RELEASE=;
 
@@ -2845,6 +2845,28 @@ fn_bs_lga_operands_to_options() { ## cSpell:Ignore BS_LGAOTO_
 #;   more than a single match is found.
 #;
 #_______________________________________________________________________________
+#
+# 2024/07/25:-
+#
+# - Minor re-write for this function to perform option matching with `sed` in
+#   all cases: `sed` it is more portable and can handle both ambiguous and
+#   non-ambiguous options with minimal changed.
+# - New code is simpler and loses little in terms of performance: tests show
+#   similar performance for either implementation, with no clear winner. It is
+#   likely this will be implementation dependent.
+# - Changes here were part of the portability work that resulted in changes
+#   across all libraries.
+#
+# _CAVEATS_
+#
+# - WARNING: the new code uses a much simpler regular expression when matching
+#   OPTIONs - this is much more portable (and likely faster) **but** assumes the
+#   config is valid. The new implementation means invalid config  _may_ be
+#   accepted when previously it would not, and while the benefits make this an
+#   acceptable tradeoff, additional config checks _may_ need to be added prior
+#   to calling this.
+#
+#...............................................................................
 fn_bs_lga_find_config() { ## cSpell:Ignore BS_LGAFC
        BS_LGAFC_Option="${1:?'[libgetargs::fn_bs_lga_find_config]: Internal Error: an option to match is required'}"
       BS_LGAFC_refType="${2:?'[libgetargs::fn_bs_lga_find_config]: Internal Error: a type output variable is required'}"
@@ -2858,9 +2880,7 @@ fn_bs_lga_find_config() { ## cSpell:Ignore BS_LGAFC
 
   #---------------------------------------------------------
   # Build the "Basic Regular Expression" that will be used
-  # to look up the OPTION. Regardless of the tool used to
-  # perform the lookup, almost the entire expression will
-  # be the same.
+  # to look up the OPTION.
   BS_LGAFC_OptionRegExp="${BS_LGAFC_OptionName}"
 
   # OPTIONs are used as regular expressions, so MAY need
@@ -2888,64 +2908,79 @@ fn_bs_lga_find_config() { ## cSpell:Ignore BS_LGAFC
       )" ;;
   esac
 
+  #---------------------------------------------------------
   # A LONG-OPTION can be abbreviated, so need to allow
   # for extra characters. (SHORT-OPTIONs must always
   # match exactly.) A LONG-OPTION can be detected by a
   # single `-` (`<hyphen>`) prefix on the parameter
   # passed into this command.
   case ${g_BS_LGA_CFG_AllowAbbreviations:-0}${BS_LGAFC_Option} in
-  1-*) BS_LGAFC_OptionRegExp="${BS_LGAFC_OptionRegExp}${c_BS_LGA__re_Alias_OtherChar}\{0,\}" ;;
+  1-*) BS_LGAFC_OptionRegExp="${BS_LGAFC_OptionRegExp}[^|[]*" ;;
   esac
 
-  # Create the full regular expression
-  BS_LGAFC_OptionRegExp="${c_BS_LGA__re_Option_MatchPrefix}${BS_LGAFC_OptionRegExp}${c_BS_LGA__re_Option_MatchSuffix}"
+  #---------------------------------------------------------
+  # When ambiguous OPTIONs are permitted, the matching
+  # script simply exits when it finds the first match,
+  # otherwise it finds all matches.
+  #
+  # Previously this was dealt with using `expr` or `grep`
+  # depending on the situation, however, this proved less
+  # portable and more complicated than this newer solution.
+  case ${g_BS_LGA_CFG_AllowAmbiguous:-0} in
+  0) BS_LGAFC_MatchAction='d' ;;
+  1) BS_LGAFC_MatchAction='q' ;;
+  esac
 
   #---------------------------------------------------------
-  # Ambiguous OPTIONs are detected with `grep`, this is
-  # slower but safer than ignoring ambiguous OPTIONs,
-  # the alternative is to use `expr` which is faster, but
-  # can not detect ambiguous OPTIONs.
-  case ${g_BS_LGA_CFG_AllowAmbiguous:-0} in
-  1)  # `expr` will extract the config that matches the
-      # captured part of the regular expression which will
-      # be the config for a single option. There is no easy
-      # way to get `expr` to find ambiguous OPTIONs that
-      # doesn't also negate the significant speed advantages
-      # of using `expr`
-      BS_LGAFC_OptionRegExp=".*,\(${BS_LGAFC_OptionRegExp}\),"
-      {
-        BS_LGAFC_Matched="$(
-            fn_bs_lga_expr_re             \
-              "${g_BS_LGA__OptionConfig}" \
-              "${BS_LGAFC_OptionRegExp}"  2>&1
-          )"
-      } || {
-        g_BS_LGA__UnrecognizedOption="Unrecognized option '${BS_LGAFC_OptionName}'"
-        return "${c_BS_LGA__EX_DATAERR}"
-      } ;;
-  0)  # `grep` will return any matched config as a single
-      # line containing the config for a single OPTION (or
-      # multiple lines if the config was ambiguous).
-      if  BS_LGAFC_Matched="$(
-            {
-              printf '%s\n' "${g_BS_LGA__OptionConfig}"
-            } | {
-              grep "^${BS_LGAFC_OptionRegExp}" 2>&1
-            }
-          )"
-      then
-        # Ambiguous options will return multiple matches,
-        # easiest way to check for that is by looking for
-        # a newline with characters before and after
-        case ${BS_LGAFC_Matched} in
-        *?"${c_BS_LGA__newline}"?*)
-          fn_bs_lga_error "Ambiguous option '${BS_LGAFC_OptionName}'"
-          return "${c_BS_LGA__EX_DATAERR}" ;;
-        esac
-      else
-        g_BS_LGA__UnrecognizedOption="Unrecognized option '${BS_LGAFC_OptionName}'"
-        return "${c_BS_LGA__EX_DATAERR}"
-      fi ;;
+  # Find the OPTION. The script here is as close to as
+  # simple as possible, although combining the matches is
+  # possible, it ends up less portable and does not
+  # significantly alter performance.
+  #
+  # _NOTES_
+  #
+  # - If each OPTION-CONFIG was preceded by `|` the script
+  #   could be more efficient, however, experiments doing
+  #   this ended up _reducing_ performance (due to the need
+  #   to replace `tr` with `sed` when formatting the
+  #   OPTION-CONFIG).
+  # - `sed` only results in a non-zero exit status on error
+  #   and not if the script executed correctly (even if no
+  #   matches were made).
+  #
+  {
+    BS_LGAFC_Matched="$(
+        {
+          printf '%s\n' "${g_BS_LGA__OptionConfig}"
+        } | {
+          sed -n "/^${BS_LGAFC_OptionRegExp}[|[]/{
+                    p
+                    ${BS_LGAFC_MatchAction}
+                  }
+                  /|${BS_LGAFC_OptionRegExp}[|[]/{
+                    p
+                    ${BS_LGAFC_MatchAction}
+                  }"
+        }
+      )"
+  } || {
+    ec_fn_bs_lga_find_config=$?
+    fn_bs_lga_error "unexpected exit status '${ec_fn_bs_lga_find_config}' from 'sed' while matching '${BS_LGAFC_OptionName}'"
+    return ${ec_fn_bs_lga_find_config}
+  }
+
+  #---------------------------------------------------------
+  # Ambiguous OPTIONs result in multiple lines being output
+  # from `sed`, while empty output means no option was
+  # found.
+  case ${BS_LGAFC_Matched} in
+  *?"${c_BS_LGA__newline}"?*)
+      fn_bs_lga_error "Ambiguous option '${BS_LGAFC_OptionName}'"
+      return "${c_BS_LGA__EX_DATAERR}" ;;
+
+  '')
+    g_BS_LGA__UnrecognizedOption="Unrecognized option '${BS_LGAFC_OptionName}'"
+    return "${c_BS_LGA__EX_DATAERR}" ;;
   esac
 
   #---------------------------------------------------------
@@ -3286,7 +3321,7 @@ fn_bs_lga_process_simple_option() { ## cSpell:Ignore BS_LGAPSO
              *) # Verify the variable name is a valid value
                 fn_bs_lga_validate_name "${BS_LGAPSO_OptArg}" || return $?
 
-                eval "BS_LGAPSO_OptArg=\"\${${BS_LGAPSO_OptArg}}\"" || return $? ;;
+                eval "BS_LGAPSO_OptArg=\"\${${BS_LGAPSO_OptArg}-}\"" || return $? ;;
           esac
       ;;
       esac
@@ -5352,33 +5387,25 @@ getargs() { ## cSpell:Ignore BS_LGA_
 
   #---------------------------------------------------------
   # Re-Format OPTION-CONFIG
+  #
+  # 2024/07/25:- Changed option matching to always use `sed`
+  # as it is more portable and can handle both ambiguous and
+  # non-ambiguous options. Config is now always processed as
+  # individual lines (one line per config).
   #---------------------------------------------------------
-  case ${g_BS_LGA_CFG_AllowAmbiguous:-0} in
-  0)  # Ambiguous options are detected with `grep` and
-      # require a newline delimited format
-      #
-      # NOTE:
-      # - Avoids using `\n` for `tr` to aid portability
+  {
+    g_BS_LGA__OptionConfig="$(
       {
-        g_BS_LGA__OptionConfig="$(
-            {
-              printf '%s\n' "${g_BS_LGA__OptionConfig%,}"
-            } | {
-              tr -s ',' "${c_BS_LGA__newline}"
-            }
-          )"
-      } || {
-        ec_getargs_tr=$?
-        fn_bs_lga_error "'tr' failed while attempting to replace ',' with '\n' in option config '${g_BS_LGA__OptionConfig}'"
-        return ${ec_getargs_tr}
-      } ;;
-  1)  # Surrounding the whole of OPTION-CONFIG values in
-      # `,` makes matching easier (a trailing `,` is
-      # already present).
-      #
-      # OPERAND-CONFIG does not benefit from this.
-      g_BS_LGA__OptionConfig=",${g_BS_LGA__OptionConfig}" ;;
-  esac
+        printf '%s\n' "${g_BS_LGA__OptionConfig%,}"
+      } | {
+        tr -s ',' "${c_BS_LGA__newline}"
+      }
+    )"
+  } || {
+    ec_getargs_tr=$?
+    fn_bs_lga_error "'tr' failed while attempting to replace ',' with '\n' in option config '${g_BS_LGA__OptionConfig}'"
+    return ${ec_getargs_tr}
+  }
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Process user ARGUMENTs
@@ -5633,6 +5660,25 @@ fn_bs_lga_readonly 'BS_LIBGETARGS_SOURCED'
 #. <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #.
 #. ## VERSIONS
+#.
+#. v1.3.0        - [FIX] Fixed an issue that would cause a failure under
+#.                 `set -u` when an unset user variable was used. (Although the
+#.                 failure _may_ be useful, it breaks the principle that
+#.                 behavior is the same under `set -u` and `set +u`.)
+#.               - [FIX] (PORTABILITY) Added trailing '\n' to `printf` - without
+#.                 it some implementations will effectively discard the last
+#.                 line of data.
+#.               - [FIX] (PORTABILITY) Rewrote OPTION matching to be simpler and
+#.                 more portable: `sed` is now used in place of `expr` and
+#.                 `grep` for all matching; `tr` is required where previously
+#.                 use was based on config. (NOTES: Previously rejected
+#.                 OPTION-CONFIG may now be accepted; performance
+#.                 characteristics may have changed, however  overall
+#.                 performance was not measurably altered.)
+#.               - [FIX] (PORTABILITY) Minor changes to some `case` statements
+#.                 which should now be more portable, though never showed any
+#.                 issues (e.g. add `;;` to some statements where it was missing
+#.                 even though this was permitted.)
 #.
 #. v1.2.0        - [NEW] Added ability to specify a variable name with `--unmatched`,
 #.                 which will receive all unmatched OPTIONS and OPTION-ARGUMENTs

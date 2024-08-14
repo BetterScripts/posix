@@ -10,12 +10,12 @@
 
 ## SYNOPSIS
 
-_Full synopsis, description, arguments, examples and other information is_
-_documented with each individual command._
+_Full synopsis, description, arguments, examples and other information is
+ documented with each individual command._
 
 ---------------------------------------------------------
 
-_DEQUE: Double-Ended Queue_
+`deque` - _Double-Ended Queue_
 <!-- ------------------ -->
 
 [`deque_push_front <DEQUE> <VALUE>...`](#deque_push_front)
@@ -48,8 +48,8 @@ _DEQUE: Double-Ended Queue_
 
 ---------------------------------------------------------
 
-_QUEUE: First In, First Out Queue._
-<!-- -------------------------- -->
+`queue` - First In, First Out Queue._
+<!-- ---------------------------- -->
 
 [`queue_push <QUEUE> <VALUE>...`](#queue_push)
 
@@ -63,8 +63,8 @@ _QUEUE: First In, First Out Queue._
 
 ---------------------------------------------------------
 
-STACK: Last In, First Out Stack._
-<!-- ------------------------ -->
+`stack` - Last In, First Out Stack._
+<!-- --------------------------- -->
 
 [`stack_push <STACK> <VALUE>...`](#stack_push)
 
@@ -170,6 +170,22 @@ _For more details see the common suite [documentation](./README.MD#environment).
 - Automatically enabled if _Z Shell_ is detected.
 - Any use of `setopt` is scoped as tightly as possible
   and SHOULD not affect other commands.
+
+---------------------------------------------------------
+
+#### `BS_LIBDEQUE_CONFIG_NO_GREP_F`
+
+- Suite:    [`BETTER_SCRIPTS_CONFIG_NO_GREP_F`](./README.MD#better_scripts_config_no_grep_f)
+- Type:     FLAG
+- Class:    CONSTANT
+- Default:  \<automatic>
+- \[Disable]/Enable using the non-standard `fgrep`
+  instead of `grep -F`.
+- _OFF_: Use `grep -F`.
+- _ON_: Use `fgrep`.
+- While `grep -F` is standard, it is not always available
+  but in the cases it is not `fgrep` often is and
+  provides the required functionality.
 
 <!-- ------------------------------------------------ -->
 

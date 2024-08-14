@@ -486,7 +486,7 @@ __list__TESTS			= tests/test_libgetargs.sh \
 #.
 #> |_NUMBER_SIGN:#|
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-_set_shell__char_NUMBER_SIGN	= _char_NUMBER_SIGN="$$(sed -n -s 's/^.> |_NUMBER_SIGN:\(.\)|$$/\1/p' Makefile)"
+_set_shell__char_NUMBER_SIGN	= _char_NUMBER_SIGN="$$(sed -n -e 's/^.> |_NUMBER_SIGN:\(.\)|$$/\1/p' Makefile)"
 
 #===========================================================
 #. <!-- ------------------------------------------------ -->

@@ -1041,15 +1041,19 @@ fn_bs_tr_shell_array_create() { ## cSpell:Ignore BS_TRInit_
         \
         'ksh'     'ksh88'     'ksh93'     'ksh2020'     \
         'ksh -r'  'ksh88 -r'  'ksh93 -r'  'ksh2020 -r'  \
+        'rksh'                                          \
         \
-        'mksh'  'lksh'  'mksh -r' \
+        'mksh'    'lksh'      'mksh -r' \
+        \
+        'oksh'      'oksh -r' \
         \
         'bash'      'bash --posix'    \
         'bash -r'   'bash --posix -r' \
         \
         'posh' \
         'qsh'  \
-        'yash' \
+        \
+        'yash'      'yash -o posixlycorrect' \
         \
         'zsh'       'zsh --emulate sh'    \
         'zsh -r'    'zsh --emulate sh -r'

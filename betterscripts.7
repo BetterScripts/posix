@@ -405,6 +405,28 @@ however also provides \f[V]setopt\f[R] which can be tightly scoped to
 set options when required without impacting other platforms.[2]
 .PP
    *   *   *   *   *
+.SS \f[V]BETTER_SCRIPTS_CONFIG_NO_GREP_F\f[R]
+.IP \[bu] 2
+Type: FLAG
+.IP \[bu] 2
+Class: CONSTANT
+.IP \[bu] 2
+Default: <automatic>
+.IP \[bu] 2
+[Disable]/Enable using the non-standard \f[V]fgrep\f[R] instead of
+\f[V]grep -F\f[R].
+.IP \[bu] 2
+\f[I]OFF\f[R]: Use \f[V]grep -F\f[R].
+.IP \[bu] 2
+\f[I]ON\f[R]: Use \f[V]fgrep\f[R].
+.IP \[bu] 2
+Automatically enabled if \f[I]Z Shell\f[R] is detected.
+.IP \[bu] 2
+While \f[V]grep -F\f[R] is standard, it is not always supported -
+implementations that do not support it usually provide the non-standard
+\f[V]fgrep\f[R] instead.
+.PP
+   *   *   *   *   *
 .SS LIBRARY INFORMATION
 .PP
 Each library provides a number of variables that are set by the library
@@ -670,7 +692,7 @@ The use of \f[V]local\f[R] variables (as supported by many shells) will
 .RE
 .SS COMPATIBILITY
 .PP
-The \f[I]Better Scripts POSIX Suite\f[R] is supported in any environment
+The \f[I]BetterScripts POSIX Suite\f[R] is supported in any environment
 that is compatible with the \[lq]command interpretation services and
 common utility programs\[rq] as defined in the \[lq]Shell and
 Utilities\[rq] (https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/idx/xcu.html)
@@ -732,6 +754,23 @@ Additionally, the test harness, while \f[I]POSIX.1\f[R] compliant, may
 require a more capable platform than that of individual libraries.
 Still, if tests run successfully for a specific platform it is likely
 the platform will be fully supported.
+.RS
+.PP
+\f[I]The Suite\f[R] has been tested in multiple operating systems
+including \f[I]Ubuntu\f[R], \f[I]Oracle Solaris\f[R], \f[I]FreeBSD\f[R],
+\f[I]OpenBSD\f[R], and \f[I]Windows Subsystem for Linux\f[R].
+.PP
+Multiple implementations of \[lq]Shells and Utilities\[rq] have also
+been tested including: \f[V]sh\f[R][4], \f[V]bash\f[R],
+\f[V]busybox\f[R], \f[V]dash\f[R], \f[V]ksh88\f[R], \f[V]ksh93\f[R],
+\f[V]mksh\f[R], \f[V]oksh\f[R], \f[V]pdksh\f[R], \f[V]posh\f[R],
+\f[V]yash\f[R], and \f[V]zsh\f[R] (including \[lq]restricted\[rq]
+versions of these shells where known to exist) - all shells are tested
+in \[lq]default\[rq] mode along with any \f[I]POSIX.1\f[R] compatibility
+mode.
+.PP
+Various implementations of utilities have also been tested.
+.RE
 .SS PERFORMANCE
 .IP \[bu] 2
 Libraries have been written to maximize performance without sacrificing
@@ -739,7 +778,7 @@ configurability, safety or utility - with a general philosophy of
 \[lq]you don\[cq]t pay for what you don\[cq]t use\[rq].
 .IP \[bu] 2
 For \f[I]most\f[R] use cases library performance should not be an issue
-and will likely be far outweighed by other factors.[4]
+and will likely be far outweighed by other factors.[5]
 .IP \[bu] 2
 Where library performance \f[I]is\f[R] an issue, configuration of each
 library can have a significant affect on performance.
@@ -759,6 +798,16 @@ Utilities like \f[V]sed\f[R], \f[V]grep\f[R], \f[V]awk\f[R], etc.
 are available in multiple implementations, each of which has it\[cq]s
 own performance characteristics.
 .RE
+.IP \[bu] 2
+Many libraries in \f[I]the Suite\f[R] provide emulated versions of data
+structures that are not normally available.
+These are stored in in a standard shell variable which is manipulated
+using standard utilities or the shell command language.
+\f[B]Performance of these data structures is highly dependent on the
+size of the data stored.\f[R] Although implementation dependent, shells
+tend to be optimized for processing \f[I]short\f[R] strings, with
+strings that may be hundreds or thousands of characters long performance
+can rapidly decrease.
 .SS CAVEATS
 .PP
 The tools and libraries in \f[I]the Suite\f[R] are subject to the
@@ -767,7 +816,7 @@ invoked.
 Each implementation of the required utilities and command execution
 environment will have specific limitations that may be different to
 those in another implementation and may change between versions of the
-same utilities.[5]
+same utilities.[6]
 .PP
 For most use cases it is deemed unlikely that these limitations will be
 an issue, however, there will be cases where some limitations may cause
@@ -870,6 +919,10 @@ Where practicable, \f[I]the Suite\f[R] is intended to support all such
 systems.
 .SS [4]
 .PP
+While \f[V]sh\f[R] is often simply a link to another shell, this is not
+always true - for some platforms it is a unique shell.
+.SS [5]
+.PP
 Initially there was an alternative version of each library which
 excluded as much of the main version as possible, while leaving most
 functionality intact, with the intention being that these versions would
@@ -877,7 +930,7 @@ give the absolute best performance possible.
 This plan was ultimately abandoned as the resulting gains were
 surprisingly small despite the significant reduction in file sizes and
 customization - most of the expensive computation is unavoidable.
-.SS [5]
+.SS [6]
 .PP
 Many of these limitations are specified in the standard, with specific
 constraints, though generally the actual value is \[lq]implementation
