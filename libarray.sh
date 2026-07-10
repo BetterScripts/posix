@@ -1,14 +1,15 @@
 #!/usr/bin/env false
 # SPDX-License-Identifier: MPL-2.0
+## cSpell:Ignore libarray shtoolkit
 #################################### LICENSE ###################################
 #******************************************************************************#
 #*                                                                            *#
 #* BetterScripts 'libarray': Array emulation for POSIX.1 compliant shells.    *#
 #*                                                                            *#
-#* Copyright (c) 2022 BetterScripts ( better.scripts@proton.me,               *#
-#*                                    https://github.com/BetterScripts )      *#
+#* Copyright (c) 2022-2026 BetterScripts ( better.scripts@proton.me,          *#
+#*                         https://github.com/BetterScripts )                 *#
 #*                                                                            *#
-#* This file is part of the BetterScripts POSIX Suite.                        *#
+#* This file is part of the BetterScripts `shtoolkit` (aka _the suite_).      *#
 #*                                                                            *#
 #* This Source Code Form is subject to the terms of the Mozilla Public        *#
 #* License, v. 2.0. If a copy of the MPL was not distributed with this        *#
@@ -19,14 +20,14 @@
 #* ADDENDUM:                                                                  *#
 #*                                                                            *#
 #* In addition to the Mozilla Public License a copy of LICENSE.MD should have *#
-#* been be provided alongside this file; LICENSE.MD clarifies how the Mozilla *#
+#* been provided alongside this file; LICENSE.MD clarifies how the Mozilla    *#
 #* Public License v2.0 applies to this file and MAY confer additional rights. *#
 #*                                                                            *#
 #* Should there be any apparent ambiguity (implied or otherwise) the terms    *#
 #* and conditions from the Mozilla Public License v2.0 shall apply.           *#
 #*                                                                            *#
 #* If a copy of LICENSE.MD was not provided it can be obtained from           *#
-#* https://github.com/BetterScripts/posix/LICENSE.MD.                         *#
+#* https://github.com/BetterScripts/shtoolkit/LICENSE.MD.                     *#
 #*                                                                            *#
 #* NOTE:                                                                      *#
 #*                                                                            *#
@@ -39,8 +40,8 @@
 ################################### LIBARRAY ###################################
 #
 # Documentation is written inline formatted as [`Markdown`][markdown], this is
-# in addition to the suite wide documentation which includes details common to
-# multiple suite libraries that may not be detailed here.
+# in addition to `shtoolkit` general documentation which includes details
+# common to multiple libraries that may not be noted here.
 #
 # The included `Makefile` can be used to generate standalone documentation in
 # various formats with various verbosity settings. The `Makefile` can also be
@@ -48,12 +49,14 @@
 #
 # As far as possible, terminology and conventions follow those of the
 # [_POSIX.1-2008_ Standard][posix_2008].
-#===============================================================================
-## cSpell:Ignore libarray
+#
+################################################################################
+
 ################################ DOCUMENTATION #################################
 #
-#% % libarray(7) BetterScripts | Array emulation for POSIX.1 shells.
+#% % libarray(7) BetterScripts libarray v2.0.0  | Array emulation for POSIX.1 shells.
 #% % BetterScripts (better.scripts@proton.me)
+#% % July 2026
 #
 #: <!-- #################################################################### -->
 #: <!-- ############ THIS FILE WAS GENERATED FROM 'libarray.sh' ############ -->
@@ -67,12 +70,12 @@
 #:
 #: ## SYNOPSIS
 #:
-#: _Full synopsis, description, arguments, examples and other information is
-#:  documented with each individual command._
+#: _Full synopsis, description, arguments, examples and other information is_
+#: _documented with each individual command._
 #:
 #: [`array_value <VALUE>`](#array_value)
 #:
-#: [`array_new [--reverse|--reversed|-r] <ARRAY> [<VALUE>...]`](#array_new)
+#: [`array_new [--reverse|--reversed|-r] [--] <ARRAY> [<VALUE>...]`](#array_new)
 #:
 #: [`array_size <ARRAY> [<OUTPUT>]`](#array_size)
 #:
@@ -82,7 +85,7 @@
 #:
 #: [`array_insert <ARRAY> <INDEX> <VALUE>...`](#array_insert)
 #:
-#: [`array_remove <ARRAY> [<PRIMARY>] <EXPRESSION>`](#array_remove)
+#: [`array_remove <ARRAY> <INDEX>|<RANGE>|<PRIMARY> [<ARGUMENT>]`](#array_remove)
 #:
 #: [`array_push <ARRAY> [<VALUE>...]`](#array_push)
 #:
@@ -104,17 +107,34 @@
 #:
 #: [`array_join <ARRAY> <DELIM> [<OUTPUT>]`](#array_join)
 #:
-#: [`array_split [<ARRAY>] <TEXT> <SEPARATOR>`](#array_split)
+#: [`array_split [<OPTION>] [--] [<ARRAY>] <TEXT> <DELIMITER>`](#array_split)
 #:
 #: [`array_printf <ARRAY> <FORMAT>`](#array_printf)
 #:
-#: [`array_from_path [--all|-a] [<ARRAY>] <DIRECTORY>`](#array_from_path)
+#: [`array_from_path [--all|-a] [--] [<ARRAY>] <PATH>`](#array_from_path)
 #:
 #: [`array_from_find [<ARRAY>] [--] [<ARGUMENT>...]`](#array_from_find)
 #:
-#: [`array_from_find_allow_print <ARRAY> [<DESC>] [--] [<ARGUMENT>...]`](#array_from_find_allow_print)
+#: [`array_from_find_allow_print <ARRAY> [<FD>] [--] [<ARGUMENT>...]`](#array_from_find_allow_print)
 #:
 #: [`array_is_array <ARRAY>`](#array_is_array)
+#:
+#: **_BREAKING CHANGES_**
+#: <!-- ------------- -->
+#:
+#: With `v2.0.0` several breaking changes were introduced:
+#:
+#: - [`array_from_path`](#array_from_path) now requires options precede other
+#:   arguments (previously they could be specified in any order);
+#: - [`array_printf`](#array_printf) no longer writes out anything for empty
+#:   arrays;
+#: - _Pattern Matching_ options have been entirely re-written and in some cases
+#:   will no longer work as they did. This affects
+#:   [`array_remove`](#array_remove), [`array_search`](#array_search),
+#:   [`array_contains`](#array_contains), and [`array_split`](#array_split).
+#:
+#: These changes were necessary to fix several issues, some of which made the
+#: previous implementations impossible to use safely in certain circumstances.
 #:
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
@@ -131,11 +151,12 @@
 #:   the command was completed successfully.
 #: - For any command which is intended to perform a test, an exit status of
 #:   `1` (`<one>`) indicates "false", while `0` (`<zero>`) indicates "true".
-#: - An exit status that is NOT `0` (`<zero>`) from an external command will
+#: - An exit status that is _NOT_ `0` (`<zero>`) from an external command will
 #:   be propagated to the caller where relevant (and possible).
-#: - For any usage error (e.g. an unsupported variable name), the `EX_USAGE`
-#:   error code from [FreeBSD `SYSEXITS(3)`][sysexits] is used.
-#: - Configuration SHOULD NOT change the value of any exit status.
+#: - Exit status' not covered by any of the above use values as described in
+#:   [FreeBSD `SYSEXITS(3)`][sysexits] - including the `EX_USAGE` which is used
+#:   for all usage errors.
+#: - Exit status is configuration agnostic.
 #:
 ################################################################################
 
@@ -173,9 +194,20 @@ case ${BS_LIBARRAY_SOURCED:+1} in 1) return ;; esac
 
 #===============================================================================
 #===============================================================================
+# DEFAULTS
+#===============================================================================
+#===============================================================================
+: "${BS_LIBARRAY_DEBUG:=${BS_DEBUG:-${DEBUG:-0}}}"
+: "${BS_LIBARRAY_CONFIG_DEBUG:=${BS_CONFIG_DEBUG:-${BS_LIBARRAY_DEBUG:-0}}}"
+: "${BS_LIBARRAY_DEBUG_FD:=${BS_DEBUG_FD:-2}}"
+
+#===============================================================================
+#===============================================================================
 #. <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #.
-#. ## INTERNAL CONSTANT HELPER
+#. ## INTERNAL HELPERS
+#.
+#. Low level commands required to implement other parts of the library.
 #.
 #===============================================================================
 #===============================================================================
@@ -190,7 +222,7 @@ case ${BS_LIBARRAY_SOURCED:+1} in 1) return ;; esac
 #. Required because in its default configuration Z Shell's `readonly` causes
 #. problems (due to variable scoping).
 #.
-#. See [`BS_LIBARRAY_CONFIG_NO_Z_SHELL_SETOPT`](#bs_libarray_config_no_z_shell_setopt)
+#. See [`BS_LIBARRAY_CONFIG_NO_Z_SHELL_SETOPT`](#bs_libarray_config_no_z_shell_setopt).
 #.
 #. _SYNOPSIS_
 #. <!-- - -->
@@ -207,11 +239,184 @@ case ${BS_LIBARRAY_SOURCED:+1} in 1) return ;; esac
 #.
 #_______________________________________________________________________________
 fn_bs_libarray_readonly() { ## cSpell:Ignore BS_LA_readonly_
-  case ${c_BS_LIBARRAY_CFG_USE__zsh_setopt} in
+  case ${c_BS_LIBARRAY_CFG__use_zsh_setopt} in
   1) setopt 'LOCAL_OPTIONS' 'POSIX_BUILTINS' ;;
   esac
   readonly "$@" || true
 }
+
+#_______________________________________________________________________________
+#. ---------------------------------------------------------
+#.
+#. ### `fn_bs_libarray_dbg_printf_to_fd`
+#.
+#. Debug output command.
+#.
+#. _SYNOPSIS_
+#. <!-- - -->
+#.
+#.      fn_bs_libarray_dbg_printf_to_fd <ARGS>...
+#.
+#. _ARGUMENTS_
+#. <!-- -- -->
+#.
+#. `ARGS` \[in]
+#.
+#. : Arguments to `printf`.
+#.
+#. _NOTES_
+#. <!-- -->
+#.
+#. - Output is written to the file descriptor stored in
+#.   [`BS_LIBARRAY_DEBUG_FD`](#bs_libarray_debug_fd).
+#.
+#_______________________________________________________________________________
+fn_bs_libarray_dbg_printf_to_fd() { ## cSpell:Ignore BS_LA_DPTFD_
+  # SC2059: Don't use variables in the printf format string.
+  #         Use printf "..%s.." "$foo".
+  # EXCEPT: This is a printf wrapper.
+  # SC2086: Double quote to prevent globbing and word
+  #+        splitting.
+  # EXCEPT: Quoting changes the meaning (under POSIX rules
+  #+        the descriptor will be considered a file)
+  # shellcheck disable=SC2059,SC2086
+  case ${BS_LIBARRAY_DEBUG_FD:-2} in
+  [123456789]) printf "$@" >&  ${BS_LIBARRAY_DEBUG_FD}      ;;
+         '&'*) printf "$@" >&  ${BS_LIBARRAY_DEBUG_FD#'&'}  ;;
+            *) printf "$@" >> "${BS_LIBARRAY_DEBUG_FD#'>'}" ;;
+  esac || true
+}
+
+#_______________________________________________________________________________
+#. ---------------------------------------------------------
+#.
+#. ### `fn_bs_libarray_dbg_msg`
+#.
+#. Debug output command.
+#.
+#. _SYNOPSIS_
+#. <!-- - -->
+#.
+#.      fn_bs_libarray_dbg_msg <CALLER> <MESSAGE>...
+#.
+#. _ARGUMENTS_
+#. <!-- -- -->
+#.
+#. `CALLER` \[in]
+#.
+#. : Name of the calling command.
+#. : Added to the output message.
+#.
+#. `MESSAGE` \[in]
+#.
+#. : Debug message.
+#. : Multiple message values may be specified and
+#.   will be joined into a single string delimited
+#.   by `<space>` characters.
+#.
+#. _NOTES_
+#. <!-- -->
+#.
+#. - A no-op unless debugging is enabled.
+#. - Output is written to the file descriptor stored in
+#.   [`BS_LIBARRAY_DEBUG_FD`](#bs_libarray_debug_fd).
+#.
+#. _IMPLEMENTATION NOTES_
+#. <!-- ------------- -->
+#.
+#. - Avoids using `$*` since `IFS` may not be set appropriately.
+#. - Written for simplicity and not performance.
+#.
+#_______________________________________________________________________________
+fn_bs_libarray_dbg_msg() { ## cSpell:Ignore BS_LA_DM_
+  case ${BS_LIBARRAY_DEBUG:-0} in 0) return ;; esac
+
+  BS_LA_DM_Caller=$1
+  shift
+
+  fn_bs_libarray_dbg_printf_to_fd                \
+    "[libarray::${BS_LA_DM_Caller}]: DEBUG:%s\n" \
+    "$(printf ' %s' "$@")"
+}
+
+#_______________________________________________________________________________
+#. ---------------------------------------------------------
+#.
+#. ### `fn_bs_libarray_config_constant`
+#.
+#. Helper to set configuration variables and report the set value when in
+#. debug mode.
+#.
+#. In non-debug mode, identical to
+#. [`fn_bs_libarray_readonly`](#fn_bs_libarray_readonly).
+#.
+#. _SYNOPSIS_
+#. <!-- - -->
+#.
+#.     fn_bs_libarray_config_constant <VAR>...
+#.
+#. _ARGUMENTS_
+#. <!-- -- -->
+#.
+#. `VAR` \[in]
+#.
+#. : Can be any value accepted by `readonly`.
+#. : Can be specified multiple times.
+#.
+#. _NOTES_
+#. <!-- -->
+#.
+#. - Output is in form `[libarray::config]: DEBUG: <NAME>: <VALUE>` where
+#.   `NAME` is the constant name and `VALUE` its value.
+#. - Output is written to the file descriptor stored in
+#.   [`BS_LIBARRAY_DEBUG_FD`](#bs_libarray_debug_fd).
+#.
+#_______________________________________________________________________________
+fn_bs_libarray_config_constant() { ## cSpell:Ignore BS_LA_CFGCST_
+  case ${BS_LIBARRAY_CONFIG_DEBUG:-0} in
+  0)  ;;
+  *)  for BS_LA_CFGCST_Name
+      do
+        eval "BS_LA_CFGCST_Value=\${${BS_LA_CFGCST_Name}-}" || BS_LA_CFGCST_Value=;
+        fn_bs_libarray_dbg_printf_to_fd              \
+          "[libarray::config]: DEBUG: %s: %s\n"      \
+          "${BS_LA_CFGCST_Name#c_BS_LIBARRAY_CFG__}" \
+          "${BS_LA_CFGCST_Value}"                    || true
+      done ;;
+  esac
+
+  case ${c_BS_LIBARRAY_CFG__use_zsh_setopt} in
+  1) setopt 'LOCAL_OPTIONS' 'POSIX_BUILTINS' ;;
+  esac
+  readonly "$@" || true
+}
+
+#_______________________________________________________________________________
+#. ---------------------------------------------------------
+#.
+#. ### `fn_bs_libarray_print_utf8_fw_A`
+#.
+#. Print the UTF-8 character "Fullwidth Latin Capital
+#. Letter A" (code point `0xEF 0xBC 0xA1`).
+#.
+#. See [`U+FF21`](https://www.compart.com/en/unicode/U+FF21)
+#.
+#. _Used for configuration tests._
+#.
+#. ---------------------------------------------------------
+#.
+#. ### `fn_bs_libarray_print_utf8_fw_a`
+#.
+#. Print the UTF-8 character "Fullwidth Latin Small Letter
+#. A" (code point `0xEF 0xBD 0x81`).
+#.
+#. See [`U+FF41`](https://www.compart.com/en/unicode/U+FF41)
+#.
+#. _Used for configuration tests._
+#.
+#_______________________________________________________________________________
+fn_bs_libarray_print_utf8_fw_A() { echo '' | awk 'BEGIN{ print "\357\274\241" }'; }
+fn_bs_libarray_print_utf8_fw_a() { echo '' | awk 'BEGIN{ print "\357\275\201" }'; }
 
 #===============================================================================
 #===============================================================================
@@ -228,18 +433,18 @@ fn_bs_libarray_readonly() { ## cSpell:Ignore BS_LA_readonly_
 #: In additional to these, there are a number of variables that are set by the
 #: library to convey information outside of command invocation.
 #:
-#: If unset, some variables will take an initial value from a _BetterScripts_
-#: _POSIX Suite_ wide variable, these allow the same configuration to be used by
-#: all libraries in the suite.
+#: If unset, some variables will take an initial value from a common `shtoolkit`
+#: variable applicable to all libraries, these allow the same configuration to
+#: be used across libraries more easily.
 #:
 #: After the library has been sourced, external commands must not set library
-#: environment variables that are classified as CONSTANT. Variables may use
+#: environment variables that are classified as _CONSTANT_. Variables may use
 #: the `readonly` command to enforce this.
 #:
 #: **_If not otherwise specified, an `<unset>` variable is equivalent to the_**
 #: **_default value._**
 #:
-#: _For more details see the common suite [documentation](./README.MD#environment)._
+#: _For more details see the `shtoolkit` general [documentation](./README.MD#environment)._
 #:
 #===============================================================================
 #===============================================================================
@@ -259,8 +464,8 @@ fn_bs_libarray_readonly() { ## cSpell:Ignore BS_LA_readonly_
 #: #### `BS_LIBARRAY_CONFIG_NO_Z_SHELL_SETOPT`
 #:
 #: - Suite:    [`BETTER_SCRIPTS_CONFIG_NO_Z_SHELL_SETOPT`](./README.MD#better_scripts_config_no_z_shell_setopt)
-#: - Type:     FLAG
-#: - Class:    CONSTANT
+#: - Type:     _FLAG_
+#: - Class:    _CONSTANT_
 #: - Default:  \<automatic>
 #: - \[Disable]/Enable using `setopt` in _Z Shell_ to ensure
 #:   _POSIX.1_ like behavior.
@@ -268,17 +473,18 @@ fn_bs_libarray_readonly() { ## cSpell:Ignore BS_LA_readonly_
 #: - Any use of `setopt` is scoped as tightly as possible
 #:   and SHOULD not affect other commands.
 #. - See [`fn_bs_libarray_readonly`](#fn_bs_libarray_readonly).
+#. - **MUST BE SET BEFORE FIRST CALL TO `fn_...readonly`**
 #:
 case ${BS_LIBARRAY_CONFIG_NO_Z_SHELL_SETOPT:-${BETTER_SCRIPTS_CONFIG_NO_Z_SHELL_SETOPT:-A}} in
-A)  case ${ZSH_VERSION:+1} in
-    1) c_BS_LIBARRAY_CFG_USE__zsh_setopt=1 ;;
-    *) c_BS_LIBARRAY_CFG_USE__zsh_setopt=0 ;;
-    esac ;;
-0) c_BS_LIBARRAY_CFG_USE__zsh_setopt=0 ;;
-*) c_BS_LIBARRAY_CFG_USE__zsh_setopt=1 ;;
+[AD]) case ${ZSH_VERSION:+1} in
+      1) c_BS_LIBARRAY_CFG__use_zsh_setopt=1 ;;
+      *) c_BS_LIBARRAY_CFG__use_zsh_setopt=0 ;;
+      esac ;;
+   0) c_BS_LIBARRAY_CFG__use_zsh_setopt=0 ;;
+   *) c_BS_LIBARRAY_CFG__use_zsh_setopt=1 ;;
 esac
 
-fn_bs_libarray_readonly 'c_BS_LIBARRAY_CFG_USE__zsh_setopt'
+fn_bs_libarray_config_constant 'c_BS_LIBARRAY_CFG__use_zsh_setopt'
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #: ---------------------------------------------------------
@@ -286,8 +492,8 @@ fn_bs_libarray_readonly 'c_BS_LIBARRAY_CFG_USE__zsh_setopt'
 #: #### `BS_LIBARRAY_CONFIG_NO_MULTIDIGIT_PARAMETER`
 #:
 #: - Suite:    [`BETTER_SCRIPTS_CONFIG_NO_MULTIDIGIT_PARAMETER`](./README.MD#better_scripts_config_no_multidigit_parameter)
-#: - Type:     FLAG
-#: - Class:    CONSTANT
+#: - Type:     _FLAG_
+#: - Class:    _CONSTANT_
 #: - Default:  \<automatic>
 #: - \[Disable]/Enable using only single digit shell
 #:   parameters, i.e. `$0` to `$9`.
@@ -297,24 +503,25 @@ fn_bs_libarray_readonly 'c_BS_LIBARRAY_CFG_USE__zsh_setopt'
 #:   supported by all implementations.
 #:
 case ${BS_LIBARRAY_CONFIG_NO_MULTIDIGIT_PARAMETER:-${BETTER_SCRIPTS_CONFIG_NO_MULTIDIGIT_PARAMETER:-A}} in
-A)  case $(
-            {
-              set 1 2 3 4 5 6 7 8 9 10 11 12
-              if test "${10}" -eq 10; then
-                echo 'SUCCESS'
-              else
-                echo 'FAILED'
-              fi
-            } 2>&1
-          ) in
-    'SUCCESS') c_BS_LIBARRAY_CFG_USE__multidigit_param=1 ;;
-            *) c_BS_LIBARRAY_CFG_USE__multidigit_param=0 ;;
-    esac ;;
-0)  c_BS_LIBARRAY_CFG_USE__multidigit_param=1 ;;
-*)  c_BS_LIBARRAY_CFG_USE__multidigit_param=0 ;;
+[AD]) case $(
+          {
+            set 1 2 3 4 5 6 7 8 9 10 11 12
+            if test "${10}" -eq 10
+            then
+              echo 'SUCCESS'
+            else
+              echo 'FAILED'
+            fi
+          } 2>&1
+      ) in
+      'SUCCESS') c_BS_LIBARRAY_CFG__use_multidigit_param=1 ;;
+              *) c_BS_LIBARRAY_CFG__use_multidigit_param=0 ;;
+      esac ;;
+   0) c_BS_LIBARRAY_CFG__use_multidigit_param=1 ;;
+   *) c_BS_LIBARRAY_CFG__use_multidigit_param=0 ;;
 esac
 
-fn_bs_libarray_readonly 'c_BS_LIBARRAY_CFG_USE__multidigit_param'
+fn_bs_libarray_config_constant 'c_BS_LIBARRAY_CFG__use_multidigit_param'
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #: ---------------------------------------------------------
@@ -322,8 +529,8 @@ fn_bs_libarray_readonly 'c_BS_LIBARRAY_CFG_USE__multidigit_param'
 #: #### `BS_LIBARRAY_CONFIG_NO_SHIFT_N`
 #:
 #: - Suite:    [`BETTER_SCRIPTS_CONFIG_NO_SHIFT_N`](./README.MD#better_scripts_config_no_shift_n)
-#: - Type:     FLAG
-#: - Class:    CONSTANT
+#: - Type:     _FLAG_
+#: - Class:    _CONSTANT_
 #: - Default:  \<automatic>
 #: - \[Disable]/Enable using only `shift` and not `shift N`
 #:   for multiple parameters.
@@ -333,70 +540,25 @@ fn_bs_libarray_readonly 'c_BS_LIBARRAY_CFG_USE__multidigit_param'
 #:   supported by all implementations
 #:
 case ${BS_LIBARRAY_CONFIG_NO_SHIFT_N:-${BETTER_SCRIPTS_CONFIG_NO_SHIFT_N:-A}} in
-A)  case $(
-            {
-              set 1 2 3 4 5 6 7 8 9 10 11 12
-              if shift 10 && test "$1" -eq 11; then
-                echo 'SUCCESS'
-              else
-                echo 'FAILED'
-              fi
-            } 2>&1
-          ) in
-    'SUCCESS') c_BS_LIBARRAY_CFG_USE__shift_n=1 ;;
-            *) c_BS_LIBARRAY_CFG_USE__shift_n=0 ;;
-    esac ;;
-0)  c_BS_LIBARRAY_CFG_USE__shift_n=1 ;;
-*)  c_BS_LIBARRAY_CFG_USE__shift_n=0 ;;
+[AD]) case $(
+        {
+          set 1 2 3 4 5 6 7 8 9 10 11 12
+          if shift 10 && test "$1" -eq 11
+          then
+            echo 'SUCCESS'
+          else
+            echo 'FAILED'
+          fi
+        } 2>&1
+      ) in
+      'SUCCESS') c_BS_LIBARRAY_CFG__use_shift_n=1 ;;
+              *) c_BS_LIBARRAY_CFG__use_shift_n=0 ;;
+      esac ;;
+   0) c_BS_LIBARRAY_CFG__use_shift_n=1 ;;
+   *) c_BS_LIBARRAY_CFG__use_shift_n=0 ;;
 esac
 
-fn_bs_libarray_readonly 'c_BS_LIBARRAY_CFG_USE__shift_n'
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBARRAY_CONFIG_NO_EXPR_BRE_MATCH`
-#:
-#: - Suite:    [`BETTER_SCRIPTS_CONFIG_NO_EXPR_BRE_MATCH`](./README.MD#better_scripts_config_no_expr_bre_match)
-#: - Type:     FLAG
-#: - Class:    CONSTANT
-#: - Default:  \<automatic>
-#: - \[Disable]/Enable using alternatives to `expr` for
-#:   matching a
-#:   ["Basic Regular Expression (_BRE_)"][posix_bre].
-#: - _OFF_: Use `expr`.
-#: - _ON_: Use an alternative command (i.e. `sed`).
-#: - `expr` is much faster if it works correctly, but
-#:   some implementations make that difficult, while
-#:   `sed` is more robust for this use case.
-#:
-case ${BS_LIBARRAY_CONFIG_NO_EXPR_BRE_MATCH:-${BETTER_SCRIPTS_CONFIG_NO_EXPR_BRE_MATCH:-A}} in
-A)  case $(
-            {
-              # HP-UX 11: Only One \(
-              # QNX 4.25: Exit Status Always 1 If \( Used
-              BS_LA_expr_match1="$(expr 'Test Value' : '\(Te\(st\)\)')" || echo 'FAILED'
-              # QNX 4.25: Failed Match -> Output '0'
-              BS_LA_expr_match2="$(expr 'Test Value' : '\(No Test\)')" && echo 'FAILED'
-              # Tru64: Strips Leading Zeros (string -> number)
-              BS_LA_expr_match3="$(expr '0000000100' : '.*\(.....\)')" || echo 'FAILED'
-              # Mac OS X 10.4: [^-] problems
-              BS_LA_expr_match4="$(expr 'Expr-Test-Successful' : '[^-]*-[^-]*-\(.*\)')" || echo 'FAILED'
-              printf '%s%s %s%% %s\n'         \
-                      "${BS_LA_expr_match1-}" \
-                      "${BS_LA_expr_match2-}" \
-                      "${BS_LA_expr_match3-}" \
-                      "${BS_LA_expr_match4-}"
-            } 2>&1
-          ) in
-    'Test 00100% Successful') c_BS_LIBARRAY_CFG_USE__expr_bre_match=1 ;;
-                           *) c_BS_LIBARRAY_CFG_USE__expr_bre_match=0 ;;
-    esac ;;
-0)  c_BS_LIBARRAY_CFG_USE__expr_bre_match=0 ;;
-*)  c_BS_LIBARRAY_CFG_USE__expr_bre_match=1 ;;
-esac
-
-fn_bs_libarray_readonly 'c_BS_LIBARRAY_CFG_USE__expr_bre_match'
+fn_bs_libarray_config_constant 'c_BS_LIBARRAY_CFG__use_shift_n'
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #: ---------------------------------------------------------
@@ -404,8 +566,8 @@ fn_bs_libarray_readonly 'c_BS_LIBARRAY_CFG_USE__expr_bre_match'
 #: #### `BS_LIBARRAY_CONFIG_NO_DEV_NULL`
 #:
 #: - Suite:    [`BETTER_SCRIPTS_CONFIG_NO_DEV_NULL`](./README.MD#better_scripts_config_no_dev_null)
-#: - Type:     FLAG
-#: - Class:    CONSTANT
+#: - Type:     _FLAG_
+#: - Class:    _CONSTANT_
 #: - Default:  \<automatic>
 #: - \[Disable]/Enable using alternatives to `/dev/null` as
 #:   a redirection source/target (e.g. for output
@@ -420,242 +582,140 @@ fn_bs_libarray_readonly 'c_BS_LIBARRAY_CFG_USE__expr_bre_match'
 #:
 #. _IMPLEMENTATION NOTES_
 #.
+#. - Capturing output is **not** equivalent to redirection
+#.   to `/dev/null` in some cases, specifically, without
+#.   using an additional file descriptor it is not possible
+#.   to _only_ capture `STDERR`.
 #. - An additional subshell is needed here to suppress shell
 #.   error messages when `/dev/null` is not accessible.
 #.
 case ${BS_LIBARRAY_CONFIG_NO_DEV_NULL:-${BETTER_SCRIPTS_CONFIG_NO_DEV_NULL:-A}} in
-A)  case $( ( echo 'TEST' >/dev/null ) 2>&1 && echo 'SUCCESS') in
-    'SUCCESS') c_BS_LIBARRAY_CFG_USE__dev_null=1 ;;
-            *) c_BS_LIBARRAY_CFG_USE__dev_null=0 ;;
-    esac ;;
-0)  c_BS_LIBARRAY_CFG_USE__dev_null=1 ;;
-*)  c_BS_LIBARRAY_CFG_USE__dev_null=0 ;;
+[AD]) case $( ( echo 'TEST' >/dev/null ) 2>&1 && echo 'SUCCESS') in
+      'SUCCESS') c_BS_LIBARRAY_CFG__use_dev_null=1 ;;
+              *) c_BS_LIBARRAY_CFG__use_dev_null=0 ;;
+      esac ;;
+   0) c_BS_LIBARRAY_CFG__use_dev_null=1 ;;
+   *) c_BS_LIBARRAY_CFG__use_dev_null=0 ;;
 esac
 
-fn_bs_libarray_readonly 'c_BS_LIBARRAY_CFG_USE__dev_null'
+fn_bs_libarray_config_constant 'c_BS_LIBARRAY_CFG__use_dev_null'
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #: ---------------------------------------------------------
 #:
-#: #### `BS_LIBARRAY_CONFIG_NO_SED_SLASH_N_NEWLINE`
+#: #### `BS_LIBARRAY_CONFIG_SHELL_SUPPORTS_MBC`
 #:
-#: - Type:     FLAG
-#: - Class:    CONSTANT
+#: - Suite:    [`BETTER_SCRIPTS_CONFIG_SHELL_SUPPORTS_MBC`](./README.MD#better_scripts_config_shell_supports_mbc)
+#: - Type:     _FLAG_
+#: - Class:    _CONSTANT_
 #: - Default:  \<automatic>
-#: - \[Disable]/Enable using `\n` (`<newline>`) as a
-#:   replacement in a `sed` substitution command.
-#: - _OFF_: Use `\n` (`<newline>`) as a replacement.
-#: - _ON_: Avoid `\n` (`<newline>`) as a replacement, this
-#:   requires significantly more work when required.
-#: - Some implementations of `sed` interpret `\n` in the
-#:   replacement portion of a substitution command as a
-#:   literal `n`. Unfortunately there seems to be no
-#:   workaround using just a substitution; using a literal
-#:   `<newline>` simply changes the issue without improving
-#:   things.
+#: - Disable/\[Enable] support for multi-byte character
+#:   processing within the shell itself.
+#: - _OFF_: use fallback code for operations affected.
+#: - _ON_:  use internal shell operations.
+#: - Default is to run tests for the current shell when a
+#:   library is sourced to determine if such support is
+#:   present.
+#: - See
+#:   [`BETTER_SCRIPTS_CONFIG_SHELL_SUPPORTS_MBC`](./README.MD#better_scripts_config_shell_supports_mbc)
+#:   for details.
 #:
-#
-#-----------------------------------------------------------
-# SC2312: Consider invoking this command separately to avoid
-#         masking its return value.
-# EXCEPT: The return value doesn't matter here.
-# shellcheck disable=SC2312
-case ${BS_LIBARRAY_CONFIG_NO_SED_SLASH_N_NEWLINE:-A} in
-A)  if test "_$(echo 'TEST' | sed 's/E/\n/')" = "_$(printf 'T\nST\n')"
-    then
-      c_BS_LIBARRAY_CFG_USE__sed_slash_n=1
-    else
-      c_BS_LIBARRAY_CFG_USE__sed_slash_n=0
-    fi ;;
-0)  c_BS_LIBARRAY_CFG_USE__sed_slash_n=1 ;;
-*)  c_BS_LIBARRAY_CFG_USE__sed_slash_n=0 ;;
+case ${BS_LIBARRAY_CONFIG_SHELL_SUPPORTS_MBC:-${BETTER_SCRIPTS_CONFIG_SHELL_SUPPORTS_MBC:-A}} in
+[AD]) case ${LC_ALL:-${LC_CTYPE:-${LANG:-C}}} in
+      C|POSIX)  c_BS_LIBARRAY_CFG__shell_supports_mbc=0 ;;
+            *)  if i_BS_LIBARRAY__utf8_char=$(fn_bs_libarray_print_utf8_fw_A 2>&1)
+                then
+                  case ${i_BS_LIBARRAY__utf8_char}:${i_BS_LIBARRAY__utf8_char} in
+                  [${i_BS_LIBARRAY__utf8_char}]:?) c_BS_LIBARRAY_CFG__shell_supports_mbc=1 ;;
+                                                *) c_BS_LIBARRAY_CFG__shell_supports_mbc=0 ;;
+                  esac
+                else
+                  c_BS_LIBARRAY_CFG__shell_supports_mbc=0
+                fi
+                unset i_BS_LIBARRAY__utf8_char ;;
+      esac ;;
+   0) c_BS_LIBARRAY_CFG__shell_supports_mbc=0 ;;
+   *) c_BS_LIBARRAY_CFG__shell_supports_mbc=1 ;;
 esac
 
-fn_bs_libarray_readonly 'c_BS_LIBARRAY_CFG_USE__sed_slash_n'
-
-#===========================================================
-#===========================================================
-#: <!-- ------------------------------------------------ -->
-#:
-#: ### USER PREFERENCE
-#:
-#. _IMPLEMENTATION NOTES_
-#. <!-- ------------- -->
-#.
-#. - User set configuration options that are in the constant
-#.   CLASS are converted to internal options which are made
-#.   read-only. This happens even when the user option could
-#.   be used directly. This allows the user to reuse the
-#.   option if desired, and also avoids any manipulation of
-#.   variables set externally.
-#.
-#===========================================================
-#===========================================================
+fn_bs_libarray_config_constant 'c_BS_LIBARRAY_CFG__shell_supports_mbc'
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #: ---------------------------------------------------------
 #:
-#: #### `BS_LIBARRAY_CONFIG_QUIET_ERRORS`
+#: #### `BS_LIBARRAY_CONFIG_SHELL_SUPPORTS_PORTABLE_GLOB`
 #:
-#: - Suite:    [`BETTER_SCRIPTS_CONFIG_QUIET_ERRORS`](./README.MD#better_scripts_config_quiet_errors)
-#: - Type:     FLAG
-#: - Class:    VARIABLE
-#: - Default:  _OFF_
-#: - \[Enable]/Disable library error message output.
-#: - _OFF_: error messages will be written to `STDERR` as:
-#:   `[libarray::<COMMAND>]: ERROR: <MESSAGE>`.
-#: - _ON_: library error messages will be suppressed.
-#: - The most recent error message is always available in
-#:   [`BS_LIBARRAY_LAST_ERROR`](#bs_libarray_last_error)
-#:   even when error output is suppressed.
-#: - Both the library version of this option and the
-#:   suite version can be modified between command
-#:   invocations and will affect the next command.
-#: - Does NOT affect errors from non-library commands, which
-#:   _may_ still produce output.
+#: - Suite:    [`BETTER_SCRIPTS_CONFIG_SHELL_SUPPORTS_PORTABLE_GLOB`](./README.MD#better_scripts_config_shell_supports_portable_glob)
+#: - Type:     _FLAG_
+#: - Class:    _CONSTANT_
+#: - Default:  \<automatic>
+#: - Disable/\[Enable] glob/wildcard pattern
+#:   matching even if the pattern contains known problematic characters.
+#: - _OFF_: use fallback code for patterns that contain problem characters.
+#: - _ON_:  use shell pattern matching.
+#: - Default is to run tests for the current shell when a library is sourced to
+#:   determine if the current shell supports these as expected or not.
+#: - See
+#:   [`BETTER_SCRIPTS_CONFIG_SHELL_SUPPORTS_PORTABLE_GLOB`](./README.MD#better_scripts_config_shell_supports_portable_glob)
+#:   for details.
 #:
+#---------------------------------------------------------
+# SC2295: Expansions inside ${..} need to be quoted
+#         separately, otherwise they will match as a
+#         pattern.
+# EXCEPT: Want globbing to happen here.
+# shellcheck disable=SC2295
+case ${BS_LIBARRAY_CONFIG_SHELL_SUPPORTS_PORTABLE_GLOB:-${BETTER_SCRIPTS_CONFIG_SHELL_SUPPORTS_PORTABLE_GLOB:-A}} in
+[AD]) case $(
+        {
+          if [ "${c_BS_LIBARRAY_CFG__use_zsh_setopt}" = 1 ]
+          then
+            setopt  'LOCAL_OPTIONS' 'SH_FILE_EXPANSION' \
+                    'SH_GLOB' 'GLOB_SUBST' 'NONOMATCH'
+          fi
+
+          i_BS_LIBARRAY_Test='\[a\((t)est*\string?'
+          i_BS_LIBARRAY_Glob='\\\[a\\\((t)est\*\\string\?'
+          i_BS_LIBARRAY_Test=${i_BS_LIBARRAY_Test##${i_BS_LIBARRAY_Glob}}
+          printf '%s\n' "${i_BS_LIBARRAY_Test:-SUCCESS}"
+        } 2>&1
+      ) in
+      'SUCCESS') c_BS_LIBARRAY_CFG__full_glob_support=1 ;;
+              *) c_BS_LIBARRAY_CFG__full_glob_support=0 ;;
+      esac ;;
+   0) c_BS_LIBARRAY_CFG__full_glob_support=0 ;;
+   *) c_BS_LIBARRAY_CFG__full_glob_support=1 ;;
+esac
+
+fn_bs_libarray_config_constant 'c_BS_LIBARRAY_CFG__full_glob_support'
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #: ---------------------------------------------------------
 #:
-#: #### `BS_LIBARRAY_CONFIG_FATAL_ERRORS`
+#: #### `BS_LIBARRAY_CONFIG_NO_GREP_E`
 #:
-#: - Suite:    [`BETTER_SCRIPTS_CONFIG_FATAL_ERRORS`](./README.MD#better_scripts_config_fatal_errors)
-#: - Type:     FLAG
-#: - Class:    VARIABLE
-#: - Default:  _OFF_
-#: - Enable/\[Disable] causing library errors to terminate
-#:   the current (sub-)shell.
-#: - _OFF_: errors stop any further processing, and cause a
-#:   non-zero exit status, but do not cause an exception.
-#: - _ON_: any library error will cause an "unset variable"
-#:   shell exception using the
-#:   [`${parameter:?[word]}`][posix_param_expansion]
-#:   parameter expansion, where `word` is set to an error
-#:   message that _should_ be displayed by the shell (this
-#:   message is NOT suppressed by
-#:   [`BS_LIBARRAY_CONFIG_QUIET_ERRORS`](#bs_libarray_config_quiet_errors)).
-#: - Both the library version of this option and the
-#:   suite version can be modified between command
-#:   invocations and will affect the next command.
+#: - Suite:    [`BETTER_SCRIPTS_CONFIG_NO_GREP_E`](./README.MD#better_scripts_config_no_grep_e)
+#: - Type:     _FLAG_
+#: - Class:    _CONSTANT_
+#: - Default:  \<automatic>
+#: - \[Disable]/Enable using the non-standard `egrep`
+#:   instead of `grep -E`.
+#: - _OFF_: Use `grep -E`.
+#: - _ON_: Use `egrep`.
+#: - While `grep -E` is standard, it is not always available
+#:   but in the cases it is not `egrep` often is and
+#:   provides the required functionality.
 #:
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBARRAY_CONFIG_START_INDEX_ONE`
-#:
-#: - Type:     FLAG
-#: - Class:    CONSTANT
-#: - Default:  _OFF_
-#: - Enable/\[Disable] one-based indexing.
-#: - _OFF_: use `0` (`<zero>`)  based array indexes (i.e.
-#:   in the range `[0, size)`).
-#: - _ON_:  use `1` (`<one>`) based array indexes (i.e.
-#:   in the range `[1, size]`).
-#: - Only affects commands that use indexes, i.e.
-#:   [`array_get`](#array_get),
-#:   [`array_set`](#array_set),
-#:   [`array_remove`](#array_remove),
-#:   [`array_insert`](#array_insert),
-#:   and [`array_slice`](#array_slice)
-#: - Negative indexes are **not** affected `-1` is
-#:   **always** the last element in the array.
-#:
-case ${BS_LIBARRAY_CONFIG_START_INDEX_ONE:-0} in
-0) c_BS_LIBARRAY_CFG__StartIndex=0 ;;
-*) c_BS_LIBARRAY_CFG__StartIndex=1 ;;
+case ${BS_LIBARRAY_CONFIG_NO_GREP_E:-${BETTER_SCRIPTS_CONFIG_NO_GREP_E:-A}} in
+[AD]) case $(printf '(TEST*EXTENDED)\n' | grep -E -e '\(TEST[*_%.](EXTENDED|CONTRACTED){1,}\)' 2>&1 || echo 'FAILED') in
+      '(TEST*EXTENDED)') c_BS_LIBARRAY_CFG__use_grep_E=1 ;;
+                      *) c_BS_LIBARRAY_CFG__use_grep_E=0 ;;
+      esac ;;
+   0) c_BS_LIBARRAY_CFG__use_grep_E=0 ;;
+   *) c_BS_LIBARRAY_CFG__use_grep_E=1 ;;
 esac
 
-fn_bs_libarray_readonly 'c_BS_LIBARRAY_CFG__StartIndex'
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1`
-#:
-#: - Type:     TEXT
-#: - Class:    CONSTANT
-#: - Default:  3
-#: - Used by
-#:   [`array_from_find_allow_print`](#array_from_find_allow_print)
-#:   as the first of two file descriptors to use to redirect
-#:   output.
-#: - MUST be a single digit integer in the range \[3,9]
-#:   (the standard allows for multiple digit file
-#:   descriptors, but only _requires_ (and most
-#:   implementations only support) single digits)
-#: - When the given descriptor is used if it is already
-#:   in use with a previous (non-library) command this
-#:   _will_ cause errors.
-#: - MUST be different to
-#:   [`BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2`](#bs_libarray_config_find_redirect_fd_2)
-#: - An invalid value will cause a fatal error while
-#:   **sourcing**.
-#:
-case ${BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1:+1} in
-1)  case ${BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1} in
-    [3456789]) : ;;
-    *) BS_LIBARRAY__ConfigError=;
-      : "${BS_LIBARRAY__ConfigError:?"[libarray]: CONFIG ERROR: BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1 '${BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1}' must be an integer > 2."}" ;;
-    esac
-    c_BS_LIBARRAY_CFG__find_fd_1="${BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1}" ;;
-*)  c_BS_LIBARRAY_CFG__find_fd_1=3 ;;
-esac
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2`
-#:
-#: - Type:     TEXT
-#: - Class:    CONSTANT
-#: - Default:  4
-#: - Used by
-#:   [`array_from_find_allow_print`](#array_from_find_allow_print)
-#:   as the second of two file descriptors to use to
-#:   redirect output.
-#: - MUST be a single digit integer in the range \[3,9]
-#:   (the standard allows for multiple digit file
-#:   descriptors, but only _requires_ (and most
-#:   implementations only support) single digits)
-#: - When the given descriptor is used if it is already
-#:   in use with a previous (non-library) command this
-#:   _will_ cause errors.
-#: - MUST be different to
-#:   [`BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1`](#bs_libarray_config_find_redirect_fd_1)
-#: - An invalid value will cause a fatal error while
-#:   **sourcing**.
-#:
-case ${BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2:+1} in
-1)  case ${BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2} in
-    [3456789]) : ;;
-    *) BS_LIBARRAY__ConfigError=;
-      : "${BS_LIBARRAY__ConfigError:?"[libarray]: CONFIG ERROR: BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2 '${BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2}' must be an integer > 2."}" ;;
-    esac
-    c_BS_LIBARRAY_CFG__find_fd_2="${BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2}" ;;
-*)  # FD_2 = FD_1 + 1, but kept in set [3456789] so that 10->3:
-    #    - 3   ->  shift to range [0,7]
-    #    + 1   ->  increment
-    #    % 7   ->  wrap
-    #    + 3   ->  shift to range [3,9]
-    #
-    # FD_2 = (((FD_1 - 3) + 1) % 7 + 3)
-    c_BS_LIBARRAY_CFG__find_fd_2=$(( ( (c_BS_LIBARRAY_CFG__find_fd_1 - 2) % 7) + 3 ))
-esac
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Check
-# [`BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1`](#bs_libarray_config_find_redirect_fd_1)
-# is different to
-# [`BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2`](#bs_libarray_config_find_redirect_fd_2)
-case $((c_BS_LIBARRAY_CFG__find_fd_1 - c_BS_LIBARRAY_CFG__find_fd_2)) in
-0) BS_LIBARRAY__ConfigError=;
-   : "${BS_LIBARRAY__ConfigError:?"[libarray]: CONFIG ERROR: BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1 '${c_BS_LIBARRAY_CFG__find_fd_1}' and BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2 '${c_BS_LIBARRAY_CFG__find_fd_2}' must be different."}" ;;
-esac
-
-fn_bs_libarray_readonly 'c_BS_LIBARRAY_CFG__find_fd_1' \
-                        'c_BS_LIBARRAY_CFG__find_fd_2'
+fn_bs_libarray_config_constant 'c_BS_LIBARRAY_CFG__use_grep_E'
 
 #===========================================================
 #===========================================================
@@ -714,8 +774,8 @@ fn_bs_libarray_readonly 'c_BS_LIBARRAY_CFG__find_fd_1' \
 #: - Possible values include 'alpha', 'beta', 'rc',
 #:   etc, (a numerical suffix may also be appended).
 #:
-  BS_LIBARRAY_VERSION_MAJOR=1
-  BS_LIBARRAY_VERSION_MINOR=2
+  BS_LIBARRAY_VERSION_MAJOR=2
+  BS_LIBARRAY_VERSION_MINOR=0
   BS_LIBARRAY_VERSION_PATCH=0
 BS_LIBARRAY_VERSION_RELEASE=;
 
@@ -739,10 +799,10 @@ fn_bs_libarray_readonly 'BS_LIBARRAY_VERSION_MAJOR'   \
 #:   `NNN` is the `MINOR` version (3 digit, zero padded),
 #:   and `PPP` is the `PATCH` version (3 digit, zero padded).
 #:
-BS_LIBARRAY_VERSION_FULL=$(( \
+BS_LIBARRAY_VERSION_FULL=$((\
     ( (BS_LIBARRAY_VERSION_MAJOR * 1000) + BS_LIBARRAY_VERSION_MINOR ) * 1000 \
     + BS_LIBARRAY_VERSION_PATCH \
-  ))
+ ))
 
 fn_bs_libarray_readonly 'BS_LIBARRAY_VERSION_FULL'
 
@@ -764,15 +824,275 @@ fn_bs_libarray_readonly 'BS_LIBARRAY_VERSION_FULL'
 #:   from the BetterScripts versions. (This information
 #:   should precede the version number.)
 #:
-BS_LIBARRAY_VERSION="$(
+BS_LIBARRAY_VERSION=$(
     printf "BetterScripts 'libarray' v%d.%d.%d%s\n" \
            "${BS_LIBARRAY_VERSION_MAJOR}"           \
            "${BS_LIBARRAY_VERSION_MINOR}"           \
            "${BS_LIBARRAY_VERSION_PATCH}"           \
            "${BS_LIBARRAY_VERSION_RELEASE:+-${BS_LIBARRAY_VERSION_RELEASE}}"
-  )"
+  )
 
 fn_bs_libarray_readonly 'BS_LIBARRAY_VERSION'
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBARRAY_LAST_ERROR`
+#:
+#: - Stores the error message of the most recent error.
+#: - ONLY valid immediately following a command for which
+#:   the exit status is not `0` (`<zero>`).
+#: - Available even when error output is suppressed.
+#:
+BS_LIBARRAY_LAST_ERROR=; #< CLEAR ON SOURCING
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBARRAY_SOURCED`
+#:
+#: - Set (and non-null) once the library has been sourced.
+#: - Dependant scripts can query if this variable is set to
+#:   determine if this file has been sourced.
+#. - Used as a script guard on script sourcing
+#. - Only set at end of script (once script is
+#.   successfully sourced).
+#:
+
+#===========================================================
+#===========================================================
+#: <!-- ------------------------------------------------ -->
+#:
+#: ### USER PREFERENCE
+#:
+#. _IMPLEMENTATION NOTES_
+#. <!-- ------------- -->
+#.
+#. - User set configuration options that are in the constant
+#.   CLASS are converted to internal options which are made
+#.   read-only. This happens even when the user option could
+#.   be used directly. This allows the user to reuse the
+#.   option if desired, and also avoids any manipulation of
+#.   variables set externally.
+#.
+#===========================================================
+#===========================================================
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBARRAY_CONFIG_QUIET_ERRORS`
+#:
+#: - Suite:    [`BETTER_SCRIPTS_CONFIG_QUIET_ERRORS`](./README.MD#better_scripts_config_quiet_errors)
+#: - Type:     _FLAG_
+#: - Class:    _VARIABLE_
+#: - Default:  _OFF_
+#: - \[Enable]/Disable library error message output.
+#: - _OFF_: error messages will be written to `STDERR` as:
+#:   `[libarray::<COMMAND>]: ERROR: <MESSAGE>`.
+#: - _ON_: library error messages will be suppressed.
+#: - The most recent error message is always available in
+#:   [`BS_LIBARRAY_LAST_ERROR`](#bs_libarray_last_error)
+#:   even when error output is suppressed.
+#: - Both the library version of this option and the
+#:   suite version can be modified between command
+#:   invocations and will affect the next command.
+#: - Does NOT affect errors from non-library commands, which
+#:   _may_ still produce output.
+#:
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBARRAY_CONFIG_FATAL_ERRORS`
+#:
+#: - Suite:    [`BETTER_SCRIPTS_CONFIG_FATAL_ERRORS`](./README.MD#better_scripts_config_fatal_errors)
+#: - Type:     _FLAG_
+#: - Class:    _VARIABLE_
+#: - Default:  _OFF_
+#: - Enable/\[Disable] causing library errors to terminate
+#:   the current (sub-)shell.
+#: - _OFF_: errors stop any further processing, and cause a
+#:   non-zero exit status, but do not cause an exception.
+#: - _ON_: any library error will cause an "unset variable"
+#:   shell exception using the
+#:   [`${parameter:?[word]}`][posix_param_expansion]
+#:   parameter expansion, where `word` is set to an error
+#:   message that _should_ be displayed by the shell (this
+#:   message is NOT suppressed by
+#:   [`BS_LIBARRAY_CONFIG_QUIET_ERRORS`](#bs_libarray_config_quiet_errors)).
+#: - Both the library version of this option and the
+#:   suite version can be modified between command
+#:   invocations and will affect the next command.
+#:
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBARRAY_CONFIG_START_INDEX_ONE`
+#:
+#: - Type:     _FLAG_
+#: - Class:    _CONSTANT_
+#: - Default:  _OFF_
+#: - Enable/\[Disable] one-based indexing.
+#: - _OFF_: use `0` (`<zero>`)  based array indexes (i.e.
+#:   in the range `[0, size)`).
+#: - _ON_:  use `1` (`<one>`) based array indexes (i.e.
+#:   in the range `[1, size]`).
+#: - Only affects commands that use indexes, i.e.
+#:   [`array_get`](#array_get),
+#:   [`array_set`](#array_set),
+#:   [`array_remove`](#array_remove),
+#:   [`array_insert`](#array_insert),
+#:   and [`array_slice`](#array_slice)
+#: - Negative indexes are **not** affected `-1` is
+#:   **always** the last element in the array.
+#:
+case ${BS_LIBARRAY_CONFIG_START_INDEX_ONE:-0} in
+0) c_BS_LIBARRAY_CFG__start_index=0 ;;
+*) c_BS_LIBARRAY_CFG__start_index=1 ;;
+esac
+
+fn_bs_libarray_config_constant 'c_BS_LIBARRAY_CFG__start_index'
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1`
+#:
+#: - Type:     _TEXT_
+#: - Class:    _CONSTANT_
+#: - Default:  3
+#: - Used by
+#:   [`array_from_find_allow_print`](#array_from_find_allow_print)
+#:   as the first of two file descriptors to use to redirect
+#:   output.
+#: - MUST be a single digit integer in the range \[3,9]
+#:   (the standard allows for multiple digit file
+#:   descriptors, but only _requires_ (and most
+#:   implementations only support) single digits)
+#: - When the given descriptor is used if it is already
+#:   in use with a previous (non-library) command this
+#:   _will_ cause errors.
+#: - MUST be different to
+#:   [`BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2`](#bs_libarray_config_find_redirect_fd_2)
+#: - An invalid value will cause a fatal error while
+#:   **sourcing**.
+#:
+case ${BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1:+1} in
+1)  case ${BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1} in
+    [3456789]) : ;;
+    *)  BS_LIBARRAY__ConfigError=;
+        : "${BS_LIBARRAY__ConfigError:?'[libarray]: Config Error: BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1 must be an integer greater than 2.'}" ;;
+    esac
+    c_BS_LIBARRAY_CFG__find_fd_1=${BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1} ;;
+*)  c_BS_LIBARRAY_CFG__find_fd_1=3 ;;
+esac
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2`
+#:
+#: - Type:     _TEXT_
+#: - Class:    _CONSTANT_
+#: - Default:  4
+#: - Used by
+#:   [`array_from_find_allow_print`](#array_from_find_allow_print)
+#:   as the second of two file descriptors to use to
+#:   redirect output.
+#: - MUST be a single digit integer in the range \[3,9]
+#:   (the standard allows for multiple digit file
+#:   descriptors, but only _requires_ (and most
+#:   implementations only support) single digits)
+#: - When the given descriptor is used if it is already
+#:   in use with a previous (non-library) command this
+#:   _will_ cause errors.
+#: - MUST be different to
+#:   [`BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1`](#bs_libarray_config_find_redirect_fd_1)
+#: - An invalid value will cause a fatal error while
+#:   **sourcing**.
+#:
+case ${BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2:+1} in
+1)  case ${BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2} in
+    [3456789]) : ;;
+    *)   BS_LIBARRAY__ConfigError=;
+        : "${BS_LIBARRAY__ConfigError:?'[libarray]: Config Error: BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2 must be an integer greater than 2.'}" ;;
+    esac
+    c_BS_LIBARRAY_CFG__find_fd_2=${BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2} ;;
+*)  # FD_2 = FD_1 + 1, but kept in set [3456789] so that 10->3:
+    #    - 3   ->  shift to range [0,7]
+    #    + 1   ->  increment
+    #    % 7   ->  wrap
+    #    + 3   ->  shift to range [3,9]
+    #
+    # FD_2 = (((FD_1 - 3) + 1) % 7 + 3)
+    c_BS_LIBARRAY_CFG__find_fd_2=$((( (c_BS_LIBARRAY_CFG__find_fd_1 - 2) % 7) + 3))
+esac
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Check
+# [`BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1`](#bs_libarray_config_find_redirect_fd_1)
+# is different to
+# [`BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2`](#bs_libarray_config_find_redirect_fd_2)
+case $((c_BS_LIBARRAY_CFG__find_fd_1 - c_BS_LIBARRAY_CFG__find_fd_2)) in
+0)  BS_LIBARRAY__ConfigError=;
+    : "${BS_LIBARRAY__ConfigError:?'[libarray]: Config Error: BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_1 and BS_LIBARRAY_CONFIG_FIND_REDIRECT_FD_2 must be different.'}" ;;
+esac
+
+fn_bs_libarray_config_constant 'c_BS_LIBARRAY_CFG__find_fd_1' \
+                               'c_BS_LIBARRAY_CFG__find_fd_2'
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBARRAY_CONFIG_NO_AWK_ARGV`
+#:
+#: - Suite:    [`BETTER_SCRIPTS_CONFIG_NO_AWK_ARGV`](./README.MD#better_scripts_config_no_awk_argv)
+#: - Type:     _FLAG_
+#: - Class:    _VARIABLE_
+#: - Default:  `0` (Use `awk` `ARGV`)
+#: - Disable/\[Enable] using `ARGV` within `awk` - enabling
+#:   gives significantly better performance, but is subject
+#:   to some limitations.
+#: - _OFF_: Use `ARGV` within `awk`.
+#: - _ON_: Avoid `ARGV` within `awk`.
+#: - When _ON_ `ARGV` will be used whenever appropriate, if
+#:   this fails (likely due one of the limitations), the
+#:   code for the _OFF_ condition will be used to get the
+#:   required results. This comes with a small cost as the
+#:   `ARGV` code must first be run and fail (although this
+#:   should be relatively fast, it does have an impact).
+#: - This is _not_ autodetected as the point is not to test
+#:   if `ARGV` is available (it is assumed to be), but
+#:   if it should be used for performance reasons. There is
+#:   no real way to test this it will be system and data
+#:   specific.
+#:
+#. _IMPLEMENTATION NOTES_
+#.
+#. - The primary limitation for using `ARGV` is the Command
+#.   Line Length limit. As this can be queried using
+#.   `getconf ARG_MAX` it would be possible to implement
+#.   conditional usage of `ARGV`, however, this is not the
+#.   only limitation - the Linux Kernel imposes an
+#.   additional limitation `MAX_ARG_STRLEN` which defines
+#.   the maximum size of any single argument. Unfortunately
+#.   this value is not standard, (far) easier to hit, (far)
+#.   harder to deal with, and _not_ queryable. Ultimately,
+#.   the Linux version of code this controls would always
+#.   likely work the way the current code does, while other
+#.   systems might have different possible options.
+#.
+
+#===========================================================
+#===========================================================
+#: <!-- ------------------------------------------------ -->
+#:
+#: ### EXTERNAL CONSTANTS
+#:
+#===========================================================
+#===========================================================
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #: ---------------------------------------------------------
@@ -790,6 +1110,9 @@ fn_bs_libarray_readonly 'BS_LIBARRAY_VERSION'
 #:         BS_LIBARRAY_SH_TO_ARRAY -- '{}' '+'
 #:       echo ' ' #< This is required
 #:
+#: - Passing `BS_LIBARRAY_SH_TO_ARRAY` as the first argument
+#:   to the script is not required, however it is useful to
+#:   avoid accidentally setting `$0`.
 #: - The array MUST have whitespace appended once it is
 #:   generated or it will fail to work as expected.
 #: - _POSIX.1_ specifies that the first argument following
@@ -819,6 +1142,7 @@ fn_bs_libarray_readonly 'BS_LIBARRAY_VERSION'
 BS_LIBARRAY_SH_TO_ARRAY='
   {
     case ${1-} in "BS_LIBARRAY_SH_TO_ARRAY") shift ;; esac
+    case ${1-} in --) shift ;; esac
     for BS_LIBARRAY_PARAM
     do
       case ${BS_LIBARRAY_PARAM} in
@@ -836,31 +1160,6 @@ BS_LIBARRAY_SH_TO_ARRAY='
 '
 
 fn_bs_libarray_readonly 'BS_LIBARRAY_SH_TO_ARRAY'
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBARRAY_LAST_ERROR`
-#:
-#: - Stores the error message of the most recent error.
-#: - ONLY valid immediately following a command for which
-#:   the exit status is not `0` (`<zero>`).
-#: - Available even when error output is suppressed.
-#:
-BS_LIBARRAY_LAST_ERROR=; #< CLEAR ON SOURCING
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBARRAY_SOURCED`
-#:
-#: - Set (and non-null) once the library has been sourced.
-#: - Dependant scripts can query if this variable is set to
-#:   determine if this file has been sourced.
-#. - Used as a script guard on script sourcing
-#. - Only set at end of script (once script is
-#.   successfully sourced).
-#:
 
 #===========================================================
 #===========================================================
@@ -903,56 +1202,198 @@ fn_bs_libarray_readonly 'c_BS_LIBARRAY__EX_USAGE'
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #. <!-- ................................................ -->
 #.
-#. #### `c_BS_LIBARRAY__sed_sort_unescape`
+#. #### `c_BS_LIBARRAY__awk_fn__array_print`
 #.
-#. - The script used with `sed` in
-#.   [`array_sort`](#array_sort) to undo the escaping that
-#.   is needed for `sort` to be able to act on the array.
-#. - When `\n` can be used in a substitution command
-#.   replacement the script is simple, when this is not
-#.   possible the script makes use of the `sed` "hold space"
-#.   and iterates over input, effectively splitting it in to
-#.   segments where each requires a trailing `<newline>`.
+#. - An `awk` code snippet that defines a function that
+#.   creates a `libarray.sh` style array value from a
+#.   given value.
+#. - Array value is output to `STDOUT` as a single array
+#.   element.
 #.
 #. _IMPLEMENTATION NOTES_
 #.
-#. - `sed` matches are always "greedy", which can cause
-#.   unexpected issues when trying to split a line into
-#.   multiple sections - it is very easy to accidentally
-#.   lose data.
-#. - Some versions of `sed` (e.g. Solaris, FreeBSD, OpenBSD):
-#.   - require short names for `sed` branch labels
-#.   - characters following branch labels will become part
-#.     of the branch label, when other implementations will
-#.     parse them as expected. For example, opening a block
-#.     on the same line as the label (using `{`) will be
-#.     instead interpreted as part of the label.
+#. - `awk` is used in a number of different places where
+#.   it performs different tasks, but often requires similar
+#.   tools to accomplish these tasks. The easiest way to
+#.   avoid code repetition is to have functions defined in
+#.   code snippets that can be included in the scripts that
+#.   use them (via parameter expansion).
 #.
-case ${c_BS_LIBARRAY_CFG_USE__sed_slash_n:-0} in
-  1)  c_BS_LIBARRAY__sed_sort_unescape="
-        s/'/'\\\\''/g
-        s/^/'/
-        s/\$/' \\\\/
-        s/ \\\\n/\n/g
-        s/\\\\\\\\/\\\\/g" ;;
+#. ##### `bs_fn_array_print`
+#.
+#. Print a `libarray.sh` style array value from `awk`.
+#.
+#. _SYNOPSIS_
+#. <!-- - -->
+#.
+#.      bs_fn_array_print(<VALUE>)
+#.
+#. _ARGUMENTS_
+#. <!-- -- -->
+#.
+#. `VALUE` \[in]
+#.
+#. : Value to convert into an array value.
+#. : Can be null.
+#. : Can contain any arbitrary text excluding any
+#.   embedded `\0` (`<NUL>`) characters.
+#.
+c_BS_LIBARRAY__awk_fn__array_print="
+  function bs_fn_array_print(strValue) {
+    gsub(\"'\", \"'\\\\''\", strValue)
+    printf(\"'%s' \\\\\n\", strValue)
+  }
+"
 
-  0)  c_BS_LIBARRAY__sed_sort_unescape="
-        s/'/'\\\\''/g
-        s/^/'/
-        s/\$/' \\\\/
-        :LOOP
-          / \\\\n/{
-            h
-            s/^.* \\\\n\(.*\)$/\1/
-            x
-            s/^\(.*\) \\\\n.*$/\1/
-            G
-            / \\\\n/b LOOP
+fn_bs_libarray_readonly 'c_BS_LIBARRAY__awk_fn__array_print'
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#. <!-- ................................................ -->
+#.
+#. #### `c_BS_LIBARRAY__awk_fn__glob_to_ere`
+#.
+#. - An `awk` code snippet that defines a function that
+#.   converts a _Wildcard_ pattern to an
+#.   _Extended Regular Expression_ (_ERE_).
+#. - There are a number of cases when a _Wildcard_ pattern
+#.   will not work as expected - including shell support for
+#.   certain characters, and locale issues. This is used
+#.   when any of these cases is detected.
+#.
+#. _IMPLEMENTATION NOTES_
+#.
+#. - It always seems like converting one form of pattern
+#.   matching expression to another form _should_ be
+#.   relatively easy, however, there are many pitfalls and
+#.   edge cases that cause this not to be true. `awk` and
+#.   _ERE_ may seem somewhat like overkill, but alternatives
+#.   do not work (e.g. `sed`), or are significantly more
+#.   complex and prone to further portability issues (e.g.
+#.   processing using the shell). Ultimately `awk` is easier
+#.   and safer to do what is required.
+#.
+#. ##### `bs_fn_glob_to_ere`
+#.
+#. Convert a _Wildcard_ pattern to an _ERE_.
+#.
+#. _SYNOPSIS_
+#. <!-- - -->
+#.
+#.      <VARIABLE>=bs_fn_glob_to_ere(<WILDCARD>)
+#.
+#. _ARGUMENTS_
+#. <!-- -- -->
+#.
+#. `WILDCARD` \[in]
+#.
+#. : _Wildcard_ pattern to convert into an _ERE_.
+#. : Can be null.
+#. : Can contain any arbitrary text excluding any
+#.   embedded `\0` (`<NUL>`) characters.
+#.
+#. _IMPLEMENTATION NOTES_
+#. <!-- ------------- -->
+#.
+#. - While it would seem like this can be written more
+#.   simply, it turns out that certain edge cases make that
+#.   more challenging than it appears. The most straight-
+#.   forward way would be simple iteration over _all_
+#.   characters and process each appropriately, however,
+#.   `awk` lacks this ability, so `match` is used instead.
+#. - The algorithm is:
+#.   - find the first character that is "special"
+#.   - for `[` characters find the appropriate `]` (dealing
+#.     with `[:...:]` style sequences as well as `\` and
+#.     escaped `]` characters, while converting `[!...]` to
+#.     `[^...]` and `[^...]` to `[\^...]`)
+#.   - for `\` characters check for repeated sequences and
+#.     copy them appropriately - if `\` escapes a character
+#.     ensure it remains escaped.
+#.   - convert `*` and `?` to `.*` and `.?` respectively
+#.   - escape all other special characters with `\`
+#. - _NOTE:_ escaping most characters could also be
+#.   written as `[c]`, but this fails for `^` so it is
+#.   easier to simply use `\` in all cases.
+#. - _NOTE:_ some wildcard sequences that are not normally
+#.   possible to use (at least portably) can be used here -
+#.   for example, the use of `]` inside `[...]` works here,
+#.   but is hard to use as a wildcard pattern.
+#. - _NOTE:_ In both wildcard patterns and _ERE_ closing
+#.   braces are _only_ special if following an opening
+#.   brace and so do not need to be processed.
+#. - **WARNING:** Invalid sequences are **NOT** detected.
+#.
+c_BS_LIBARRAY__awk_fn__glob_to_ere='
+  function bs_fn_glob_to_ere(strGlob) {
+    strERE = ""
+
+    while (match(strGlob, /[\\.(+{|^$[*?]/)) {
+      if (RSTART > 1) {
+        strERE  = strERE substr(strGlob, 1, (RSTART - 1))
+        strGlob = substr(strGlob, RSTART)
+      }
+
+      ch = substr(strGlob, 1, 1)
+      if (ch == "[") {
+        strGlob = substr(strGlob, 2)
+        chNext  = substr(strGlob, 1, 1)
+        if (chNext == "!") {
+          strERE  = strERE "[^"
+          ch      = substr(strGlob, 2, 1)
+          strGlob = substr(strGlob, 3)
+        } else if (chNext == "^") {
+          strERE  = strERE "[\\^"
+          ch      = substr(strGlob, 2, 1)
+          strGlob = substr(strGlob, 3)
+        }
+
+        while (ch && ch != "]") {
+          strERE = strERE ch
+          if (match(strGlob, /^\[([:.=])[^\]]*\1\]/)) {
+            strERE  = strERE substr(strGlob, 1, RLENGTH)
+            ch      = substr(strGlob, RLENGTH, 1)
+            strGlob = substr(strGlob, (RLENGTH + 1))
+          } else {
+            chNext = substr(strGlob, 1, 1)
+            if (ch == "\\" && (chNext == "]" || chNext == "\\")) {
+              strERE  = strERE chNext
+              ch      = substr(strGlob, 2, 1)
+              strGlob = substr(strGlob, 3)
+            } else {
+              ch      = chNext
+              strGlob = substr(strGlob, 2)
+            }
           }
-        s/\\\\\\\\/\\\\/g" ;;
-esac
+        }
 
-fn_bs_libarray_readonly 'c_BS_LIBARRAY__sed_sort_unescape'
+        strERE = strERE "]"
+      } else if (ch == "\\") {
+        nLength = 1
+        if (match(strGlob,/^(\\\\)*[^\\]/)) {
+          nLength = RLENGTH - 1
+        } else if (match(strGlob,/^(\\\\)*\\[^\\]/)) {
+          nLength = RLENGTH
+        }
+        strERE  = strERE substr(strGlob, 1, nLength)
+        strGlob = substr(strGlob, nLength + 1)
+      } else if (ch == "*" || ch == "?") {
+        strERE  = strERE "." ch
+        strGlob = substr(strGlob, 2)
+      } else {
+        strERE  = strERE "\\" ch
+        strGlob = substr(strGlob, 2)
+      }
+    }
+
+    if (strGlob) {
+      strERE = strERE strGlob
+    }
+
+    return strERE
+  }
+'
+
+fn_bs_libarray_readonly 'c_BS_LIBARRAY__awk_fn__glob_to_ere'
 
 #===============================================================================
 #===============================================================================
@@ -1011,25 +1452,27 @@ fn_bs_libarray_readonly 'c_BS_LIBARRAY__sed_sort_unescape'
 #;   `<MESSAGE>` without any additional prefix regardless of other settings.
 #;
 #_______________________________________________________________________________
-fn_bs_libarray_error() { ## cSpell:Ignore BS_LAE_
-  BS_LAE_Caller="${1:?'[libarray::fn_bs_libarray_error]: Internal Error: a command name is required'}"
+fn_bs_libarray_error() { ## cSpell:Ignore BS_LA_E_
+  BS_LA_E_Caller=${1:?'[libarray::fn_bs_libarray_error]: Internal Error: a caller is required'}
 
   BS_LIBARRAY_LAST_ERROR=;
   case $# in
   1)  : "${2:?'[libarray::fn_bs_libarray_error]: Internal Error: an error message is required'}" ;;
-  2)  BS_LIBARRAY_LAST_ERROR="$2" ;;
+  2)  BS_LIBARRAY_LAST_ERROR=$2 ;;
   *)  shift
-      case ${IFS-} in
-      ' '*) BS_LIBARRAY_LAST_ERROR="$*" ;;
-         *) BS_LIBARRAY_LAST_ERROR="$1"; shift
-            BS_LIBARRAY_LAST_ERROR="${BS_LIBARRAY_LAST_ERROR}$(printf ' %s' "$@")" ;;
-      esac ;; #<: `case ${IFS-} in`
+      # NOTE: unset `IFS` == default `IFS`
+      #       null  `IFS` == null `IFS`
+      case ${IFS-' '} in
+      ' '*) BS_LIBARRAY_LAST_ERROR=$* ;;
+         *) BS_LIBARRAY_LAST_ERROR=$(printf '%s ' "$@")
+            BS_LIBARRAY_LAST_ERROR=${BS_LIBARRAY_LAST_ERROR% } ;;
+      esac ;; #<: `case ${IFS-' '} in`
   esac #<: `case $# in`
 
   # OUTPUT ERROR
   case ${BS_LIBARRAY_CONFIG_QUIET_ERRORS:-${BETTER_SCRIPTS_CONFIG_QUIET_ERRORS:-0}} in
   0)  printf '[libarray::%s]: ERROR: %s\n' \
-             "${BS_LAE_Caller}"            \
+             "${BS_LA_E_Caller}"            \
              "${BS_LIBARRAY_LAST_ERROR}"   >&2 ;;
   esac
 
@@ -1037,9 +1480,31 @@ fn_bs_libarray_error() { ## cSpell:Ignore BS_LAE_
   case ${BS_LIBARRAY_CONFIG_FATAL_ERRORS:-${BETTER_SCRIPTS_CONFIG_FATAL_ERRORS:-0}} in
   0)  ;;
   *)  BS_LIBARRAY__FatalError=;
-      : "${BS_LIBARRAY__FatalError:?"[libarray::${BS_LAE_Caller}]: ERROR: ${BS_LIBARRAY_LAST_ERROR}"}" ;;
-  esac
-}
+      BS_LIBARRAY__ErrorMessage="[libarray::${BS_LA_E_Caller}]: ERROR: ${BS_LIBARRAY_LAST_ERROR}"
+      # `zsh`, being it's own special self, does not perform parameter expansion
+      # of `word` in `${parameter:?[word]}`, so a workaround is required to
+      # make the error message shown. It's not clear how to do this other than
+      # to use `eval`, but that opens up a can of worms regarding the message
+      # contents - specifically what happens if the message contains special
+      # characters. In this regard, `zhs` is useful as it provides a mechanism
+      # for quoting parameters, which makes it safe.
+      #
+      # NOTE: Although shells should ignore the `zsh` branch of the `case` here
+      #       some fail to parse it. For now that means the use of two `eval`
+      #       statements - the first simply blocks other shells from seeing
+      #       the `zsh` specific code.
+      #
+      # SC2296: Parameter expansions can't start with {. Double check syntax.
+      # EXCEPT: The code here is fine in `zsh`, and should be ignored in other
+      #         shells.
+      # shellcheck disable=SC2296
+      case ${ZSH_VERSION:+1} in
+      1)  eval 'BS_LIBARRAY__ErrorMessage=${(qq)BS_LIBARRAY__ErrorMessage}'
+          eval ": \"\${BS_LIBARRAY__FatalError:?${BS_LIBARRAY__ErrorMessage}}\"" ;;
+      *) : "${BS_LIBARRAY__FatalError:?${BS_LIBARRAY__ErrorMessage}}" ;;
+      esac ;;
+  esac  #<: `case ${BS_LIBARRAY_CONFIG_FATAL_ERRORS:-${BETTER_SCRIPTS_CONFIG_FATAL_ERRORS:-0}} in`
+} #<: `fn_bs_libarray_error()`
 
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
@@ -1078,11 +1543,11 @@ fn_bs_libarray_error() { ## cSpell:Ignore BS_LAE_
 #;   cost of some performance when an error occurs.
 #;
 #_______________________________________________________________________________
-fn_bs_libarray_invalid_args() { ## cSpell:Ignore BS_LAIA_
-  BS_LAIA_Caller="${1:?'[libarray::fn_bs_libarray_invalid_args]: Internal Error: a command name is required'}"
+fn_bs_libarray_invalid_args() { ## cSpell:Ignore BS_LA_IA_
+  BS_LA_IA_Caller=${1:?'[libarray::fn_bs_libarray_invalid_args]: Internal Error: a caller is required'}
   shift
-  fn_bs_libarray_error "${BS_LAIA_Caller}" 'Invalid Arguments:' "$@"
-}
+  fn_bs_libarray_error "${BS_LA_IA_Caller}" 'Invalid Arguments:' "$@"
+} #<: `fn_bs_libarray_invalid_args()`
 
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
@@ -1124,29 +1589,33 @@ fn_bs_libarray_invalid_args() { ## cSpell:Ignore BS_LAIA_
 #;   error occurs.
 #;
 #_______________________________________________________________________________
-fn_bs_libarray_expected() { ## cSpell:Ignore BS_LAExpected_
-   BS_LAExpected_Caller="${1:?'[libarray::fn_bs_libarray_expected]: Internal Error: a command name is required'}"
-  BS_LAExpected_Message="Invalid Arguments: expected ${2:?'[libarray::fn_bs_libarray_expected]: Internal Error: an expected argument is required'}"
+fn_bs_libarray_expected() { ## cSpell:Ignore BS_LA_Expected_
+  BS_LA_Expected_Caller=${1:?'[libarray::fn_bs_libarray_expected]: Internal Error: a caller is required'}
+  shift
+  BS_LA_Expected_Message=${1:?'[libarray::fn_bs_libarray_expected]: Internal Error: an expected argument is required'}
+  shift
 
-  case $# in
-  2)  ;;
-  *)  shift; shift
-      while : #< [ $# -gt 1 ]
-      do
-        #> LOOP TEST --------------
-        case $# in 1) break ;; esac #< [ $# -gt 1 ]
-        #> ------------------------
+  #=========================================================
+  #
+  #=========================================================
+  while : #<: `[ $# -gt 1 ]`
+  do
+    case $# in
+    0)  break ;;
+    1)  BS_LA_Expected_Message="${BS_LA_Expected_Message}, and $1"
+        break ;;
+    *)  BS_LA_Expected_Message="${BS_LA_Expected_Message}, $1"
+        shift ;;
+    esac
+  done #<: `while [ $# -gt 1 ]`
 
-        BS_LAExpected_Message="${BS_LAExpected_Message}, $1"
-        shift
-      done #<: `while : #< [ $# -gt 1 ]`
-      BS_LAExpected_Message="${BS_LAExpected_Message}, and $1";;
-  esac #<: `case $# in`
-
-  fn_bs_libarray_invalid_args  \
-    "${BS_LAExpected_Caller}"  \
-    "${BS_LAExpected_Message}"
-}
+  #=========================================================
+  #
+  #=========================================================
+  fn_bs_libarray_error         \
+    "${BS_LA_Expected_Caller}"  \
+    "Invalid Arguments: expected ${BS_LA_Expected_Message}"
+} #<: `fn_bs_libarray_expected()`
 
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
@@ -1204,18 +1673,18 @@ fn_bs_libarray_expected() { ## cSpell:Ignore BS_LAExpected_
 #;   implementations.)
 #;
 #_______________________________________________________________________________
-fn_bs_libarray_validate_name() { ## cSpell:Ignore BS_LAVN_
-  BS_LAVN_Caller="${1:?'[libarray::fn_bs_libarray_validate_name]: Internal Error: a command name is required'}"
-    BS_LAVN_Name="${2?'[libarray::fn_bs_libarray_validate_name]: Internal Error: a variable name is required'}"
+fn_bs_libarray_validate_name() { ## cSpell:Ignore BS_LA_VN_
+  BS_LA_VN_Caller=${1:?'[libarray::fn_bs_libarray_validate_name]: Internal Error: a caller is required'}
+    BS_LA_VN_Name=${2?'[libarray::fn_bs_libarray_validate_name]: Internal Error: a variable name is required'}
 
-  case ${BS_LAVN_Name:-#} in
+  case ${BS_LA_VN_Name:-#} in
   [0123456789]*|*[!abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_]*)
     fn_bs_libarray_invalid_args \
-      "${BS_LAVN_Caller}"       \
-      "invalid variable name '${BS_LAVN_Name}'"
+      "${BS_LA_VN_Caller}"       \
+      "invalid variable name '${BS_LA_VN_Name}'"
     return "${c_BS_LIBARRAY__EX_USAGE}" ;;
   esac
-}
+} #<: `fn_bs_libarray_validate_name()`
 
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
@@ -1231,23 +1700,23 @@ fn_bs_libarray_validate_name() { ## cSpell:Ignore BS_LAVN_
 #; details.
 #;
 #_______________________________________________________________________________
-fn_bs_libarray_validate_name_hyphen() { ## cSpell:Ignore BS_LAVNH_
-  BS_LAVNH_Caller="${1:?'[libarray::fn_bs_libarray_validate_name_hyphen]: Internal Error: a command name is required'}"
-    BS_LAVNH_Name="${2?'[libarray::fn_bs_libarray_validate_name_hyphen]: Internal Error: a variable name is required'}"
+fn_bs_libarray_validate_name_hyphen() { ## cSpell:Ignore BS_LA_VNH_
+  BS_LA_VNH_Caller=${1:?'[libarray::fn_bs_libarray_validate_name_hyphen]: Internal Error: a caller is required'}
+    BS_LA_VNH_Name=${2?'[libarray::fn_bs_libarray_validate_name_hyphen]: Internal Error: a variable name is required'}
 
-  #---------------------------------------------------------
+  #=========================================================
   # This command is called for many of the main commands.
   # To avoid an additional command call the test from
   # `fn_bs_libarray_validate_name` is duplicated here
-  case ${BS_LAVNH_Name:-#} in
+  case ${BS_LA_VNH_Name:-#} in
   -) : ;;
   [0123456789]*|*[!abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_]*)
     fn_bs_libarray_invalid_args \
-      "${BS_LAVNH_Caller}"      \
-      "invalid variable name '${BS_LAVNH_Name}'"
+      "${BS_LA_VNH_Caller}"      \
+      "invalid variable name '${BS_LA_VNH_Name}'"
     return "${c_BS_LIBARRAY__EX_USAGE}" ;;
   esac
-}
+} #<: `fn_bs_libarray_validate_name_hyphen()`
 
 #===============================================================================
 #===============================================================================
@@ -1261,7 +1730,7 @@ fn_bs_libarray_validate_name_hyphen() { ## cSpell:Ignore BS_LAVNH_
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
 #;
-#; ### `fn_bs_libarray_get_param`
+#; ### `fn_bs_libarray_get_multidigit_param`
 #;
 #; Some shells only allow numbered parameters in the single digit range, this
 #; provides a work around where needed.
@@ -1269,7 +1738,7 @@ fn_bs_libarray_validate_name_hyphen() { ## cSpell:Ignore BS_LAVNH_
 #; _SYNOPSIS_
 #; <!-- - -->
 #;
-#;     fn_bs_libarray_get_param <OUTPUT> <INDEX> [<VALUE>...]
+#;     fn_bs_libarray_get_multidigit_param <OUTPUT> <INDEX> [<VALUE>...]
 #;
 #; _ARGUMENTS_
 #; <!-- -- -->
@@ -1306,69 +1775,42 @@ fn_bs_libarray_validate_name_hyphen() { ## cSpell:Ignore BS_LAVNH_
 #;   itself was null.
 #;
 #_______________________________________________________________________________
-case ${c_BS_LIBARRAY_CFG_USE__multidigit_param:-0} in
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  #> `case ${c_BS_LIBARRAY_CFG_USE__multidigit_param:-0} in`
-  #> -------------------------------------------------------
+fn_bs_libarray_get_multidigit_param() { ## cSpell:Ignore BS_LA_GP_
+  BS_LA_GP_refOutput=${1:?'[libarray::fn_bs_libarray_get_multidigit_param]: Internal Error: an output variable is required'}
+  shift
+  BS_LA_GP_Param=${1:?'[libarray::fn_bs_libarray_get_multidigit_param]: Internal Error: a parameter is required'}
+  shift
+
+  #---------------------------------------------------------
+  # Index is out-of-bounds, so do not modify anything
+  #---------------------------------------------------------
+  if [ $# -lt "${BS_LA_GP_Param}" ]
+  then
+    return
+  fi
+
+  #---------------------------------------------------------
+  # Loop till single digit index. (No need to check
+  # `$# > 0` as the above check ensures it has to be)
   #
-  # multi-digit parameters AVAILABLE
-  #
-  # Access parameters directly
-  1)
-    fn_bs_libarray_get_param() { ## cSpell:Ignore BS_LAGP_
-      BS_LAGP_refOutput="${1:?'[libarray::fn_bs_libarray_get_param]: Internal Error: an output variable is required'}"
-      shift
-      BS_LAGP_Param="${1:?'[libarray::fn_bs_libarray_get_param]: Internal Error: a parameter is required'}"
-      shift
+  # NOTES: Assumes if no multidigit param support
+  #        there is also no `shift N` support.
+  #---------------------------------------------------------
+  while : #<: `[ "${BS_LA_GP_Param}" -gt 9 ]`
+  do
+    #> LOOP TEST -------------------------------------------
+    case ${#BS_LA_GP_Param} in 1) break;; esac #<: `[ "${BS_LA_GP_Param}" -gt 9 ]`
+    #< -----------------------------------------------------
 
-      #.....................................................
-      #  Index is out-of-bounds, so do not modify anything
-      #  [ $# -lt "${BS_LAGP_Param}" ] && return
-      case $(($# - BS_LAGP_Param)) in -*) return ;; esac
+    shift
+    BS_LA_GP_Param=$((BS_LA_GP_Param - 1))
+  done #<: `[ "${BS_LA_GP_Param}" -gt 9 ]`
 
-      eval "${BS_LAGP_refOutput}=\"\${${BS_LAGP_Param}}\""  #< SAVE
-    }
-  ;;
-
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  #> `case ${c_BS_LIBARRAY_CFG_USE__multidigit_param:-0} in`
-  #> -------------------------------------------------------
-  #
-  # multi-digit parameters UNAVAILABLE
-  #
-  # Only way to access multi-digit parameters is to
-  # use `shift` and single-digit parameters
-  0)
-    fn_bs_libarray_get_param() { ## cSpell:Ignore BS_LAGP_
-      BS_LAGP_refOutput="${1:?'[libarray::fn_bs_libarray_get_param]: Internal Error: an output variable is required'}"
-      shift
-      BS_LAGP_Param="${1:?'[libarray::fn_bs_libarray_get_param]: Internal Error: a parameter is required'}"
-      shift
-
-      #.....................................................
-      # Index is out-of-bounds, so do not modify anything
-      # [ $# -lt "${BS_LAGP_Param}" ] && return
-      case $(($# - BS_LAGP_Param)) in -*) return ;; esac
-
-      #.....................................................
-      # Loop till single digit index. (No need to check
-      # `$# > 0` as the above check ensures it has to be)
-      #
-      # NOTES: Assumes if no multidigit param support
-      #        there is also no `shift N` support.
-      while : #< [ "${BS_LAGP_Param}" -gt 9 ]
-      do
-        #> LOOP TEST ----------------------------
-        case ${BS_LAGP_Param} in ?) break ;; esac #< [ "${BS_LAGP_Param}" -gt 9 ]
-        #> --------------------------------------
-        shift
-        BS_LAGP_Param=$((BS_LAGP_Param - 1))
-      done
-
-      eval "${BS_LAGP_refOutput}=\"\${${BS_LAGP_Param}}\""  #< SAVE
-    }
-  ;;
-esac #<: `case ${c_BS_LIBARRAY_CFG_USE__multidigit_param:-0} in`
+  #---------------------------------------------------------
+  # SAVE
+  #---------------------------------------------------------
+  eval "${BS_LA_GP_refOutput}=\${${BS_LA_GP_Param}}"
+} #<: `fn_bs_libarray_get_multidigit_param()`
 
 #===============================================================================
 #===============================================================================
@@ -1378,6 +1820,419 @@ esac #<: `case ${c_BS_LIBARRAY_CFG_USE__multidigit_param:-0} in`
 #.
 #===============================================================================
 #===============================================================================
+
+#_______________________________________________________________________________
+#; ---------------------------------------------------------
+#;
+#; ### `fn_bs_libarray_awk_run_script`
+#;
+#; Run an `awk` script against the given array values, using whichever
+#; supported method of passing those values to `awk` is expected to perform
+#; best.
+#;
+#; _SYNOPSIS_
+#; <!-- - -->
+#;
+#;     fn_bs_libarray_awk_run_script <CALLER> <SCRIPT> [<VALUE>...]
+#;
+#; _ARGUMENTS_
+#; <!-- -- -->
+#;
+#; `CALLER` \[in]
+#;
+#; : Name of the calling command.
+#; : Used for any error message.
+#;
+#; `SCRIPT` \[in]
+#;
+#; : An `awk` code snippet that MUST define a
+#;   `bs_fn_main(argArray, argCount)` function.
+#; : `bs_fn_main` will be called once `argArray` has
+#;   been populated with the given `VALUE` arguments
+#;   (indexed `[1, argCount)`), and is expected to
+#;   write any required output to `STDOUT`.
+#;
+#; `VALUE` \[in]
+#;
+#; : Can be specified zero or more times.
+#; : Can be null.
+#; : Can contain any arbitrary text excluding any
+#;   embedded `\0` (`<NUL>`) characters.
+#;
+#; _NOTES_
+#; <!-- -->
+#;
+#; - Exit status and any output are entirely determined by `SCRIPT`/
+#;   `bs_fn_main` - this command imposes no convention of its own.
+#;
+#. _IMPLEMENTATION NOTES_
+#. <!-- ------------- -->
+#.
+#. - When `awk` `ARGV` is used (the default, see
+#.   [`BS_LIBARRAY_CONFIG_NO_AWK_ARGV`](#bs_libarray_config_no_awk_argv)),
+#.   `VALUE` arguments are passed directly as `awk` arguments; if this fails
+#.   (or `ARGV` use is disabled), values are instead streamed over `STDIN`
+#.   length-prefixed so that embedded `<newline>` characters are handled
+#.   correctly.
+#. - This is written in a way that is somewhat non-obvious and
+#.   counter-intuitive - it would seem that a simpler way to deal with this
+#.   would be to create a function, say `bs_fn_getargs`, that retrieves passed
+#.   args from either `ARGV` or `STDIN` and puts them in an array for `SCRIPT`.
+#.   This has significant advantages, including that `SCRIPT` could call
+#.   `bs_fn_getargs` where ever it wanted - it would be neater, clearer, and
+#.   easier to follow. However, the goal of the use of `ARGV` is performance
+#.   and while the standard notes that arrays are passed by reference, it makes
+#.   no mention of how an array is copied. The problem, then, is that
+#.   `bs_fn_getargs` _MUST_ copy `ARGV` to work as expected, _BUT_ it's
+#.   not possible to know how this will occur - it _could_ be implemented much
+#.   like a reference and so of no real cost, _or_ it _could_ be a full copy of
+#.   the entire array (which could be a significant cost). In order to have the
+#.   best performance in all cases the current, slightly odd, implementation
+#.   is required.
+#. - In `awk`, `ARGV` is _writable_, which _may_ lead to the thought that this
+#.   could be implemented by simply populating `ARGV` from `STDIN` when
+#.   required (`SCRIPT` would simply always use `ARGV`) - unfortunately this is
+#.   not possible as, although, `ARGV` is writable, it is also special - when
+#.   data is passed via `STDIN` any values in `ARGV` are assumed to be paths
+#.   that should also be read for input. (The use of `ARGV` for arguments alone
+#.   is restricted to very specific scripts.)
+#. - Arbitrary values passed via `STDIN` to `awk` are possible in numerous ways.
+#.   (Recall that `awk` separates input into records and this can not be
+#.   disabled, so data containing the record separator must be reconstructed
+#.   inside `awk` somehow.) The easiest way is to pass data as a pair of values:
+#.   a length, and the data. This allows for multi-line values, along with any
+#.   arbitrary data to be passed into `awk` and for `awk` to read the data
+#.   easily and correctly as a single value. This is also likely to be the
+#.   fastest way to do this, and has no fewer edge cases. (Alternatives may be
+#.   faster in some cases, but tend to be more complicated and slower in edge
+#.   cases.)
+#. - Multi-byte support requires both `awk` **and** `wc` support for the
+#.   fallback code. The requirement for `wc` is unlikely significant as `awk`
+#.   itself is far less likely to support multi-byte and in this case many more
+#.   things in this library will fail to work if given such characters.
+#.
+#_______________________________________________________________________________
+fn_bs_libarray_awk_run_script() {  ## cSpell:Ignore BS_LA_ARS_
+  BS_LA_ARS_Caller=${1:?'[libarray::fn_bs_libarray_awk_run_script]: Internal Error: a caller is required'}
+  shift
+  BS_LA_ARS_Script=${1:?'[libarray::fn_bs_libarray_awk_run_script]: Internal Error: a script is required'}
+  shift
+
+  #=========================================================
+  # It is very much faster to use `ARGV` to pass values to
+  # `awk`, however this may fail for large arrays due to the
+  # command line length limitations. As this should be the
+  # only reason this fails, and it should fail early in the
+  # process of invoking `awk` it is reasonable to try this
+  # approach first before falling back on the slower method.
+  #
+  # In the vast majority of cases this should be sufficient.
+  #=========================================================
+  case ${BS_LIBARRAY_CONFIG_NO_AWK_ARGV:-${BETTER_SCRIPTS_CONFIG_NO_AWK_ARGV:-0}}:${c_BS_LIBARRAY_CFG__use_dev_null:-0} in
+    0:1)
+      if  {
+            awk "
+              ${BS_LA_ARS_Script}"'
+              BEGIN {
+                bs_fn_main(ARGV, ARGC)
+              }
+            ' "$@"
+          } 2>/dev/null
+      then
+        return
+      fi ;;
+
+    0:0)
+      if  BS_LA_ARS_Output=$(
+            {
+              awk "
+                ${BS_LA_ARS_Script}"'
+                BEGIN {
+                  bs_fn_main(ARGV, ARGC)
+                }
+              ' "$@"
+            } 2>&1
+          )
+      then
+        printf '%s\n' "${BS_LA_ARS_Output}"
+        return
+      fi ;;
+
+    *) ;;
+  esac #<: `case ${BS_LIBARRAY_CONFIG_NO_AWK_ARGV:-${BETTER_SCRIPTS_CONFIG_NO_AWK_ARGV:-0}}:${c_BS_LIBARRAY_CFG__use_dev_null:-0} in`
+
+  #=========================================================
+  #
+  #=========================================================
+  fn_bs_libarray_dbg_msg  \
+    "${BS_LA_ARS_Caller}" \
+    'Using emulated ARGV for awk'
+
+  #=========================================================
+  # NOTE:
+  # - Some versions of `awk` do not process values as
+  #   numerical **unless** they have had arithmetic
+  #   performed upon them - hence the need for `+ 0` in
+  #   some locations.
+  # - `wc` is required to determine the length outside the
+  #   _POSIX_ locale.
+  # - The test against the string length is `<` to avoid
+  #   an infinite loop - it _should_ be possible to use
+  #   `!=`, but this may fail in cases where the current
+  #   locale is not correctly supported and would cause an
+  #   infinite loop - on balance it was deemed this was
+  #   a worse outcome than bad data as it would be far far
+  #   harder to diagnose.
+  #=========================================================
+  {
+    printf '%d\n' $#
+    case ${LC_ALL:-${LC_CTYPE:-${LANG:-C}}} in
+      C|POSIX)
+        for BS_LA_ARS_Element
+        do
+          printf  '%d\n%s\n'              \
+                  "${#BS_LA_ARS_Element}" \
+                  "${BS_LA_ARS_Element}"
+        done
+      ;;
+
+      *)
+        for BS_LA_ARS_Element
+        do
+          {
+            printf '%s' "${BS_LA_ARS_Element}" | wc -m
+          } || {
+            fn_bs_libarray_error    \
+              "${BS_LA_ARS_Caller}" \
+              'unknown error while invoking "wc"'
+          }
+          printf '%s\n' "${BS_LA_ARS_Element}"
+        done
+      ;;
+    esac
+  } | {
+    awk "
+      ${BS_LA_ARS_Script}"'
+      BEGIN {
+        getline BS_LA_Count
+        BS_LA_Count = BS_LA_Count + 1
+        for (i = 1; i < BS_LA_Count; ++i) {
+          getline nValueLength
+          nValueLength = nValueLength + 0
+          getline strValue
+          while((length(strValue) < nValueLength) && getline) {
+            strValue = strValue "\n" $0
+          }
+          BS_LA_aValues[i] = strValue
+        }
+
+        bs_fn_main(BS_LA_aValues, BS_LA_Count)
+      }
+    '
+  }
+} #<: `fn_bs_libarray_awk_run_script()`
+
+#_______________________________________________________________________________
+#; ---------------------------------------------------------
+#;
+#; ### `fn_bs_libarray_create`
+#;
+#; Create an array.
+#;
+#; _SYNOPSIS_
+#; <!-- - -->
+#;
+#;     fn_bs_libarray_create <CALLER> [<VALUE>...]
+#;
+#; _ARGUMENTS_
+#; <!-- -- -->
+#;
+#; `CALLER` \[in]
+#;
+#; : Name of the calling command.
+#; : Used for any error message.
+#;
+#; `VALUE` \[in]
+#;
+#; : Can be specified multiple times.
+#; : Can be null.
+#; : Can contain any arbitrary text excluding any
+#;   embedded `\0` (`<NUL>`) characters.
+#; : MUST be _at least_ `COUNT` `VALUE` arguments provided,
+#;   but only the first `COUNT` `VALUE` arguments will be
+#;   used.
+#;
+#; _CAVEATS_
+#; <!-- - -->
+#;
+#; - A trailing `<newline>` followed by a `<space>` **MUST** be added by the
+#;   caller to terminate any created array. (That is, `echo ' '`.)
+#;
+#_______________________________________________________________________________
+fn_bs_libarray_create() { ## cSpell:Ignore BS_LA_Create_
+  BS_LA_Create_Caller=${1:?'[libarray::fn_bs_libarray_create]: Internal Error: a caller is required'}
+  shift
+
+  #---------------------------------------------------------
+  # Loop through values, creating the array
+  #---------------------------------------------------------
+  for BS_LA_Create_Value
+  do
+    array_value "${BS_LA_Create_Value}" || return $?
+  done
+} #<: `fn_bs_libarray_create()`
+
+#_______________________________________________________________________________
+#; ---------------------------------------------------------
+#;
+#; ### `fn_bs_libarray_create_count`
+#;
+#; Create an array of a specific length.
+#;
+#; _SYNOPSIS_
+#; <!-- - -->
+#;
+#;     fn_bs_libarray_create_count <CALLER> <COUNT> [<VALUE>...]
+#;
+#; _ARGUMENTS_
+#; <!-- -- -->
+#;
+#; `CALLER` \[in]
+#;
+#; : Name of the calling command.
+#; : Used for any error message.
+#;
+#; `COUNT` \[in]
+#;
+#; : Number of values in final array.
+#; : Can be less than the number of `VALUE`
+#;   arguments provided.
+#; : MUST be numeric.
+#;
+#; `VALUE` \[in]
+#;
+#; : Can be specified multiple times.
+#; : Can be null.
+#; : Can contain any arbitrary text excluding any
+#;   embedded `\0` (`<NUL>`) characters.
+#; : MUST be _at least_ `COUNT` `VALUE` arguments provided,
+#;   but only the first `COUNT` `VALUE` arguments will be
+#;   used.
+#;
+#; _CAVEATS_
+#; <!-- - -->
+#;
+#; - A trailing `<newline>` followed by a `<space>` **MUST** be added by the
+#;   caller to terminate any created array. (That is, `echo ' '`.)
+#;
+#; _NOTES_
+#; <!-- -->
+#;
+#; - If there are more `VALUE` arguments than required, only the first `COUNT`
+#;   are used.
+#;
+#_______________________________________________________________________________
+fn_bs_libarray_create_count() { ## cSpell:Ignore BS_LA_CC_
+  BS_LA_CC_Caller=${1:?'[libarray::fn_bs_libarray_create_count]: Internal Error: a caller is required'}
+  shift
+  BS_LA_CC_Count=${1:?'[libarray::fn_bs_libarray_create_count]: Internal Error: a count of values is required'}
+  shift
+
+  #---------------------------------------------------------
+  # Loop through values, creating the array
+  #---------------------------------------------------------
+  while : #<: `[ "${BS_LA_CC_Count}" -gt 0 ]`
+  do
+    #> LOOP TEST -------------------------------------------
+    case ${BS_LA_CC_Count} in 0) break;; esac #<: `[ "${BS_LA_CC_Count}" -gt 0 ]`
+    #< -----------------------------------------------------
+
+    array_value "$1" || return $?
+    shift || return $?
+    BS_LA_CC_Count=$((BS_LA_CC_Count - 1))
+  done #<: `while [ "${BS_LA_CC_Count}" -gt 0 ]`
+} #<: `fn_bs_libarray_create_count()`
+
+#_______________________________________________________________________________
+#; ---------------------------------------------------------
+#;
+#; ### `fn_bs_libarray_create_count_reverse`
+#;
+#; Create a reverse array of a specific length.
+#;
+#; _SYNOPSIS_
+#; <!-- - -->
+#;
+#;     fn_bs_libarray_create_count_reverse <CALLER> <COUNT> [<VALUE>...]
+#;
+#; _ARGUMENTS_
+#; <!-- -- -->
+#;
+#; `CALLER` \[in]
+#;
+#; : Name of the calling command.
+#; : Used for any error message.
+#;
+#; `COUNT` \[in]
+#;
+#; : Number of values in final array.
+#; : Can be less than the number of `VALUE`
+#;   arguments provided.
+#; : MUST be numeric.
+#;
+#; `VALUE` \[in]
+#;
+#; : Can be specified multiple times.
+#; : Can be null.
+#; : Can contain any arbitrary text excluding any
+#;   embedded `\0` (`<NUL>`) characters.
+#; : MUST be _at least_ `COUNT` `VALUE` arguments provided,
+#;   but only the first `COUNT` `VALUE` arguments will be
+#;   used.
+#;
+#; _CAVEATS_
+#; <!-- - -->
+#;
+#; - A trailing `<newline>` followed by a `<space>` **MUST** be added by the
+#;   caller to terminate any created array. (That is, `echo ' '`.)
+#;
+#; _NOTES_
+#; <!-- -->
+#;
+#; - If there are more `VALUE` arguments than required, only the first `COUNT`
+#;   are used. (The first value in a reverse array _may_ therefore _not_ be the
+#;   last `VALUE` argument provided.)
+#;
+#_______________________________________________________________________________
+fn_bs_libarray_create_count_reverse() { ## cSpell:Ignore BS_LA_CCR_
+  BS_LA_CCR_Caller=${1:?'[libarray::fn_bs_libarray_create_count_reverse]: Internal Error: a caller is required'}
+  shift
+  BS_LA_CCR_Count=${1:?'[libarray::fn_bs_libarray_create_count_reverse]: Internal Error: a count of values is required'}
+  shift
+
+  #---------------------------------------------------------
+  # Loop through values backwards, creating the array
+  #---------------------------------------------------------
+  while : #<: `[ "${BS_LA_CCR_Count}" -gt 0 ]`
+  do
+    #> LOOP TEST -------------------------------------------
+    case ${BS_LA_CCR_Count} in 0) break;; esac #<: `[ "${BS_LA_CCR_Count}" -gt 0 ]`
+    #< -----------------------------------------------------
+
+    BS_LA_CCR_Value=;
+    case ${c_BS_LIBARRAY_CFG__use_multidigit_param:-0} in
+    1)  eval "BS_LA_CCR_Value=\${${BS_LA_CCR_Count}}" ;;
+    0)  fn_bs_libarray_get_multidigit_param \
+          'BS_LA_CCR_Value'                 \
+          "${BS_LA_CCR_Count}"              \
+          "$@"                              ;;
+    esac || return $?
+
+    array_value "${BS_LA_CCR_Value}" || return $?
+
+    BS_LA_CCR_Count=$((BS_LA_CCR_Count - 1))
+  done #<: `while [ "${BS_LA_CCR_Count}" -gt 0 ]`
+} #<: `fn_bs_libarray_create_count_reverse()`
 
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
@@ -1446,64 +2301,75 @@ esac #<: `case ${c_BS_LIBARRAY_CFG_USE__multidigit_param:-0} in`
 #.   setting and for most commands using indexes zero-based is most useful
 #.
 #_______________________________________________________________________________
-fn_bs_libarray_process_index() { ## cSpell:Ignore BS_LAPI_
-     BS_LAPI_Caller="${1:?'[libarray::fn_bs_libarray_process_index]: Internal Error: a command name is required'}"
-   BS_LAPI_refIndex="${2:?'[libarray::fn_bs_libarray_process_index]: Internal Error: an index variable is required'}"
-  BS_LAPI_ArraySize="${3:?'[libarray::fn_bs_libarray_process_index]: Internal Error: an array size is required'}"
+fn_bs_libarray_process_index() { ## cSpell:Ignore BS_LA_PI_
+     BS_LA_PI_Caller=${1:?'[libarray::fn_bs_libarray_process_index]: Internal Error: a caller is required'}
+   BS_LA_PI_refIndex=${2:?'[libarray::fn_bs_libarray_process_index]: Internal Error: an index variable is required'}
+  BS_LA_PI_ArraySize=${3:?'[libarray::fn_bs_libarray_process_index]: Internal Error: an array size is required'}
+
   case $# in
-  4) BS_LAPI_MaxIndex="$4" ;;
-  *) BS_LAPI_MaxIndex="${BS_LAPI_ArraySize}" ;;
+  4) BS_LA_PI_MaxIndex=$4 ;;
+  *) BS_LA_PI_MaxIndex=${BS_LA_PI_ArraySize} ;;
   esac
 
-  BS_LAPI_Index=;
-  eval "BS_LAPI_Index=\"\${${BS_LAPI_refIndex}}\"" || return $?
+  #=========================================================
+  # Load
+  #=========================================================
+  BS_LA_PI_Index=;
+  eval "BS_LA_PI_Index=\${${BS_LA_PI_refIndex}-}" || return $?
 
-  #---------------------------------------------------------
+  #=========================================================
   # Validate Index
   # NOTES: removing any '-' prefix makes testing easier
-  case ${BS_LAPI_Index#-}${c_BS_LIBARRAY_CFG__StartIndex} in
-    #...................................
-    #  Index is '0'; first index is '1'
+  #=========================================================
+  case ${BS_LA_PI_Index#-}${c_BS_LIBARRAY_CFG__start_index} in
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Index is '0'; first index is '1'
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     01)
       fn_bs_libarray_invalid_args \
-        "${BS_LAPI_Caller}"       \
-        "invalid index '${BS_LAPI_Index}' (one-based indexes are enabled)"
+        "${BS_LA_PI_Caller}"      \
+        "invalid index '${BS_LA_PI_Index}' (one-based indexes are enabled)"
       return "${c_BS_LIBARRAY__EX_USAGE}" ;;
 
-    #...................................
-    # Index is literally '-', or
-    # otherwise non-numeric
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Index is literally '-', or otherwise non-numeric
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     ?|*[!0123456789]*)
       fn_bs_libarray_invalid_args \
-        "${BS_LAPI_Caller}"       \
-        "invalid index '${BS_LAPI_Index}'"
+        "${BS_LA_PI_Caller}"      \
+        "invalid index '${BS_LA_PI_Index}'"
       return "${c_BS_LIBARRAY__EX_USAGE}" ;;
-  esac #< `case ${BS_LAPI_Index#-}${c_BS_LIBARRAY_CFG__StartIndex} in`
+  esac #<: `case ${BS_LA_PI_Index#-}${c_BS_LIBARRAY_CFG__start_index} in`
 
-  #---------------------------------------------------------
+  #=========================================================
   # Convert to a zero-based, forward index
-  case ${BS_LAPI_Index} in
-  -*) BS_LAPI_RealIndex=$((BS_LAPI_ArraySize + BS_LAPI_Index)) ;;               #< Negative Indexes:= Count Backwards
-   *) BS_LAPI_RealIndex=$((BS_LAPI_Index - c_BS_LIBARRAY_CFG__StartIndex)) ;;   #< Positive Indexes:= Count Forwards
+  #=========================================================
+  case ${BS_LA_PI_Index} in
+  -*) BS_LA_PI_RealIndex=$((BS_LA_PI_ArraySize + BS_LA_PI_Index)) ;;            #< Negative Indexes:= Count Backwards
+   *) BS_LA_PI_RealIndex=$((BS_LA_PI_Index - c_BS_LIBARRAY_CFG__start_index)) ;; #< Positive Indexes:= Count Forwards
   esac
 
-  #---------------------------------------------------------
+  #=========================================================
   # Validate range:
-  #     0 <= BS_LAPI_RealIndex <= BS_LAPI_MaxIndex
+  #     0 <= BS_LA_PI_RealIndex <= BS_LA_PI_MaxIndex
   # so both
-  #     BS_LAPI_RealIndex >= 0
+  #     BS_LA_PI_RealIndex >= 0
   # and
-  #     (BS_LAPI_MaxIndex - BS_LAPI_RealIndex) >= 0
+  #     (BS_LA_PI_MaxIndex - BS_LA_PI_RealIndex) >= 0
   # must be true
-  case ${BS_LAPI_RealIndex}$((BS_LAPI_MaxIndex - BS_LAPI_RealIndex)) in
+  #=========================================================
+  case ${BS_LA_PI_RealIndex}$((BS_LA_PI_MaxIndex - BS_LA_PI_RealIndex)) in
   *-*)  fn_bs_libarray_invalid_args \
-          "${BS_LAPI_Caller}"       \
-          "index '${BS_LAPI_Index}' is out of range [${c_BS_LIBARRAY_CFG__StartIndex}, ${BS_LAPI_MaxIndex}]"
+          "${BS_LA_PI_Caller}"      \
+          "index '${BS_LA_PI_Index}' is out of range [${c_BS_LIBARRAY_CFG__start_index}, ${BS_LA_PI_MaxIndex}]"
         return "${c_BS_LIBARRAY__EX_USAGE}" ;;
   esac
 
-  eval "${BS_LAPI_refIndex}=\"\${BS_LAPI_RealIndex}\""      #< SAVE
-}
+  #=========================================================
+  # SAVE
+  #=========================================================
+  eval "${BS_LA_PI_refIndex}=\${BS_LA_PI_RealIndex}"
+} #<: `fn_bs_libarray_process_index()`
 
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
@@ -1586,413 +2452,200 @@ fn_bs_libarray_process_index() { ## cSpell:Ignore BS_LAPI_
 #.   means some operations will add 1 to the index used.
 #.
 #_______________________________________________________________________________
-fn_bs_libarray_process_range() { ## cSpell:Ignore BS_LAPR_
-     BS_LAPR_Caller="${1:?'[libarray::fn_bs_libarray_process_range]: Internal Error: a command name is required'}"
-   BS_LAPR_refStart="${2:?'[libarray::fn_bs_libarray_process_range]: Internal Error: a start output variable is required'}"
-  BS_LAPR_refLength="${3:?'[libarray::fn_bs_libarray_process_range]: Internal Error: a length output variable is required'}"
-      BS_LAPR_Range="${4:?'[libarray::fn_bs_libarray_process_range]: Internal Error: a range is required'}"
-   BS_LAPR_MaxIndex="${5:?'[libarray::fn_bs_libarray_process_range]: Internal Error: a maximum index is required'}"
+fn_bs_libarray_process_range() { ## cSpell:Ignore BS_LA_PR_
+     BS_LA_PR_Caller=${1:?'[libarray::fn_bs_libarray_process_range]: Internal Error: a caller is required'}
+   BS_LA_PR_refStart=${2:?'[libarray::fn_bs_libarray_process_range]: Internal Error: a start output variable is required'}
+  BS_LA_PR_refLength=${3:?'[libarray::fn_bs_libarray_process_range]: Internal Error: a length output variable is required'}
+      BS_LA_PR_Range=${4:?'[libarray::fn_bs_libarray_process_range]: Internal Error: a range is required'}
+   BS_LA_PR_MaxIndex=${5:?'[libarray::fn_bs_libarray_process_range]: Internal Error: a maximum index is required'}
 
-  case ${BS_LAPR_Range} in
-    #...................................
-    #> `case ${BS_LAPR_Range} in`
-    #> --------------------------
-    #
-    # Range is of form
-    #    '[<START>]:[<END>]'
-    # which translates to a range of
-    #    [START, END)
+  #=========================================================
+  # Ranges can be in multiple formats...
+  #=========================================================
+  case ${BS_LA_PR_Range} in
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # '[<START>]:[<END>]'
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     *':'*)
-      BS_LAPR_Start="${BS_LAPR_Range%:*}"
-        BS_LAPR_End="${BS_LAPR_Range#*:}"
+      #---------------------------------
+      #   '[<START>]:[<END>]'
+      #     translates to
+      #      [START, END)
+      #---------------------------------
 
       # Process START
-      case ${BS_LAPR_Start:+1} in
+      BS_LA_PR_Start=${BS_LA_PR_Range%:*}
+      case ${BS_LA_PR_Start:+1} in
       1)  fn_bs_libarray_process_index \
-            "${BS_LAPR_Caller}"        \
-            'BS_LAPR_Start'            \
-            "${BS_LAPR_MaxIndex}"      || return $? ;;
-      *)  BS_LAPR_Start=0 ;;
-      esac
+            "${BS_LA_PR_Caller}"       \
+            'BS_LA_PR_Start'           \
+            "${BS_LA_PR_MaxIndex}"     || return $? ;;
+      *)  BS_LA_PR_Start=0 ;;
+      esac #<: `case ${BS_LA_PR_Start:+1} in`
 
       # Process END
-      case ${BS_LAPR_End:+1} in
+      BS_LA_PR_End=${BS_LA_PR_Range#*:}
+      case ${BS_LA_PR_End:+1} in
       1)  fn_bs_libarray_process_index \
-            "${BS_LAPR_Caller}"        \
-            'BS_LAPR_End'              \
-            $((BS_LAPR_MaxIndex + 1))  || return $? ;;
-      *)  BS_LAPR_End="${BS_LAPR_MaxIndex}" ;;
-      esac
+            "${BS_LA_PR_Caller}"       \
+            'BS_LA_PR_End'             \
+            $((BS_LA_PR_MaxIndex + 1)) || return $? ;;
+      *)  BS_LA_PR_End=${BS_LA_PR_MaxIndex} ;;
+      esac #<: `case ${BS_LA_PR_End:+1} in`
 
-      BS_LAPR_Length=$((BS_LAPR_End - BS_LAPR_Start))
-    ;;
+      BS_LA_PR_Length=$((BS_LA_PR_End - BS_LA_PR_Start))
+    ;; #<: `*':'*)`
 
-    #...................................
-    #> `case ${BS_LAPR_Range} in`
-    #> --------------------------
-    #
-    # Range is of form
-    #    '[<START>]#[<LENGTH>]'
-    # which translates to a range of
-    #    [START, START + LENGTH)
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # '[<START>]#[<LENGTH>]'
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     *'#'*)
-      BS_LAPR_Start="${BS_LAPR_Range%#*}"
-      BS_LAPR_Length="${BS_LAPR_Range#*#}"
+      #---------------------------------
+      #   '[<START>]#[<LENGTH>]'
+      #         translates to
+      #   [START, START + LENGTH)
+      #---------------------------------
 
       # Process START
-      case ${BS_LAPR_Start:+1} in
+      BS_LA_PR_Start=${BS_LA_PR_Range%[#]*}
+      case ${BS_LA_PR_Start:+1} in
       1)  fn_bs_libarray_process_index \
-            "${BS_LAPR_Caller}"        \
-            'BS_LAPR_Start'            \
-            "${BS_LAPR_MaxIndex}"      || return $? ;;
-      *)  BS_LAPR_Start=0 ;;
+            "${BS_LA_PR_Caller}"       \
+            'BS_LA_PR_Start'           \
+            "${BS_LA_PR_MaxIndex}"     || return $? ;;
+      *)  BS_LA_PR_Start=0 ;;
       esac
 
       # Process LENGTH
-      case ${BS_LAPR_Length:+1} in
-      1)  case ${BS_LAPR_Length#-} in
+      BS_LA_PR_Length=${BS_LA_PR_Range#*[#]}
+      case ${BS_LA_PR_Length:+1} in
+      1)  case ${BS_LA_PR_Length#-} in
           ''|*[!0123456789]*)
             fn_bs_libarray_invalid_args \
-              "${BS_LAPR_Caller}"       \
-              "invalid range length '${BS_LAPR_Range}'"
+              "${BS_LA_PR_Caller}"      \
+              "invalid range length '${BS_LA_PR_Range}'"
             return "${c_BS_LIBARRAY__EX_USAGE}" ;;
           esac ;;
-      *)  BS_LAPR_Length=$((BS_LAPR_MaxIndex - BS_LAPR_Start)) ;;
+      *)  BS_LA_PR_Length=$((BS_LA_PR_MaxIndex - BS_LA_PR_Start)) ;;
       esac
 
       # Calculate END (for validation)
-      BS_LAPR_End=$((BS_LAPR_Start + BS_LAPR_Length))
+      BS_LA_PR_End=$((BS_LA_PR_Start + BS_LA_PR_Length))
 
       # Validate range:
-      #    0 <= BS_LAPR_End <= BS_LAPR_MaxIndex
-      case ${BS_LAPR_End}$((BS_LAPR_MaxIndex - BS_LAPR_End)) in
+      #    0 <= BS_LA_PR_End <= BS_LA_PR_MaxIndex
+      case ${BS_LA_PR_End}$((BS_LA_PR_MaxIndex - BS_LA_PR_End)) in
       *-*)  fn_bs_libarray_invalid_args \
-              "${BS_LAPR_Caller}"       \
-              "invalid range length '${BS_LAPR_Range}'"
+              "${BS_LA_PR_Caller}"      \
+              "invalid range length '${BS_LA_PR_Range}'"
             return "${c_BS_LIBARRAY__EX_USAGE}" ;;
       esac
-    ;;
+    ;; #<: `*'#'*)`
 
-    #...................................
-    #> `case ${BS_LAPR_Range} in`
-    #> --------------------------
-    #
-    # Range is invalid
-    *)
-      fn_bs_libarray_invalid_args \
-        "${BS_LAPR_Caller}"       \
-        "invalid range '${BS_LAPR_Range}'"
-      return "${c_BS_LIBARRAY__EX_USAGE}" ;;
-  esac #<: `case ${BS_LAPR_Range} in`
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # INVALID
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    *)  fn_bs_libarray_invalid_args \
+          "${BS_LA_PR_Caller}"      \
+          "invalid range '${BS_LA_PR_Range}'"
+        return "${c_BS_LIBARRAY__EX_USAGE}" ;;
+  esac #<: `case ${BS_LA_PR_Range} in`
 
-  #---------------------------------------------------------
+  #=========================================================
   # A zero LENGTH is invalid, while a negative LENGTH means
   # the range is a reversed range where START should point
   # to the highest numbered array element (the range then
   # counts backwards from this element).
-  case ${BS_LAPR_Length} in
+  #=========================================================
+  case ${BS_LA_PR_Length} in
   0|-0) fn_bs_libarray_invalid_args \
-          "${BS_LAPR_Caller}"       \
-          "invalid range '${BS_LAPR_Range}' (Length: ${BS_LAPR_Length})"
+          "${BS_LA_PR_Caller}"      \
+          "invalid range '${BS_LA_PR_Range}' (Length: ${BS_LA_PR_Length})"
         return "${c_BS_LIBARRAY__EX_USAGE}" ;;
-    -*) BS_LAPR_Start=$((BS_LAPR_Start + 1 + BS_LAPR_Length)) ;;
-  esac
+    -*) BS_LA_PR_Start=$((BS_LA_PR_Start + 1 + BS_LA_PR_Length)) ;;
+  esac #<: `case ${BS_LA_PR_Length} in`
 
-  eval " ${BS_LAPR_refStart}=\"\${BS_LAPR_Start}\"
-        ${BS_LAPR_refLength}=\"\${BS_LAPR_Length}\""        #< SAVE
-}
+  #=========================================================
+  # SAVE
+  #=========================================================
+  eval " ${BS_LA_PR_refStart}=\${BS_LA_PR_Start}
+        ${BS_LA_PR_refLength}=\${BS_LA_PR_Length}"
+} #<: `fn_bs_libarray_process_range()`
 
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
 #;
-#; ### `fn_bs_libarray_match_bre`
+#; ### `fn_bs_libarray_any_contain_newline`
 #;
-#; Test if a value matches a ["Basic Regular Expression" (_BRE_)][posix_bre]
-#; without generating any output.
-#;
-#; Exit Status will be zero (i.e. "success") if the value matches the _BRE_.
+#; Check if any passed values contain `<newline>` characters.
 #;
 #; _SYNOPSIS_
 #; <!-- - -->
 #;
-#;     fn_bs_libarray_match_bre <VALUE> <BRE>
+#;     fn_bs_libarray_any_contain_newline <CALLER> [<VALUE>...]
 #;
 #; _ARGUMENTS_
 #; <!-- -- -->
+#;
+#; `CALLER` \[in]
+#;
+#; : Name of the calling command.
+#; : Used for any error message.
 #;
 #; `VALUE` \[in]
 #;
+#; : Parameters.
+#; : Can be specified multiple times.
 #; : Can be null.
-#; : Can contain any arbitrary text excluding any
-#;   embedded `\0` (`<NUL>`) characters.
 #;
-#; `BRE` \[in]
+#; _NOTES_
+#; <!-- -->
 #;
-#; : A _POSIX.1_ ["Basic Regular Expression"][posix_bre].
-#; : _Always_ anchored to the start of `VALUE` (i.e. an
-#;   implicit `^` (`<circumflex>`) precedes the expression).
-#; : Multiple line matches are permitted, but should
-#;   avoid the line end anchor `$` (`<dollar-sign>`) as
-#;   this is not portable.
-#; : May be used with different utilities on
-#;   different platforms; should not assume any
-#;   non-standard extensions will work.
+#; - This is required to determine which version of some algorithms to use as
+#;   not all support embedded `<newline>` characters.
 #;
 #. _IMPLEMENTATION NOTES_
 #. <!-- ------------- -->
 #.
-#. - There are multiple _POSIX.1_ specified utilities that support _BRE_ (e.g.
-#.   `expr`, `grep`, `sed`, etc). However, not all of these are suitable for
-#.   use here; `grep`, for example, can't easily do a match that may span
-#.   multiple lines. While this is not necessarily an issue in most cases
-#.   it is not easy to detect when such a use is intended, instead the
-#.   result would simply be incorrect.
+#. - There are a number of ways of implementing this, the most obvious of which
+#.   is probably to use `$*` and check if the result contains any `<newline>`
+#.   characters. Unfortunately, this relies on the value of `IFS`, which is
+#.   likely to be suitable, but _may_ not be. There is also the potential for
+#.   `$*` to be a performance issue - depending on how it is implemented by any
+#.   given shell _and_ the size of the resulting value (this has not shown up
+#.   in testing for multiple shells, but remains possible). The best
+#.   alternative, then, is to check each value in turn - iterating over them in
+#.   a way that is most likely to be performant regardless of the shell. (In
+#.   tests, this was measured as equivalent in performance to `$*` - perhaps
+#.   even (very) marginally faster in general and possibly much faster if any
+#.   values contain `<newline>` characters due to the possibility of an early
+#.   exit.)
 #.
 #_______________________________________________________________________________
-case ${c_BS_LIBARRAY_CFG_USE__expr_bre_match:-0} in
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  #> `case ${c_BS_LIBARRAY_CFG_USE__expr_bre_match:-0} in`
-  #> -----------------------------------------------------
-  #
-  # `expr` AVAILABLE
-  #
-  # Simple `expr` wrapper but with `STDOUT`
-  # suppressed
-  1)
-    case ${c_BS_LIBARRAY_CFG_USE__dev_null:-0} in
-      #.....................................................
-      #> `case ${c_BS_LIBARRAY_CFG_USE__dev_null:-0} in`
-      #> -----------------------------------------------
-      #
-      # `/dev/null` AVAILABLE
-      1)
-        fn_bs_libarray_match_bre() { ## cSpell:Ignore BS_LAMBRE_
-          BS_LAMBRE_Value="${1?'[libarray::fn_bs_libarray_match_bre]: Internal Error: a value is required'}"
-          BS_LAMBRE_Expr="${2:?'[libarray::fn_bs_libarray_match_bre]: Internal Error: an expression is required'}"
-          expr "_${BS_LAMBRE_Value}" : "_${BS_LAMBRE_Expr#^}" >/dev/null
-        }
-      ;;
+fn_bs_libarray_any_contain_newline() { ## cSpell:Ignore BS_LA_ACN_
+  BS_LA_ACN_Caller=${1:?'[libarray::fn_bs_libarray_any_contain_newline]: Internal Error: a caller is required'}
+  shift
 
-      #.....................................................
-      #> `case ${c_BS_LIBARRAY_CFG_USE__dev_null:-0} in`
-      #> -----------------------------------------------
-      #
-      # `/dev/null` UNAVAILABLE
-      #
-      # This requires output is captured, so a subshell
-      # is needed, making this slower than the previous
-      # solution
-      0)
-        fn_bs_libarray_match_bre() { ## cSpell:Ignore BS_LAMBRE_
-            BS_LAMBRE_Value="${1?'[libarray::fn_bs_libarray_match_bre]: Internal Error: a value is required'}"
-            BS_LAMBRE_Expr="${2:?'[libarray::fn_bs_libarray_match_bre]: Internal Error: an expression is required'}"
-          BS_LAMBRE_Ignored="$(expr "_${BS_LAMBRE_Value}" : "_${BS_LAMBRE_Expr#^}")"
-        }
-      ;;
-    esac #<: `case ${c_BS_LIBARRAY_CFG_USE__dev_null:-0} in`
-  ;;
+  #---------------------------------------------------------
+  # Loop over all values and check each in turn
+  #---------------------------------------------------------
+  for BS_LA_ACN_Value
+  do
+    case ${BS_LA_ACN_Value} in
+    *"${c_BS_LIBARRAY__newline}"*) return 0 ;;
+    esac
+  done
 
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  #> `case ${c_BS_LIBARRAY_CFG_USE__expr_bre_match:-0} in`
-  #> -----------------------------------------------------
-  #
-  # `expr` UNAVAILABLE
-  #
-  # Emulation of `expr` using `sed -n` which only writes
-  # to `STDOUT` if the _BRE_ was matched.
-  #
-  # Requires multiple commands in a pipeline, for which
-  # the output must also be captured, this results in
-  # two subshell environments (one for capture, one for
-  # pipeline) so is slower than the above alternatives.
-  0)
-    fn_bs_libarray_match_bre() { ## cSpell:Ignore BS_LAMBRE_
-      BS_LAMBRE_Value="${1?'[libarray::fn_bs_libarray_match_bre]: Internal Error: a value is required'}"
-      BS_LAMBRE_Expr="${2:?'[libarray::fn_bs_libarray_match_bre]: Internal Error: an expression is required'}"
-
-      # `printf` needs to append a `<newline>` as `sed` will
-      # strip the trailing `<newline>` from the value when
-      # it reads the input, and it's not possible to
-      # detect if this has been done within `sed` itself.
-      #
-      # By default `sed` acts on individual lines, however
-      # this can be changed with the `N` directive which
-      # reads another line and appends it to the pattern
-      # space delimited by a literal `\n` (`<newline>`)
-      # character. The `sed` address `$` matches the end of
-      # input, here this means the pattern space holds
-      # everything from `BS_LAMBRE_Value`.
-      BS_LAMBRE_Match="$(
-          {
-            printf '%s\n' "${BS_LAMBRE_Value}"
-          } | {
-            sed -n -e " :LOOP
-                          \$!N
-                          \$!b LOOP
-                        /^${BS_LAMBRE_Expr#^}/p"
-          }
-        )" || return $?
-
-      case ${BS_LAMBRE_Match:+1} in
-      1) return 0 ;;
-      *) return 1 ;;
-      esac
-    }
-  ;;
-esac #<: `case ${c_BS_LIBARRAY_CFG_USE__expr_bre_match:-0} in`
+  #---------------------------------------------------------
+  # No `<newline>` characters if we got here.
+  #---------------------------------------------------------
+  return 1
+} #<: `fn_bs_libarray_any_contain_newline()`
 
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
 #;
-#; ### `fn_bs_libarray_match_ere`
-#;
-#; Test if a value matches a ["Extended Regular Expression" (_ERE_)][posix_ere]
-#; without generating any output.
-#;
-#; Exit Status will be zero (i.e. "success") if the value matches the _ERE_.
-#;
-#; _SYNOPSIS_
-#; <!-- - -->
-#;
-#;     fn_bs_libarray_match_ere <VALUE> <ERE>
-#;
-#; _ARGUMENTS_
-#; <!-- -- -->
-#;
-#; `VALUE` \[in]
-#;
-#; : Can be null.
-#; : Can contain any arbitrary text excluding any
-#;   embedded `\0` (`<NUL>`) characters.
-#;
-#; `ERE` \[in]
-#;
-#; : A _POSIX.1_ ["Extended Regular Expression"][posix_ere].
-#; : _Always_ anchored to the start of `VALUE` (i.e. an
-#;   implicit `^` (`<circumflex>`) precedes the expression).
-#;
-#. _IMPLEMENTATION NOTES_
-#. <!-- ------------- -->
-#.
-#. - The only _POSIX.1_ specified utilities that support _ERE_ are `awk` and
-#.   `grep`. However, `grep` can not be used for the same reasons it can't
-#.   be used to match "Basic Regular Expressions" (see
-#.   [`fn_bs_libarray_match_bre`](#fn_bs_libarray_match_bre)).
-#. - On some platforms (e.g. Solaris) the default version of `awk` is extremely
-#.   limited and supports very little of the standard.
-#.
-#...............................................................................
-fn_bs_libarray_match_ere() { ## cSpell:Ignore BS_LAMERE_
-  BS_LAMERE_Value="${1?'[libarray::fn_bs_libarray_match_ere]: Internal Error: a value is required'}"
-   BS_LAMERE_Expr="${2:?'[libarray::fn_bs_libarray_match_ere]: Internal Error: an expression is required'}"
-
-  {
-    printf '%s\n' "${BS_LAMERE_Value}_"
-  } | {
-    awk "
-        {
-          BS_LA_FullTxt = BS_LA_FullTxt sprintf(\"%s\n\", \$0)
-        }
-
-        END {
-          # An additional newline will have been added to
-          # the text that is **not** from the initial
-          # text, so this is removed here.
-          BS_LA_TextLen = length(BS_LA_FullTxt) - 2
-          BS_LA_FullTxt = substr(BS_LA_FullTxt, 1, BS_LA_TextLen)
-
-
-          # The expression is embedded in the script here
-          # rather than passed to awk in a more traditional
-          # way as it turns out to be _very_ difficult to
-          # do that in a portable way.
-          #
-          # WARNING: Could be an 'injection attack' target.
-          #
-          if (BS_LA_FullTxt ~ /^(${BS_LAMERE_Expr#^})/) {
-            exit 0
-          } else {
-            exit 1
-          }
-        }
-      "
-  }
-}
-
-#_______________________________________________________________________________
-#; ---------------------------------------------------------
-#;
-#; ### `fn_bs_libarray_as_safe_case_pattern`
-#;
-#; Escape a `case` pattern so that it can be used safely with `eval`.
-#;
-#; _SYNOPSIS_
-#; <!-- - -->
-#;
-#;     fn_bs_libarray_as_safe_case_pattern <PATTERN>
-#;
-#; _ARGUMENTS_
-#; <!-- -- -->
-#;
-#; `PATTERN` \[in/out:ref]
-#;
-#; : Variable that contains the pattern and will
-#;   receive the escaped pattern.
-#; : All `case` special pattern matching characters
-#;   (e.g. `*` (`<asterisk>`), `?` (`<question-mark>`), etc)
-#;   retain their special meaning and need escaped if meant
-#;   to match literally.
-#; : Value can be a single `case` pattern or
-#;   multiple patterns using the `case` pattern
-#;   delimiter (i.e. `|` (`<vertical-line>`)).
-#; : All characters outside the _POSIX.1_ specified
-#;   `case` pattern matching characters are made
-#;   literal, notably this includes quote characters.
-#;
-#. _IMPLEMENTATION NOTES_
-#. <!-- ------------- -->
-#.
-#. - The set of characters NOT escaped is deliberately very limited. There is
-#.   no performance gain from using a larger set and there is more potential
-#.   for unsafe characters to be missed.
-#. - The character `]` (`<right-square-bracket>`) is _only_ special **if**
-#.   preceded by `[` (`<left-square-bracket>`), otherwise it is literal.
-#.   (This is true for both `case` and `sed` - both of which are used here.)
-#. - There are two sequences that need special attention: the character
-#.   `]` (`<right-square-bracket>`), and the sequence `[!`
-#.   (`<left-square-bracket><exclamation-mark>`) both are difficult to exclude
-#.   from being escaped but neither should be escaped. It is easier to unescape
-#.   these sequences specifically than attempt to avoid them being escaped in
-#.   the first place.
-#. - For any `PATTERN` that consists of only characters that are not escaped,
-#.   this command is a no-op.
-#.
-#_______________________________________________________________________________
-fn_bs_libarray_as_safe_case_pattern() { ## cSpell:Ignore BS_LAASCP_
-  BS_LAASCP_refPattern="${1:?'[libarray::fn_bs_libarray_as_safe_case_pattern]: Internal Error: a pattern variable is required'}"
-
-  eval "BS_LAASCP_Pattern=\"\${${BS_LAASCP_refPattern}-}\"" || return $?
-
-  # Avoid escaping if possible (the performance advantage is worth the check)
-  case ${BS_LAASCP_Pattern} in
-  *[!-*?\\\|[_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789]*)
-    BS_LAASCP_Pattern="$(
-        {
-          printf '%s\n' "${BS_LAASCP_Pattern}"
-        } | {
-          sed -e 's/[^-*?\\|[_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789]/\\&/g
-                  s/\\]/]/g
-                  s/\[\\!/[!/g'
-        }
-      )"
-    eval "${BS_LAASCP_refPattern}=\"\${BS_LAASCP_Pattern}\"" ;; #< SAVE
-  esac
-}
-
-#_______________________________________________________________________________
-#; ---------------------------------------------------------
-#;
-#; ### `fn_bs_libarray_escape_newlines`
+#; ### `fn_bs_libarray_escape_for_sort`
 #;
 #; Unpack the given array with each value flattened to a single line by
 #; replacing any newline characters with an escape sequence that can not
@@ -2008,7 +2661,7 @@ fn_bs_libarray_as_safe_case_pattern() { ## cSpell:Ignore BS_LAASCP_
 #; _SYNOPSIS_
 #; <!-- - -->
 #;
-#;     fn_bs_libarray_escape_newlines <CALLER> <ARRAY>
+#;     fn_bs_libarray_escape_for_sort <CALLER> <ARRAY>
 #;
 #; _ARGUMENTS_
 #; <!-- -- -->
@@ -2034,69 +2687,154 @@ fn_bs_libarray_as_safe_case_pattern() { ## cSpell:Ignore BS_LAASCP_
 #;   as expected, but _will_ sort in the same order every time.
 #;
 #_______________________________________________________________________________
-fn_bs_libarray_escape_newlines() { ## cSpell:Ignore BS_LAEN_
-    BS_LAEN_Caller="${1:?'[libarray::fn_bs_libarray_escape_newlines]: Internal Error: a command name is required'}"
-  BS_LAEN_refArray="${2:?'[libarray::fn_bs_libarray_escape_newlines]: Internal Error: an array variable name is required'}"
+fn_bs_libarray_escape_for_sort() { ## cSpell:Ignore BS_LA_EFS_
+    BS_LA_EFS_Caller=${1:?'[libarray::fn_bs_libarray_escape_for_sort]: Internal Error: a caller is required'}
+  BS_LA_EFS_refArray=${2:?'[libarray::fn_bs_libarray_escape_for_sort]: Internal Error: an array variable name is required'}
 
+  #=========================================================
   # Unpack...
-  eval "BS_LAEN_Array=\"\${${BS_LAEN_refArray}-}\""      || return $?
-  eval "set 'BS_DUMMY_PARAM' ${BS_LAEN_Array?} && shift" || return $?
+  #=========================================================
+  eval "BS_LA_EFS_Array=\${${BS_LA_EFS_refArray}-}"        || return $?
+  eval "set 'BS_DUMMY_PARAM' ${BS_LA_EFS_Array?} && shift" || return $?
 
+  #=========================================================
   # Escape the values (to standard out)...
-  for BS_LAEN_Value
+  #=========================================================
+  for BS_LA_EFS_Value
   do
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Processing only when required can have a significant
     # performance impact.
-    case ${BS_LAEN_Value} in
-      #...................................
-      #> `case ${BS_LAEN_Value} in
-      #> -------------------------
-      #
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    case ${BS_LA_EFS_Value} in
+      #-----------------------------------------------------
       # NEEDS ESCAPED
-      *\\*|*${c_BS_LIBARRAY__newline}*)
-        # `printf` needs to append a `<newline>` as `sed` will
-        # strip the trailing `<newline>` from the value when
-        # it reads the input, and it's not possible to
-        # detect if this has been done within `sed` itself.
-        #
+      #-----------------------------------------------------
+      *\\*|*"${c_BS_LIBARRAY__newline}"*)
         # By default `sed` acts on individual lines, however
         # this can be changed with the `N` directive which
         # reads another line and appends it to the pattern
-        # space delimited by a literal `<newline>` character.
-        # The `sed` address `$` matches the end of input,
-        # here this means the pattern space holds everything
-        # from `BS_LAMBRE_Value`.
+        # space delimited by a literal `<newline>`
+        # character. The `sed` address `$` matches the end
+        # of input, here this means the pattern space holds
+        # everything from `BS_LA_EFS_Value`.
         {
-          printf '%s\n' "${BS_LAEN_Value}"
+          printf '%s\n' "${BS_LA_EFS_Value}"
         } | {
           sed -e ':LOOP
                     $!N
                     $!b LOOP
                   s/\\/\\\\/g
                   s/\n/ \\n/g'
-        } ;;
+        }
+      ;;
 
-      #...................................
-      #> `case ${BS_LAEN_Value} in
-      #> -------------------------
-      #
+      #-----------------------------------------------------
       # FINE AS IS
-      *) printf '%s\n' "${BS_LAEN_Value}" ;;
-    esac #<: `case ${BS_LAEN_Value} in`
-  done #<: `for BS_LAEN_Value`
-}
+      #-----------------------------------------------------
+      *) printf '%s\n' "${BS_LA_EFS_Value}" ;;
+    esac #<: `case ${BS_LA_EFS_Value} in`
+  done #<: `for BS_LA_EFS_Value`
+} #<: `fn_bs_libarray_escape_for_sort()`
 
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
 #;
-#; ### `fn_bs_libarray_create`
+#; ### `fn_bs_libarray_sanitize_sed_bre`
 #;
-#; Create an array or a reverse array of a specific length.
+#; Escape a ["Basic Regular Expression"][posix_bre] such that it can be safely
+#; used in a `sed` script.
 #;
 #; _SYNOPSIS_
 #; <!-- - -->
 #;
-#;     fn_bs_libarray_create <CALLER> <COUNT> [<VALUE>...]
+#;     fn_bs_libarray_sanitize_sed_bre <BRE>
+#;
+#; _ARGUMENTS_
+#; <!-- -- -->
+#;
+#; `BRE` \[in]
+#;
+#; : A _POSIX.1_ ["Basic Regular Expression"][posix_bre].
+#; : Any `/` (`<slash>`) or `<newline>` characters will be
+#;   escaped - no other characters will be modified.
+#;
+#; _CAVEATS_
+#; <!-- - -->
+#;
+#; - If `BRE` ends with a `<newline>` character, the caller must take care that
+#;   this is not lost.
+#;
+#; _NOTES_
+#; <!-- -->
+#;
+#; - The escaped `BRE` is written to `STDOUT`.
+#; - It is expected that the caller has determined that escaping is required -
+#;   this command always processes values.
+#;
+#. _IMPLEMENTATION NOTES_
+#. <!-- ------------- -->
+#.
+#. - There are only two characters that need to be handled here: `<newline>`
+#.   characters and `/` (`<slash>`) characters. `<newline>` characters need
+#.   escaped as some implementations of `sed` do not support a literal
+#.   `<newline>` character as part of a _BRE_, although they _do_ as
+#.   replacements (if properly escaped). `<slash>` characters need escaped as
+#.   they are used to demark the _BRE_ in the `sed` script, and while it is
+#.   supposed to be possible to use alternative characters for this, not all
+#.   versions of `sed` support alternative characters in all cases. (Notably,
+#.   Solaris 11 has a version of `sed` that allows alternative characters for
+#.   the `s/.../.../` function, but not for the `/.../` function.) In both cases
+#.   the escaped value seems to be highly portable.
+#.
+#_______________________________________________________________________________
+fn_bs_libarray_sanitize_sed_bre() { ## cSpell:Ignore BS_LA_SSBRE_
+  BS_LA_SSBRE_BRE=${1?'[libarray::fn_bs_libarray_sanitize_sed_bre]: Internal Error: a BRE is required'}
+
+  #=========================================================
+  # Some implementations of `sed` do not support general
+  # usage of `*` (`<asterisk>`) or interval patterns (i.e.
+  # `{N[,[M]]}`) - restricting them to use with either a
+  # single character _or_ a back reference.
+  #
+  # In this case it means the expression to match unescaped
+  # `/` (`<slash>`) characters can not be (portably) written
+  # in the most obvious way, namely `\([^\\]\(\\\\\)*\)/` -
+  # however, this can be converted to a more portable
+  # alternative using multiple capture groups and back
+  # references: `\([^\\]\)\(\\\\\)\(\2*\)/`. Note that this
+  # needs paired with a version without `\(\\\\\)` to
+  # completely replace the previous expression.
+  #
+  # This is likely to be marginally less performant in the
+  # common case, but it's unlikely to be noticeable.
+  #=========================================================
+  {
+    printf '%s\n' "${BS_LA_SSBRE_BRE}"
+  } | {
+    sed -e '
+        :LOOP
+          $!N
+          $!b LOOP
+        s|\n|\\n|g
+        s|\([^\\]\)\(\\\\\)\(\2*\)/|\1\2\3\\/|g
+        s|\([^\\]\)/|\1\\/|g
+        s|^/|\\/|
+      '
+  }
+} #<: `fn_bs_libarray_sanitize_sed_bre()`
+
+#_______________________________________________________________________________
+#; ---------------------------------------------------------
+#;
+#; ### `fn_bs_libarray_cmp_glob`
+#;
+#; Compare a value with a shell pattern (aka glob) expression.
+#;
+#; _SYNOPSIS_
+#; <!-- - -->
+#;
+#;     fn_bs_libarray_cmp_glob <CALLER> <OPERATOR> <VALUE> <GLOB>
 #;
 #; _ARGUMENTS_
 #; <!-- -- -->
@@ -2106,117 +2844,702 @@ fn_bs_libarray_escape_newlines() { ## cSpell:Ignore BS_LAEN_
 #; : Name of the calling command.
 #; : Used for any error message.
 #;
-#; `COUNT` \[in]
+#; `OPERATOR` \[in]
 #;
-#; : Number of values in final array.
-#; : Can be less than the number of `VALUE`
-#;   arguments provided.
-#; : If negative `VALUE`s are added in reverse order.
-#; : MUST be numeric.
+#; : Either `~` or `!~` indicating whether a match (`~`) or
+#;   a non-match (`!~`) is being tested.
+#; : _NOT_ tested for correctness.
 #;
 #; `VALUE` \[in]
 #;
-#; : Can be specified multiple times.
 #; : Can be null.
 #; : Can contain any arbitrary text excluding any
 #;   embedded `\0` (`<NUL>`) characters.
-#; : MUST be _at least_ `COUNT` `VALUE` arguments provided,
-#;   but only the first `COUNT` `VALUE` arguments will be
-#;   used.
+#;
+#; `GLOB` \[in]
+#;
+#; : Shell ["Pattern Matching Notation"][posix_glob] value.
+#; : Can contain any arbitrary text excluding any
+#;   embedded `\0` (`<NUL>`) characters.
+#;
+#; _CAVEATS_
+#; <!-- - -->
+#;
+#; - **WARNING:** _Not all characters can be used portably._
+#; - The locale used is that of the shell as invoked -
+#;   _it is **not** possible to change the locale of a running shell_.
+#; - See ["PATTERN MATCHING"](./README.MD#pattern-matching).
 #;
 #; _NOTES_
 #; <!-- -->
 #;
-#; - if `COUNT` is negative the resulting array is created using the provided
-#;   `VALUE` arguments in reverse. If there are more `VALUE` arguments than
-#;   required, only the first `COUNT` are used. (The first value in a
-#;   reverse array _may_ therefore _not_ be the last `VALUE` argument provided.)
+#; - Shell ["Pattern Matching Notation"][posix_glob] are commonly called "globs"
+#;   or "wildcards", and are a simple way of matching patterns in values that is
+#;   most commonly used when dealing with file names (it is also often referred
+#;   to explicitly as such), or with `case` matches (although the `case` syntax
+#;   is slightly extended from other uses).
+#; - Exit status is dependent on `OPERATOR`: `~` a success status indicates a
+#;   match, while for `!~` a success status indicates no match.
 #;
+#. _IMPLEMENTATION NOTES_
+#. <!-- ------------- -->
+#.
+#. - The most obvious method for matching a value against a glob is the `case`
+#.   statement: `case ${Value} in ${Pattern})...`. Unfortunately, this also
+#.   turns out to be one of the least portable ways to do this, with problems
+#.   handling `(`, `)`, `|`, and `\` and possibly more. In some cases these can
+#.   be handled portably, while in others it seems impossible to do
+#.   so.[^case_glob] Parameter Expansion avoids several of these issues, but
+#.   continues to have problems with `\`.
+#. - [`autoconf` docs][autoconf_portable] mention that `pdksh` does not properly
+#.   handle parameter expansion of some forms, however the example sited in the
+#.   docs appears to have no issues on `pdksh` versions available on modern
+#.   systems. (`pdksh` was last properly updated in 1999, the version sited in
+#.   the `autoconf` docs is `5.2.14` while the latest version appears to be
+#.   `5.2.14.2` - but it is not clear where this version comes from nor what
+#.   changes might be present since the last version.) It is assumed, therefore
+#.   this issue is historical, and is ignored.
+#.
+#. [^case_glob]: For some shells the characters `(` and/or `)` cause a parsing
+#.               error. With `|`, some shells treat this as the normal `case`
+#.               special alternation operator, while for others it is a literal
+#.               `|` character - for those where it is an operator, it is not
+#.               always easy to escape the character, and in either case it is
+#.               not possible to use the character portably.
+#.
 #_______________________________________________________________________________
-fn_bs_libarray_create() { ## cSpell:Ignore BS_LACreate_
-  BS_LACreate_Caller="${1:?'[libarray::fn_bs_libarray_create]: Internal Error: a command name is required'}"
-  shift
-  BS_LACreate_Count="${1:?'[libarray::fn_bs_libarray_create]: Internal Error: a count of values is required'}"
-  shift
+fn_bs_libarray_cmp_glob() { ## cSpell:Ignore BS_LA_CmpGlob_
+  BS_LA_CmpGlob_Caller=${1:?'[libarray::fn_bs_libarray_cmp_glob]: Internal Error: a caller is required'}
+      BS_LA_CmpGlob_Op=${2:?'[libarray::fn_bs_libarray_cmp_glob]: Internal Error: an operator is required'}
+    BS_LA_CmpGlob_Expr=${3?'[libarray::fn_bs_libarray_cmp_glob]: Internal Error: an expression is required'}
+   BS_LA_CmpGlob_Value=${4?'[libarray::fn_bs_libarray_cmp_glob]: Internal Error: a value is required'}
 
-  case ${BS_LACreate_Count} in
-    #...................................
-    #> `case ${BS_LACreate_Count} in`
-    #> ------------------------------
-    #
-    #  Empty Array
-    0) return ;;
+  #=========================================================
+  # The most portable way to test for a glob match is using
+  # parameter expansion. The use of "longest match" syntax
+  # (i.e. `${Parameter##[word]}`) rather than the (perhaps
+  # more obvious) "shortest match" syntax (i.e.
+  # `${Parameter#[word]}`) is to avoid issues with
+  # some shells which do not properly handle the latter if
+  # the pattern starts with `#`.
+  #=========================================================
+  # SC2295: Expansions inside ${..} need to be quoted
+  #         separately, otherwise they will match as a
+  #         pattern.
+  # EXCEPT: Want globbing to happen here.
+  # shellcheck disable=SC2295
+  BS_LA_CmpGlob_Match=${BS_LA_CmpGlob_Value##${BS_LA_CmpGlob_Expr}}
 
-    #...................................
-    #> `case ${BS_LACreate_Count} in`
-    #> ------------------------------
-    #
-    # Negative Count:= Reverse Array
-    -*)
-      BS_LACreate_Count=$((0 - BS_LACreate_Count))
-
-      case $(($# - BS_LACreate_Count)) in #< [ "${BS_LACreate_Count}" -gt $# ]
-      -*) fn_bs_libarray_invalid_args \
-            "${BS_LACreate_Caller}"   \
-            "not enough values for count (${BS_LACreate_Count} > $#)"
-          return "${c_BS_LIBARRAY__EX_USAGE}" ;;
-      esac
-
-      while : #< [ "${BS_LACreate_Count}" -gt 0 ]
-      do
-        #> LOOP TEST --------------------------------
-        case ${BS_LACreate_Count} in 0) break ;; esac #< [ "${BS_LACreate_Count}" -gt 0 ]
-        #> ------------------------------------------
-        BS_LACreate_Value=;
-        fn_bs_libarray_get_param \
-          'BS_LACreate_Value'    \
-          "${BS_LACreate_Count}" \
-          "$@"                   || return $?
-        array_value "${BS_LACreate_Value}" || return $?
-        BS_LACreate_Count=$((BS_LACreate_Count - 1))
-      done #<: `while : #< [ "${BS_LACreate_Count}" -gt 0 ]`
-    ;;
-
-    #...................................
-    #> `case ${BS_LACreate_Count} in`
-    #> ------------------------------
-    #
-    # Positive Count:= Normal Array
-    *)
-      case $(($# - BS_LACreate_Count)) in  #< [ "${BS_LACreate_Count}" -gt $# ]
-      -*) fn_bs_libarray_invalid_args \
-            "${BS_LACreate_Caller}"   \
-            "not enough values for count (${BS_LACreate_Count} > $#)"
-          return "${c_BS_LIBARRAY__EX_USAGE}" ;;
-      esac
-
-      while : #< [ "${BS_LACreate_Count}" -gt 0 ]
-      do
-        #> LOOP TEST --------------------------------
-        case ${BS_LACreate_Count} in 0) break ;; esac #< [ "${BS_LACreate_Count}" -gt 0 ]
-        #> ------------------------------------------
-        array_value "$1" || return $?
-        shift
-        BS_LACreate_Count=$((BS_LACreate_Count - 1))
-      done #<: `while : #< [ "${BS_LACreate_Count}" -gt 0 ]`
-    ;;
-  esac #<: `case ${BS_LACreate_Count} in`
-
-  echo ' ' #< Trailing whitespace is always required
-}
+  #=========================================================
+  # If the glob matched the result will be an empty value,
+  # if the value was empty to begin with, it is always
+  # considered a non-match.
+  #=========================================================
+  case ${BS_LA_CmpGlob_Op}:${BS_LA_CmpGlob_Value:+1}:${BS_LA_CmpGlob_Match:+1} in
+  '~:1:'|'!~:1:1') return 0 ;;
+                *) return 1 ;;
+  esac
+} #<: `fn_bs_libarray_cmp_glob()`
 
 #_______________________________________________________________________________
-## cSpell:Ignore notlike
 #; ---------------------------------------------------------
 #;
-#; ### `fn_bs_libarray_create_from_unfiltered`
+#; ### `fn_bs_libarray_cmp_sed`
 #;
-#; Create an array excluding any VALUEs that match a filter.
+#; Test if a value matches a ["Basic Regular Expression" (_BRE_)][posix_bre]
+#; without generating any output.
 #;
 #; _SYNOPSIS_
 #; <!-- - -->
 #;
-#;     fn_bs_libarray_create_from_unfiltered <CALLER> <PRIMARY> <EXPRESSION>
+#;     fn_bs_libarray_cmp_sed <CALLER> <OPERATOR> <VALUE> <BRE>
+#;
+#; _ARGUMENTS_
+#; <!-- -- -->
+#;
+#; `CALLER` \[in]
+#;
+#; : Name of the calling command.
+#; : Used for any error message.
+#;
+#; `OPERATOR` \[in]
+#;
+#; : Either `~` or `!~` indicating whether a match (`~`) or
+#;   a non-match (`!~`) is being tested.
+#; : _NOT_ tested for correctness.
+#;
+#; `VALUE` \[in]
+#;
+#; : Can be null.
+#; : Can contain any arbitrary text excluding any
+#;   embedded `\0` (`<NUL>`) characters.
+#;
+#; `BRE` \[in]
+#;
+#; : A _POSIX.1_ ["Basic Regular Expression"][posix_bre].
+#; : _MUST_ **not** contain literal `<newline>` characters
+#;   or unescaped `/` (`<slash>`) characters.
+#;
+#; _CAVEATS_
+#; <!-- - -->
+#;
+#; - **WARNING:** _Not all _BRE_ can be used portably._
+#; - See ["PATTERN MATCHING"](./README.MD#pattern-matching).
+#;
+#. _IMPLEMENTATION NOTES_
+#. <!-- ------------- -->
+#.
+#. - There are multiple _POSIX.1_ specified utilities that support _BRE_ (e.g.
+#.   `expr`, `grep`, `sed`, etc). However, not all of these are suitable for
+#.   use here; `grep`, for example, can't make a match that may span
+#.   multiple lines. While this is not necessarily an issue in most cases
+#.   it is not easy to detect when such a use is intended, instead the
+#.   result would simply be incorrect.
+#.
+#_______________________________________________________________________________
+fn_bs_libarray_cmp_sed() { ## cSpell:Ignore BS_LA_CmpSed_
+  BS_LA_CmpSed_Caller=${1:?'[libarray::fn_bs_libarray_cmp_sed]: Internal Error: a caller is required'}
+      BS_LA_CmpSed_Op=${2:?'[libarray::fn_bs_libarray_cmp_sed]: Internal Error: an operator is required'}
+    BS_LA_CmpSed_Expr=${3?'[libarray::fn_bs_libarray_cmp_sed]: Internal Error: an expression is required'}
+   BS_LA_CmpSed_Value=${4?'[libarray::fn_bs_libarray_cmp_sed]: Internal Error: a value is required'}
+
+  #=========================================================
+  # The use of the `i\` function in `sed` has two purposes
+  # here: firstly, it handles the edge case when the value
+  # contains only `<newline>` characters (which would
+  # otherwise) be stripped by the shell; secondly, it
+  # _may_ be more efficient in some shells - if the value
+  # being tested is large, the shell will allocate the
+  # output accordingly, but since we only need to know if
+  # a match occurred we can use a smaller string
+  # potentially avoiding the need for the shell to do a
+  # large allocation that's not needed.
+  #=========================================================
+  BS_LA_CmpSed_Match=$(
+      {
+        printf '%s\n' "${BS_LA_CmpSed_Value}"
+      } | {
+        sed -n -e '
+          :LOOP
+            $!N
+            $!b LOOP
+          /'"${BS_LA_CmpSed_Expr}"'/i\
+Matched'
+      }
+    ) || return $?
+
+  #=========================================================
+  # Success is dependent on both a match
+  # being made _and_ the operator used.
+  #=========================================================
+  case ${BS_LA_CmpSed_Op}:${BS_LA_CmpSed_Match:+1} in
+   '~:1'|'!~:') return 0 ;;
+             *) return 1 ;;
+  esac
+} #<: `fn_bs_libarray_cmp_sed()`
+
+#_______________________________________________________________________________
+#; ---------------------------------------------------------
+#;
+#; ### `fn_bs_libarray_remove_by_glob`
+#;
+#; Create a new array by filtering out all the values that match the given shell
+#; pattern (aka glob) expression.
+#;
+#; _SYNOPSIS_
+#; <!-- - -->
+#;
+#;     fn_bs_libarray_remove_by_glob <CALLER> <OPERATOR> <GLOB> [<VALUE>...]
+#;
+#; _ARGUMENTS_
+#; <!-- -- -->
+#;
+#; `CALLER` \[in]
+#;
+#; : Name of the calling command.
+#; : Used for any error message.
+#;
+#; `OPERATOR` \[in]
+#;
+#; : Either `~` or `!~` indicating whether a match (`~`) or
+#;   a non-match (`!~`) is being tested.
+#; : _NOT_ tested for correctness.
+#;
+#; `GLOB` \[in]
+#;
+#; : Shell ["Pattern Matching Notation"][posix_glob] value.
+#; : Can contain any arbitrary text excluding any
+#;   embedded `\0` (`<NUL>`) characters.
+#;
+#; `VALUE` \[in]
+#;
+#; : Can be specified zero or more times.
+#; : Can be null.
+#; : Can contain any arbitrary text excluding any
+#;   embedded `\0` (`<NUL>`) characters.
+#;
+#; _CAVEATS_
+#; <!-- - -->
+#;
+#; - See [`fn_bs_libarray_cmp_glob`](#fn_bs_libarray_cmp_glob).
+#;
+#_______________________________________________________________________________
+fn_bs_libarray_remove_by_glob() {  ## cSpell:Ignore BS_LA_RBG_
+  BS_LA_RBG_Caller=${1:?'[libarray::fn_bs_libarray_remove_by_glob]: Internal Error: a caller is required'}
+  shift
+  BS_LA_RBG_Op=${1:?'[libarray::fn_bs_libarray_remove_by_glob]: Internal Error: an operator is required'}
+  shift
+  BS_LA_RBG_Expr=${1?'[libarray::fn_bs_libarray_remove_by_glob]: Internal Error: an expression is required'}
+  shift
+
+  #=========================================================
+  #
+  #=========================================================
+  BS_LA_RBG_Fast=0
+  case ${c_BS_LIBARRAY_CFG__full_glob_support}:${c_BS_LIBARRAY_CFG__shell_supports_mbc}:${LC_ALL:-${LC_CTYPE:-${LANG:-C}}} in
+    1:1:*|1:0:C|1:0:POSIX)
+      BS_LA_RBG_Fast=1 ;;
+
+    0:1:*|0:0:C|0:0:POSIX)
+      case ${BS_LA_RBG_Expr} in
+      *[\\\(\)]*) BS_LA_RBG_Fast=0 ;;
+               *) BS_LA_RBG_Fast=1 ;;
+      esac ;;
+  esac
+
+  #=========================================================
+  #
+  #=========================================================
+  case ${BS_LA_RBG_Fast} in
+    1)
+      #-----------------------------------------------------
+      # As ever, `zsh` needs some settings changed or it
+      # will always fail.
+      #-----------------------------------------------------
+      case ${c_BS_LIBARRAY_CFG__use_zsh_setopt} in
+      1) setopt 'LOCAL_OPTIONS' 'SH_FILE_EXPANSION' 'SH_GLOB' \
+                'GLOB_SUBST'    'NONOMATCH'                   ;; ## cSpell:Ignore NONOMATCH
+      esac
+
+      #-----------------------------------------------------
+      # Loop through the values, including only those where
+      # the glob match is _false_.
+      #-----------------------------------------------------
+      BS_LA_RBG_HaveElements=0
+      for BS_LA_RBG_Value
+      do
+        {
+          fn_bs_libarray_cmp_glob \
+            "${BS_LA_RBG_Caller}" \
+            "${BS_LA_RBG_Op}"     \
+            "${BS_LA_RBG_Expr}"   \
+            "${BS_LA_RBG_Value}"
+        } || {
+          array_value "${BS_LA_RBG_Value}" || return $?
+          BS_LA_RBG_HaveElements=1
+        }
+      done #<: `for BS_LA_RBG_Value`
+
+      #-----------------------------------------------------
+      # Trailing whitespace is always required (if there are
+      # any elements)
+      #-----------------------------------------------------
+      case ${BS_LA_RBG_HaveElements} in 1) echo ' ' ;; esac
+    ;;
+
+    0)
+      #-----------------------------------------------------
+      #
+      #-----------------------------------------------------
+      fn_bs_libarray_dbg_msg  \
+        "${BS_LA_RBG_Caller}" \
+        "Using emulated globs (expression '${BS_LA_RBG_Expr}')"
+
+      #-----------------------------------------------------
+      #
+      #-----------------------------------------------------
+      fn_bs_libarray_awk_run_script \
+        "${BS_LA_RBG_Caller}"       \
+        " ${c_BS_LIBARRAY__awk_fn__glob_to_ere}
+          ${c_BS_LIBARRAY__awk_fn__array_print}"'
+          function bs_fn_main(argArray, argCount) {
+            BS_LA_ERE = bs_fn_glob_to_ere(argArray[1])
+
+            BS_LA_HaveElements = 0
+            for (i = 2; i < argCount; ++i) {
+              if (! (argArray[i] '"${BS_LA_RBG_Op}"' BS_LA_ERE)) {
+                bs_fn_array_print(argArray[i])
+                BS_LA_HaveElements = 1
+              }
+            }
+
+            if (BS_LA_HaveElements == 1) {
+              print " "
+            }
+          }
+        '                   \
+        "${BS_LA_RBG_Expr}" \
+        "$@"
+    ;;
+  esac
+} #<: `fn_bs_libarray_remove_by_glob()`
+
+#_______________________________________________________________________________
+#; ---------------------------------------------------------
+#;
+#; ### `fn_bs_libarray_remove_by_grep`
+#;
+#; Create a new array by filtering out values using `grep` with either a
+#; ["Basic Regular Expression" (_BRE_)][posix_bre] or an
+#; ["Extended Regular Expressions" (_ERE_)][posix_ere].
+#;
+#; _SYNOPSIS_
+#; <!-- - -->
+#;
+#;     fn_bs_libarray_remove_by_grep <CALLER> <MODE> <OPERATOR> <REGEX> [<VALUE>...]
+#;
+#; _ARGUMENTS_
+#; <!-- -- -->
+#;
+#; `CALLER` \[in]
+#;
+#; : Name of the calling command.
+#; : Used for any error message.
+#;
+#; `MODE` \[in]
+#;
+#; : Either `-G` or `-E` indicating whether `REGEX` is a
+#;   _BRE_ (`-G`) or an _ERE_ (`-E`).
+#; : _NOT_ tested for correctness.
+#;
+#; `OPERATOR` \[in]
+#;
+#; : Either `~` or `!~` indicating whether a match (`~`) or
+#;   a non-match (`!~`) is being tested.
+#; : _NOT_ tested for correctness.
+#;
+#; `REGEX` \[in]
+#;
+#; : A ["Basic Regular Expressions" (_BRE_)][posix_bre] if
+#;   `MODE` is `-G`, an
+#;   ["Extended Regular Expressions" (_ERE_)][posix_ere]
+#;   otherwise.
+#;
+#; `VALUE` \[in]
+#;
+#; : Can be specified zero or more times.
+#; : Can be null.
+#; : Can contain any arbitrary text excluding any
+#;   embedded `\0` (`<NUL>`) characters.
+#;
+#; _CAVEATS_
+#; <!-- - -->
+#;
+#; - Can match array values that _contain_ `<newline>` characters, **but** can
+#;   _not_ match `<newline>` characters themselves. (That is, it is **not**
+#;   possible to match entire entries than span more than a single line - only
+#;   single lines can be matched.)
+#; - Performance is significantly increased when array values do _not_ contain
+#;   `<newline>` characters.
+#;
+#; _NOTES_
+#; <!-- -->
+#;
+#; - `MODE` is assumed to be `-G` unless specified as `-E`.
+#;
+#. _IMPLEMENTATION NOTES_
+#. <!-- ------------- -->
+#.
+#. - Some platforms do not support `grep -E` but support the non-standard
+#.   `egrep`. This allows for either case.
+#.
+#_______________________________________________________________________________
+fn_bs_libarray_remove_by_grep() {  ## cSpell:Ignore BS_LA_RBG_
+  BS_LA_RBG_Caller=${1:?'[libarray::fn_bs_libarray_remove_by_grep]: Internal Error: a caller is required'}
+  shift
+  BS_LA_RBG_Mode=${1?'[libarray::fn_bs_libarray_remove_by_grep]: Internal Error: a mode is required'}
+  shift
+  BS_LA_RBG_Op=${1:?'[libarray::fn_bs_libarray_remove_by_grep]: Internal Error: a value is required'}
+  shift
+  BS_LA_RBG_Expr=${1?'[libarray::fn_bs_libarray_remove_by_grep]: Internal Error: an expression is required'}
+  shift
+
+  #=========================================================
+  # It _should_ be possible to use a single parameter for
+  # the whole command to be used, unfortunately, this
+  # relies on the value of `IFS` - additionally some shells
+  # (e.g. `osh`) do not seem to properly split the value
+  # regardless of `IFS`.
+  #=========================================================
+  case ${c_BS_LIBARRAY_CFG__use_grep_E}:${BS_LA_RBG_Mode} in
+  0':-E') BS_LA_RBG_grep_cmd='egrep'; BS_LA_RBG_grep_args=;    ;;
+  1':-E') BS_LA_RBG_grep_cmd='grep';  BS_LA_RBG_grep_args='E'; ;;
+       *) BS_LA_RBG_grep_cmd='grep';  BS_LA_RBG_grep_args=;    ;;
+  esac
+
+  #=========================================================
+  # If the array values contain `<newline>` characters,
+  # `grep` has to be used to check each value in turn -
+  # there is no real way to check them all at once,
+  # otherwise all the values can be checked in a single
+  # call.
+  #=========================================================
+  if fn_bs_libarray_any_contain_newline "${BS_LA_RBG_Caller}" "$@"
+  then
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    BS_LA_RBB_HaveElements=0
+    for BS_LA_RBB_Value
+    do
+      if  BS_LA_RBB_Ignored=$(
+              {
+                printf '%s\n' "${BS_LA_RBB_Value}"
+              } | {
+                ${BS_LA_RBG_grep_cmd} \
+                  ${BS_LA_RBG_grep_args:+"-${BS_LA_RBG_grep_args}"} \
+                  "${BS_LA_RBG_Expr}"
+              }
+            )
+      then
+        case ${BS_LA_RBG_Op} in  '~') continue ;; esac
+      else
+        case ${BS_LA_RBG_Op} in '!~') continue ;; esac
+      fi
+
+      array_value "${BS_LA_RBB_Value}" || return $?
+      BS_LA_RBB_HaveElements=1
+    done #<: `for BS_LA_RBB_Value`
+
+    #-------------------------------------------------------
+    # Trailing whitespace is always required (if there are
+    # any elements)
+    #-------------------------------------------------------
+    case ${BS_LA_RBB_HaveElements} in 1) echo ' ' ;; esac
+  else #<: `if fn_bs_libarray_any_contain_newline`
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    case ${BS_LA_RBG_Op} in
+    '~') BS_LA_RBG_grep_args="${BS_LA_RBG_grep_args-}v" ;;
+    esac
+
+    #-------------------------------------------------------
+    #
+    #-------------------------------------------------------
+    {
+      printf '%s\n' "$@"
+    } | {
+      ${BS_LA_RBG_grep_cmd} \
+        ${BS_LA_RBG_grep_args:+"-${BS_LA_RBG_grep_args}"} \
+        "${BS_LA_RBG_Expr}"
+    } | {
+      sed -e "s/'/'\\\\''/g
+              s/^/'/
+              s/\$/' \\\\/"
+      echo ' '  #< NOTE: This adds whitespace even if no
+                #< values were found, this is difficult to
+                #< deal with here, so is dealt with by
+                #< the caller
+    }
+  fi #<: `if fn_bs_libarray_any_contain_newline`
+} #<: `fn_bs_libarray_remove_by_grep()`
+
+#_______________________________________________________________________________
+#; ---------------------------------------------------------
+#;
+#; ### `fn_bs_libarray_remove_by_sed`
+#;
+#; Create a new array by filtering out values using a
+#; ["Basic Regular Expressions" (_BRE_)][posix_bre].
+#;
+#; _SYNOPSIS_
+#; <!-- - -->
+#;
+#;     fn_bs_libarray_remove_by_sed <CALLER> <OPERATOR> <BRE> [<VALUE>...]
+#;
+#; _ARGUMENTS_
+#; <!-- -- -->
+#;
+#; `CALLER` \[in]
+#;
+#; : Name of the calling command.
+#; : Used for any error message.
+#;
+#; `OPERATOR` \[in]
+#;
+#; : Either `~` or `!~` indicating whether a match (`~`) or
+#;   a non-match (`!~`) is being tested.
+#; : _NOT_ tested for correctness.
+#;
+#; `BRE` \[in]
+#;
+#; : A ["Basic Regular Expressions" (_BRE_)][posix_bre].
+#;
+#; `VALUE` \[in]
+#;
+#; : Can be specified zero or more times.
+#; : Can be null.
+#; : Can contain any arbitrary text excluding any
+#;   embedded `\0` (`<NUL>`) characters.
+#;
+#; _CAVEATS_
+#; <!-- - -->
+#;
+#; - **WARNING:** _Not all _BRE_ can be used portably._
+#; - See ["PATTERN MATCHING"](./README.MD#pattern-matching).
+#;
+#. _IMPLEMENTATION NOTES_
+#. <!-- ------------- -->
+#.
+#. - While `expr` can also be utilized for this purpose, it suffers from
+#.   significant issues that make it hard to properly utilize. While some
+#.   platforms (e.g. Solaris 11) have a more capable `expr` than `sed`, in
+#.   general `sed` is the safer choice.
+#.
+#_______________________________________________________________________________
+fn_bs_libarray_remove_by_sed() {  ## cSpell:Ignore BS_LA_RBS_
+  BS_LA_RBS_Caller=${1:?'[libarray::fn_bs_libarray_remove_by_sed]: Internal Error: a caller is required'}
+  shift
+  BS_LA_RBS_Op=${1:?'[libarray::fn_bs_libarray_remove_by_sed]: Internal Error: a value is required'}
+  shift
+  BS_LA_RBS_Expr=${1?'[libarray::fn_bs_libarray_remove_by_sed]: Internal Error: an expression is required'}
+  shift
+
+  #=========================================================
+  # The BRE is going to be used as part of a `sed` script,
+  # so literal `<newline>` characters along with `/`
+  # (`<slash>`) characters need to be escaped, or they will
+  # cause errors.
+  #
+  # NOTE: Although `sed` is supposed to support characters
+  #       other than `/` (`<slash>`) for "functions", some
+  #       implementations do not, so it's easier to always
+  #       use `/` (`<slash>`) than try to use something
+  #       else in cases when the BRE contains it.
+  #=========================================================
+  case ${BS_LA_RBS_Expr} in
+  *'/'*|*"${c_BS_LIBARRAY__newline}"*)
+    BS_LA_RBS_Expr=$(fn_bs_libarray_sanitize_sed_bre "${BS_LA_RBS_Expr}_") || return $?
+    BS_LA_RBS_Expr=${BS_LA_RBS_Expr%_} ;;
+  esac
+
+  #=========================================================
+  # Iterate and keep only the required values.
+  #=========================================================
+  BS_LA_RBS_HaveElements=0
+  for BS_LA_RBS_Value
+  do
+    {
+      fn_bs_libarray_cmp_sed  \
+        "${BS_LA_RBS_Caller}" \
+        "${BS_LA_RBS_Op}"     \
+        "${BS_LA_RBS_Expr}"   \
+        "${BS_LA_RBS_Value}"
+    } || {
+      array_value "${BS_LA_RBS_Value}" || return $?
+      BS_LA_RBS_HaveElements=1
+    }
+  done #<: `for BS_LA_RBS_Value`
+
+  #=========================================================
+  # Trailing whitespace is always required (if there are
+  # any elements)
+  #=========================================================
+  case ${BS_LA_RBS_HaveElements} in 1) echo ' ' ;; esac
+} #<: `fn_bs_libarray_remove_by_sed()`
+
+#_______________________________________________________________________________
+#; ---------------------------------------------------------
+#;
+#; ### `fn_bs_libarray_remove_by_awk`
+#;
+#; Create a new array by filtering out values using an
+#;  ["Extended Regular Expression" (_ERE_)][posix_ere].
+#;
+#; _SYNOPSIS_
+#; <!-- - -->
+#;
+#;     fn_bs_libarray_remove_by_awk <CALLER> <OPERATOR> <ERE> [<VALUE>...]
+#;
+#; _ARGUMENTS_
+#; <!-- -- -->
+#;
+#; `CALLER` \[in]
+#;
+#; : Name of the calling command.
+#; : Used for any error message.
+#;
+#; `OPERATOR` \[in]
+#;
+#; : Either `~` or `!~` indicating whether a match (`~`) or
+#;   a non-match (`!~`) is being tested.
+#; : _NOT_ tested for correctness.
+#;
+#; `ERE` \[in]
+#;
+#; : An ["Extended Regular Expression" (_ERE_)][posix_ere].
+#;
+#; `VALUE` \[in]
+#;
+#; : Can be specified zero or more times.
+#; : Can be null.
+#; : Can contain any arbitrary text excluding any
+#;   embedded `\0` (`<NUL>`) characters.
+#;
+#; _CAVEATS_
+#; <!-- - -->
+#;
+#; - **WARNING:** _Not all _ERE_ can be used portably._
+#; - See ["PATTERN MATCHING"](./README.MD#pattern-matching).
+#;
+#_______________________________________________________________________________
+fn_bs_libarray_remove_by_awk() {  ## cSpell:Ignore BS_LA_RBA_
+  BS_LA_RBA_Caller=${1:?'[libarray::fn_bs_libarray_remove_by_awk]: Internal Error: a caller is required'}
+  shift
+  BS_LA_RBA_Op=${1:?'[libarray::fn_bs_libarray_remove_by_awk]: Internal Error: an operator is required'}
+  shift
+  BS_LA_RBA_Expr=${1?'[libarray::fn_bs_libarray_remove_by_awk]: Internal Error: an expression is required'}
+  shift
+
+  #=========================================================
+  #
+  #=========================================================
+  fn_bs_libarray_awk_run_script \
+    "${BS_LA_RBA_Caller}"       \
+    "${c_BS_LIBARRAY__awk_fn__array_print}"'
+      function bs_fn_main(argArray, argCount) {
+        BS_LA_Expression   = argArray[1]
+        BS_LA_HaveElements = 0
+        for (i = 2; i < argCount; ++i) {
+          if (! (argArray[i] '"${BS_LA_RBA_Op}"' BS_LA_Expression)) {
+            bs_fn_array_print(argArray[i])
+            BS_LA_HaveElements = 1
+          }
+        }
+
+        if (BS_LA_HaveElements == 1) {
+          print " "
+        }
+      }
+    '                   \
+    "${BS_LA_RBA_Expr}" \
+    "$@"
+} #<: `fn_bs_libarray_remove_by_awk()`
+
+#_______________________________________________________________________________
+## cSpell:Ignore notlike notmatch matchex notmatchex matchbre matchere
+## cSpell:IgnoreRegExp -\w*[be]re\w*\b
+#; ---------------------------------------------------------
+#;
+#; ### `fn_bs_libarray_remove_by_filter`
+#;
+#; Create an array excluding any values that match a filter.
+#;
+#; _SYNOPSIS_
+#; <!-- - -->
+#;
+#;     fn_bs_libarray_remove_by_filter <CALLER> <PRIMARY> <EXPRESSION> [<VALUE>...]
 #;
 #; _ARGUMENTS_
 #; <!-- -- -->
@@ -2228,43 +3551,44 @@ fn_bs_libarray_create() { ## cSpell:Ignore BS_LACreate_
 #;
 #; `PRIMARY` \[in]
 #;
-#; : A test operator used for filtering.
+#; : A test operator used with EXPRESSION.
 #; : MUST be ONE of: `=`, `!=`, `-eq`, `-ne`, `-gt`, `-ge`,
-#;   `-lt`, `-le`, `-like`, or `-notlike`.
-#; : The primaries `-gt`, `-ge`, `-lt`, and `-le` are
-#;   identical to the `test` primaries of the same
-#;   names, while `=`, `!=`, `-eq`, `-ne` are
-#;   functionally similar, but do not distinguish
-#;   between numerical and string values.
-#; : The `-like` primary performs a `case` pattern
-#;   match and supports the glob characters as
-#;   supported by `case`, the `-notlike` primary is
-#;   identical, but with inverted meaning.
-#; : `-like` and `-notlike` support the normal `case`
-#;   pattern matching characters, and can consist of
-#;   multiple patterns delimited by the `|` character.
+#;   `-lt`, `-le`, `-like`, `-notlike`, `-bre`, `-notbre`,
+#;   `-ere`, or `-notere`.
 #;
 #; `EXPRESSION` \[in]
 #;
 #; : Value to use with `PRIMARY`.
 #; : Can be null.
-#; : _EXPECTS_
-#;   - a _string_ when `PRIMARY` is `=`, `!=`
+#; : _EXPECTS_:
+#;   - a _string_ when `PRIMARY` is `=`, or `!=`
 #;   - a _number_ when `PRIMARY` is `-eq`, `-ne`,
-#;     `-gt`, `-ge`,  `-lt`, `-le`
-#;   - a `case` pattern when `PRIMARY` is `-like`,
-#;     or `-notlike`.
-#; : _ALLOWS_
-#;   - a _number_ when PRIMARY is `=` or `!=`
-#;   - a _string_ when PRIMARY is `-eq` or `-ne`.
-#; : `case` pattern allows the normal `case` pattern
-#;   matching characters: `*` (`<asterisk>`)
-#;   `?` (`<question-mark>`), and
-#;   `[` (`<left-square-bracket>`) with the same
-#;   meanings as with a standard `case` match;
-#;   also supported is the pattern delimiter `|`
-#;   (`<vertical-line>`) which can be used to separate
-#;   multiple patterns in a single `EXPRESSION`.
+#;     `-gt`, `-ge`,  `-lt`, or `-le`
+#;   - a _pattern_ when `PRIMARY` is `-like`, or `-notlike`.
+#;   - a _BRE_ when `PRIMARY` is `-bre`, or `-notbre`.
+#;   - an _ERE_ when `PRIMARY` is `-ere`, or `-notere`.
+#;
+#; `VALUE` \[in]
+#;
+#; : Can be specified zero or more times.
+#; : Can be null.
+#; : Can contain any arbitrary text excluding any
+#;   embedded `\0` (`<NUL>`) characters.
+#;
+#; _CAVEATS_
+#; <!-- - -->
+#;
+#; - **WARNING:** _Not all patterns, _BRE_, or _ERE_ can be used portably.
+#; - The `-like`/`-notlike` operators use the locale of the shell as invoked -
+#;   _it is **not** possible to change the locale of a running shell_.
+#; - See ["PATTERN MATCHING"](./README.MD#pattern-matching).
+#;
+#; _NOTES_
+#; <!-- -->
+#;
+#; - Several aliases are provided: `-[not]match` and `-[not]matchbre` for
+#;   `-[not]bre`; `-[not]matchex` and `-[not]matchere` for
+#;   `-[not]ere`. Additionally, `=~` for `-ere` and `!~` for `-notere`.
 #;
 #. _IMPLEMENTATION NOTES_
 #. <!-- ------------- -->
@@ -2274,152 +3598,261 @@ fn_bs_libarray_create() { ## cSpell:Ignore BS_LACreate_
 #.   which might be expected.
 #.
 #_______________________________________________________________________________
-fn_bs_libarray_create_from_unfiltered() { ## cSpell:Ignore BS_LACFU_
-  BS_LACFU_Caller="${1:?'[libarray::fn_bs_libarray_create_from_unfiltered]: Internal Error: a command name is required'}"
+fn_bs_libarray_remove_by_filter() { ## cSpell:Ignore BS_LA_RBF_
+  BS_LA_RBF_Caller=${1:?'[libarray::fn_bs_libarray_remove_by_filter]: Internal Error: a caller is required'}
   shift
-  BS_LACFU_Primary="${1:?'[libarray::fn_bs_libarray_create_from_unfiltered]: Internal Error: a primary is required'}"
+  BS_LA_RBF_Primary=${1:?'[libarray::fn_bs_libarray_remove_by_filter]: Internal Error: a primary is required'}
   shift
-  BS_LACFU_Expression="${1?'[libarray::fn_bs_libarray_create_from_unfiltered]: Internal Error: an expression is required'}"
+  BS_LA_RBF_Expr=${1?'[libarray::fn_bs_libarray_remove_by_filter]: Internal Error: an expression is required'}
   shift
 
-  BS_LACFU_HaveElements=0  #< Flag indicating if any array values were output
+  : "${1?'[libarray::fn_bs_libarray_remove_by_filter]: Internal Error: one or more array values are required'}"
 
-  case ${BS_LACFU_Primary} in
-    #.......................................................
-    #> `case ${BS_LACFU_Primary} in`
-    #> -----------------------------
-    #
-    # EXCLUDE VALUES MATCHING A GLOB
+  #=========================================================
+  # Keep a copy of the input primary for error messages.
+  #=========================================================
+  BS_LA_RBF_TestPrimary=${BS_LA_RBF_Primary}
+
+  #=========================================================
+  # Pre-match some common elements and remove them from the
+  # primary:
+  #
+  # - `-not<PRIMARY>` becomes `-<PRIMARY>`
+  # - `=~` becomes `-ere`
+  # - `!~` becomes `-ere`
+  #
+  # A flag is used to indicate the operator logic: `~` means
+  # a match is being looked for, `!~` means the opposite,
+  # and is only used for some primaries.
+  #
+  # Doing this significantly simplifies the subsequent code,
+  # but leaves open the potential for invalid primaries
+  # being specified. Most of these cases are handled later,
+  # but some are simply ignored. (To handle _all_ cases
+  # further complicates the code with little benefits - of
+  # note, the trailing specifiers `:s` and `:m` are ignored
+  # with `-[not]like` - there is no special case code for
+  # this combination, but semantically it makes sense for
+  # such operators them to exist.)
+  #=========================================================
+  BS_LA_RBF_Op='~'
+  case ${BS_LA_RBF_TestPrimary} in
+    '-not'*)
+      BS_LA_RBF_TestPrimary=-${BS_LA_RBF_TestPrimary#'-not'}
+      BS_LA_RBF_Op='!~'
+    ;;
+
+    '=~')
+      BS_LA_RBF_TestPrimary='-ere'
+      BS_LA_RBF_Op='~'
+    ;;
+
+    '!~')
+      BS_LA_RBF_TestPrimary='-ere'
+      BS_LA_RBF_Op='!~'
+    ;;
+  esac #<: `case ${BS_LA_RBF_TestPrimary} in`
+
+  #=========================================================
+  #
+  #=========================================================
+  case ${BS_LA_RBF_TestPrimary%:[sm]} in
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # GLOB
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     '-like')
-      case ${BS_LACFU_Expression:+1} in
-        #'''''''''''''''''''''''''''''''''''''''''''''''''''
-        #> `case ${BS_LACFU_Expression:+1} in`
-        #> -----------------------------------
-        #
-        # NORMAL PATTERN
-        1)
-          fn_bs_libarray_as_safe_case_pattern 'BS_LACFU_Expression' || return $?
-          # NOTES:
-          # - `array_value` has to be after the `case`
-          #    statement since the GLOB could be simply '*'
-          #    which would cause errors if the
-          #    `array_value` was added to the `case` using
-          #    the '*)' catch-all match
-          eval "for BS_LACFU_Value
-                do
-                  case \${BS_LACFU_Value} in
-                  ${BS_LACFU_Expression:-''}) continue ;;
-                  esac
-                  array_value \"\${BS_LACFU_Value}\" || return \$?
-                  BS_LACFU_HaveElements=1
-                done" || return $? ;;
+      #-----------------------------------------------------
+      #
+      #-----------------------------------------------------
+      fn_bs_libarray_remove_by_glob \
+        "${BS_LA_RBF_Caller}"       \
+        "${BS_LA_RBF_Op}"           \
+        "${BS_LA_RBF_Expr}"         \
+        "$@"                        || return $?
+    ;; #<: `'-like')`
 
-        #'''''''''''''''''''''''''''''''''''''''''''''''''''
-        #> `case ${BS_LACFU_Expression:+1} in`
-        #> -----------------------------------
-        #
-        # NULL PATTERN
-        #
-        # Slightly faster version for
-        # creating from non-null values
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # BRE
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    '-match'|'-matchbre'|'-bre')
+      case ${BS_LA_RBF_TestPrimary} in
+        #...............................
+        # SINGLE LINE MODE
+        #...............................
+        *':s')
+          fn_bs_libarray_remove_by_grep \
+            "${BS_LA_RBF_Caller}"       \
+            '-G'                        \
+            "${BS_LA_RBF_Op}"           \
+            "${BS_LA_RBF_Expr}"         \
+            "$@"                        || return $? ;;
+
+        #...............................
+        # MULTI-LINE MODE
+        #...............................
         *)
-          for BS_LACFU_Value
+          fn_bs_libarray_remove_by_sed \
+            "${BS_LA_RBF_Caller}"      \
+            "${BS_LA_RBF_Op}"          \
+            "${BS_LA_RBF_Expr}"        \
+            "$@"                       || return $? ;;
+      esac #<: `case ${BS_LA_RBF_TestPrimary} in`
+    ;; #<: `'-match'|'-matchbre'|'-bre')`
+
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ERE
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    '-matchex'|'-matchere'|'-ere')
+      #-----------------------------------------------------
+      #
+      #-----------------------------------------------------
+      case ${BS_LA_RBF_TestPrimary} in
+        #...............................
+        # SINGLE LINE MODE
+        #...............................
+        *':s')
+          fn_bs_libarray_remove_by_grep \
+            "${BS_LA_RBF_Caller}"       \
+            '-E'                        \
+            "${BS_LA_RBF_Op}"           \
+            "${BS_LA_RBF_Expr}"         \
+            "$@"                        || return $? ;;
+
+        #...............................
+        # MULTI-LINE MODE
+        #...............................
+        *)
+          fn_bs_libarray_remove_by_awk \
+            "${BS_LA_RBF_Caller}"      \
+            "${BS_LA_RBF_Op}"          \
+            "${BS_LA_RBF_Expr}"        \
+            "$@"                       || return $? ;;
+      esac #<: `case ${BS_LA_FI_TestPrimary} in`
+    ;; #<: `'-matchex'|'-matchere'|'-ere')`
+
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # STRING EQUALITY
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    '=')
+      case ${BS_LA_RBF_TestPrimary} in
+        #---------------------------------------------------
+        #
+        #---------------------------------------------------
+        "${BS_LA_RBF_Primary}")
+          BS_LA_RBF_HaveElements=0
+          for BS_LA_RBF_Value
           do
-            case ${BS_LACFU_Value} in
-            *?*)  array_value "${BS_LACFU_Value}" || return $?
-                  BS_LACFU_HaveElements=1 ;;
+            case ${BS_LA_RBF_Value} in
+            "${BS_LA_RBF_Expr}") continue ;;
             esac
-          done ;;
-      esac #<: `case ${BS_LACFU_Expression:+1} in`
-    ;;
+            array_value "${BS_LA_RBF_Value}" || return $?
+            BS_LA_RBF_HaveElements=1
+          done #<: `for BS_LA_RBF_Value
 
-    #.......................................................
-    #> `case ${BS_LACFU_Primary} in`
-    #> -----------------------------
-    #
-    # INCLUDE VALUES MATCHING A GLOB
-    '-notlike')
-      fn_bs_libarray_as_safe_case_pattern 'BS_LACFU_Expression' || return $?
+          #-----------------------------
+          # Trailing whitespace is
+          # always required (if there
+          # are any elements)
+          #-----------------------------
+          case ${BS_LA_RBF_HaveElements} in 1) echo ' ' ;; esac
+        ;; #<: `"${BS_LA_RBF_Primary}")`
 
-      eval "for BS_LACFU_Value
-            do
-              case \${BS_LACFU_Value} in
-              ${BS_LACFU_Expression:-''})
-                array_value \"\${BS_LACFU_Value}\" || return \$?
-                BS_LACFU_HaveElements=1 ;;
-              esac
-            done" || return $?
-    ;;
+        #---------------------------------------------------
+        # Invalid Primary (e.g. `=:s`)
+        #---------------------------------------------------
+        *)  fn_bs_libarray_invalid_args \
+              "${BS_LA_RBF_Caller}"     \
+              "invalid primary '${BS_LA_RBF_Primary}'"
+            return "${c_BS_LIBARRAY__EX_USAGE}" ;;
+      esac #<: `case ${BS_LA_RBF_TestPrimary} in`
+    ;; #<: `'=')`
 
-    #.......................................................
-    #> `case ${BS_LACFU_Primary} in`
-    #> -----------------------------
-    #
-    # EXCLUDE MATCHING VALUES
-    '-eq'|'=')
-      for BS_LACFU_Value
-      do
-        case ${BS_LACFU_Value} in
-        "${BS_LACFU_Expression}") continue ;;
-        esac
-        array_value "${BS_LACFU_Value}" || return $?
-        BS_LACFU_HaveElements=1
-      done
-    ;;
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # STRING INEQUALITY
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    '!=')
+      case ${BS_LA_RBF_TestPrimary} in
+        #---------------------------------------------------
+        #
+        #---------------------------------------------------
+        "${BS_LA_RBF_Primary}")
+          BS_LA_RBF_HaveElements=0
+          for BS_LA_RBF_Value
+          do
+            case ${BS_LA_RBF_Value} in
+            "${BS_LA_RBF_Expr}")
+              array_value "${BS_LA_RBF_Value}" || return $?
+              BS_LA_RBF_HaveElements=1 ;;
+            esac
+          done #<: `for BS_LA_RBF_Value`
 
-    #.......................................................
-    #> `case ${BS_LACFU_Primary} in`
-    #> -----------------------------
-    #
-    # INCLUDE MATCHING VALUES
-    '-ne'|'!=')
-      for BS_LACFU_Value
-      do
-        case ${BS_LACFU_Value} in
-        "${BS_LACFU_Expression}")
-          array_value "${BS_LACFU_Value}" || return $?
-          BS_LACFU_HaveElements=1 ;;
-        esac
-      done
-    ;;
+          #-----------------------------
+          # Trailing whitespace is
+          # always required (if there
+          # are any elements)
+          #-----------------------------
+          case ${BS_LA_RBF_HaveElements} in 1) echo ' ' ;; esac
+        ;; #<: `"${BS_LA_RBF_Primary}")`
 
-    #.......................................................
-    #> `case ${BS_LACFU_Primary} in`
-    #> -----------------------------
-    #
-    # EXCLUDE SUCCESSFUL `test`s
-    '-gt'|'-ge'|'-lt'|'-le')
-      for BS_LACFU_Value
-      do
-        if test "${BS_LACFU_Value}"      \
-                "${BS_LACFU_Primary}"    \
-                "${BS_LACFU_Expression}"
-        then
-          continue
-        else
-          array_value "${BS_LACFU_Value}" || return $?
-          BS_LACFU_HaveElements=1
-        fi
-      done
-    ;;
+        #---------------------------------------------------
+        # Invalid Primary (e.g. `!=:s`)
+        #---------------------------------------------------
+        *)  fn_bs_libarray_invalid_args \
+              "${BS_LA_RBF_Caller}"     \
+              "invalid primary '${BS_LA_RBF_Primary}'"
+            return "${c_BS_LIBARRAY__EX_USAGE}" ;;
+      esac #<: `case ${BS_LA_RBF_TestPrimary} in`
+    ;; #<: `'!=')`
 
-    #.......................................................
-    #> `case ${BS_LACFU_Primary} in`
-    #> -----------------------------
-    #
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # NUMERICAL COMPARISON
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    '-eq'|'-ne'|'-gt'|'-ge'|'-lt'|'-le')
+      case ${BS_LA_RBF_TestPrimary} in
+        #---------------------------------------------------
+        #
+        #---------------------------------------------------
+        "${BS_LA_RBF_Primary}")
+          BS_LA_RBF_HaveElements=0
+          for BS_LA_RBF_Value
+          do
+            if test "${BS_LA_RBF_Value}"   \
+                    "${BS_LA_RBF_Primary}" \
+                    "${BS_LA_RBF_Expr}"
+            then
+              continue
+            else
+              array_value "${BS_LA_RBF_Value}" || return $?
+              BS_LA_RBF_HaveElements=1
+            fi
+          done #<: `for BS_LA_RBF_Value`
+
+          #-----------------------------
+          # Trailing whitespace is
+          # always required (if there
+          # are any elements)
+          #-----------------------------
+          case ${BS_LA_RBF_HaveElements} in 1) echo ' ' ;; esac
+        ;; #<: `"${BS_LA_RBF_Primary}")`
+
+        #---------------------------------------------------
+        # Invalid Primary (e.g. `-gt:s`)
+        #---------------------------------------------------
+        *)  fn_bs_libarray_invalid_args \
+              "${BS_LA_RBF_Caller}"     \
+              "invalid primary '${BS_LA_RBF_Primary}'"
+            return "${c_BS_LIBARRAY__EX_USAGE}" ;;
+      esac #<: `case ${BS_LA_RBF_TestPrimary} in`
+    ;; #<: `'-gt'|'-ge'|'-lt'|'-le')`
+
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # INVALID
-    *)
-      fn_bs_libarray_invalid_args \
-        "${BS_LACFU_Caller}"      \
-        "invalid primary '${BS_LACFU_Primary}'"
-      return "${c_BS_LIBARRAY__EX_USAGE}" ;;
-  esac #<: `case ${BS_LACFU_Primary} in`
-
-  # Avoid writing the trailing space unless there are
-  # elements as this allows the final array variable to
-  # be null and easier to check if empty (otherwise the
-  # variable will always contain at least whitespace)
-  case ${BS_LACFU_HaveElements} in 1) echo ' ' ;; esac
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    *)  fn_bs_libarray_invalid_args \
+          "${BS_LA_RBF_Caller}"     \
+          "invalid primary '${BS_LA_RBF_Primary}'"
+        return "${c_BS_LIBARRAY__EX_USAGE}" ;;
+  esac #<: `case ${BS_LA_RBF_TestPrimary} in`
 }
 
 #_______________________________________________________________________________
@@ -2483,132 +3916,589 @@ fn_bs_libarray_create_from_unfiltered() { ## cSpell:Ignore BS_LACFU_
 #;   the `RANGE`/`INDEX` argument.
 #;
 #_______________________________________________________________________________
-fn_bs_libarray_remove_by_range() { ## cSpell:Ignore BS_LARBR_
-    BS_LARBR_Caller="${1:?'[libarray::fn_bs_libarray_remove_by_range]: Internal Error: a command name is required'}"
-  BS_LARBR_refArray="${2:?'[libarray::fn_bs_libarray_remove_by_range]: Internal Error: an array variable is required'}"
-     BS_LARBR_Range="${3:?'[libarray::fn_bs_libarray_remove_by_range]: Internal Error: a range is required'}"
+fn_bs_libarray_remove_by_range() { ## cSpell:Ignore BS_LA_RBR_
+    BS_LA_RBR_Caller=${1:?'[libarray::fn_bs_libarray_remove_by_range]: Internal Error: a caller is required'}
+  BS_LA_RBR_refArray=${2:?'[libarray::fn_bs_libarray_remove_by_range]: Internal Error: an array variable is required'}
+     BS_LA_RBR_Range=${3:?'[libarray::fn_bs_libarray_remove_by_range]: Internal Error: a range is required'}
 
-  #---------------------------------------------------------
+  #=========================================================
   # Unpack the array
-  eval "BS_LARBR_Array=\"\${${BS_LARBR_refArray}-}\"" || return $?
-  eval "set 'BS_DUMMY_PARAM' ${BS_LARBR_Array?}" && shift || return $?
+  #=========================================================
+  eval "BS_LA_RBR_Array=\${${BS_LA_RBR_refArray}-}" || return $?
+  eval "set 'BS_DUMMY_PARAM' ${BS_LA_RBR_Array?}" && shift || return $?
 
-  #---------------------------------------------------------
+  #=========================================================
   # Early out
+  #=========================================================
   case $# in 0) return ;; esac
 
-  #---------------------------------------------------------
+  #=========================================================
   # Determine START and LENGTH
   # NOTES: START will be zero-based, LENGTH >= 1
-  case ${BS_LARBR_Range} in
+  case ${BS_LA_RBR_Range} in
     #...................................
-    #> `case ${BS_LARBR_Range} in`
-    #> ---------------------------
-    #
-    #  USING A RANGE
+    # USING A RANGE
+    #...................................
     *[#:]*)
       fn_bs_libarray_process_range \
-        "${BS_LARBR_Caller}"       \
-        'BS_LARBR_Start'           \
-        'BS_LARBR_Length'          \
-        "${BS_LARBR_Range}"        \
-        $#                         || return $? ;;
+        "${BS_LA_RBR_Caller}"       \
+        'BS_LA_RBR_Start'           \
+        'BS_LA_RBR_Length'          \
+        "${BS_LA_RBR_Range}"        \
+        $#                         || return $?
+    ;;
 
-    #.................................
-    #> `case ${BS_LARBR_Range} in`
-    #> ---------------------------
-    #
+    #...................................
     # USING AN INDEX
-    # (convert to a single
-    #  element range)
+    # (convert to single element range)
+    #...................................
     *)
       fn_bs_libarray_process_index \
-        "${BS_LARBR_Caller}"       \
-        'BS_LARBR_Range'           \
+        "${BS_LA_RBR_Caller}"       \
+        'BS_LA_RBR_Range'           \
         $#                         || return $?
-      BS_LARBR_Start="${BS_LARBR_Range}"
-      BS_LARBR_Length=1 ;;
-  esac #<: `case ${BS_LARBR_Range} in`
+      BS_LA_RBR_Length=1
+       BS_LA_RBR_Start=${BS_LA_RBR_Range}
+    ;;
+  esac #<: `case ${BS_LA_RBR_Range} in`
 
-  #---------------------------------------------------------
+  #=========================================================
   # PROCESS \[START, START + LENGTH)
-  BS_LARBR_End=;
-  case ${BS_LARBR_Start} in
+  #=========================================================
+  BS_LA_RBR_End=;
+  case ${BS_LA_RBR_Start} in
     #...................................
-    #> `case ${BS_LARBR_Start} in`
-    #> ---------------------------
-    #
     # START is zero
     # - keep nothing
     # - skip \[0, LENGTH)
-    0)  BS_LARBR_Array=;
-        BS_LARBR_End="${BS_LARBR_Length}" ;;
+    #...................................
+    0)
+      BS_LA_RBR_Array=;
+        BS_LA_RBR_End=${BS_LA_RBR_Length}
+    ;;
 
     #...................................
-    #> `case ${BS_LARBR_Start} in`
-    #> ---------------------------
-    #
     # START is non-zero
     # - keep \[0, START)
     # - skip \[START, START + LENGTH)
+    #...................................
     *)
-      #  Add kept values
-      BS_LARBR_Array="$(
-          fn_bs_libarray_create  \
-            "${BS_LARBR_Caller}" \
-            "${BS_LARBR_Start}"  \
-            "$@"
-        )" || return $?
+      # Add kept values
+      BS_LA_RBR_Array=$(
+          {
+            fn_bs_libarray_create_count \
+              "${BS_LA_RBR_Caller}"      \
+              "${BS_LA_RBR_Start}"       \
+              "$@"
+          } && {
+            echo ' '
+          }
+        ) || return $?
 
-      #  Skip kept values + skipped values
-      BS_LARBR_End=$((BS_LARBR_Start + BS_LARBR_Length)) ;;
-  esac #<: `case ${BS_LARBR_Start} in`
+      # Skip kept values + skipped values
+      BS_LA_RBR_End=$((BS_LA_RBR_Start + BS_LA_RBR_Length))
+    ;;
+  esac #<: `case ${BS_LA_RBR_Start} in`
 
-  #---------------------------------------------------------
+  #=========================================================
   # Append any remaining elements
+  #=========================================================
   case $# in
     #...................................
-    #> `case $# in`
-    #> ------------
-    #
     # NOTHING TO ADD
-    0|"${BS_LARBR_End}") ;;
+    #...................................
+    0|"${BS_LA_RBR_End}") ;;
 
     #...................................
-    #> `case $# in`
-    #> ------------
-    #
     # ONE OR MORE ELEMENTS TO ADD
+    #...................................
     *)
       # `shift` all processed elements
-      case ${c_BS_LIBARRAY_CFG_USE__shift_n:-0} in
-      0)  while : #< [ "${BS_LARBR_End}" -ge 0 ]
+      case ${c_BS_LIBARRAY_CFG__use_shift_n:-0} in
+      0)  while : #<: `[ "${BS_LA_RBR_End}" -ge 0 ]`
           do
-            #> LOOP TEST ---------------------------
-            case ${BS_LARBR_End} in 0) break ;; esac #< [ "${BS_LARBR_End}" -ge 0 ]
-            #> -------------------------------------
             shift
-            BS_LARBR_End=$((BS_LARBR_End - 1))
+            BS_LA_RBR_End=$((BS_LA_RBR_End - 1))
+            #> LOOP TEST -----------------------------------
+            case ${BS_LA_RBR_End} in 0) break;; esac #<: `[ "${BS_LA_RBR_End}" -ge 0 ]`
+            #< ---------------------------------------------
           done ;;
-      1) shift "${BS_LARBR_End}" ;;
+      1)  shift "${BS_LA_RBR_End}" ;;
       esac
 
-      BS_LARBR_Array="${BS_LARBR_Array}$(
-          fn_bs_libarray_create \
-            'array_insert'      \
-            $#                  \
-            "$@"
+      BS_LA_RBR_Array="${BS_LA_RBR_Array}$(
+          {
+            fn_bs_libarray_create  \
+              "${BS_LA_RBR_Caller}" \
+              "$@"
+          } && {
+            echo ' '
+          }
         )" || return $? ;;
   esac #<: `case $# in`
 
-  eval "${BS_LARBR_refArray}=\"\${BS_LARBR_Array}\""        #< SAVE
+  #=========================================================
+  # SAVE
+  #=========================================================
+  eval "${BS_LA_RBR_refArray}=\${BS_LA_RBR_Array}"
 }
 
 #_______________________________________________________________________________
-## cSpell:Ignore notmatch
 #; ---------------------------------------------------------
 #;
-#; ### fn_bs_libarray_find_index
+#; ### `fn_bs_libarray_find_index_glob`
+#;
+#; Use `awk` to find the first array element that matches a _ERE_ and print the
+#; index of that element to `STDOUT`.
+#;
+#; Exit status will be zero _only_ if a match was found, otherwise it will be
+#; non-zero.
+#;
+#; _SYNOPSIS_
+#; <!-- - -->
+#;
+#;     fn_bs_libarray_find_index_glob <CALLER> <OPERATOR> <ERE> [<VALUE>...]
+#;
+#; _ARGUMENTS_
+#; <!-- -- -->
+#;
+#; `CALLER` \[in]
+#;
+#; : Name of the calling command.
+#; : Used for any error message.
+#;
+#; `OPERATOR` \[in]
+#;
+#; : Either `~` or `!~` indicating whether a match (`~`) or
+#;   a non-match (`!~`) is being tested.
+#; : _NOT_ tested for correctness.
+#;
+#; `ERE` \[in]
+#;
+#; : An ["Extended Regular Expression" (_ERE_)][posix_ere].
+#;
+#; `VALUE` \[in]
+#;
+#; : Can be specified zero or more times.
+#; : Can be null.
+#; : Can contain any arbitrary text excluding any
+#;   embedded `\0` (`<NUL>`) characters.
+#;
+#; _CAVEATS_
+#; <!-- - -->
+#;
+#; - **WARNING:** _Not all _ERE_ can be used portably._
+#; - See ["PATTERN MATCHING"](./README.MD#pattern-matching).
+#;
+#_______________________________________________________________________________
+fn_bs_libarray_find_index_glob() {  ## cSpell:Ignore BS_LA_FIG_
+  BS_LA_FIG_Caller=${1:?'[libarray::fn_bs_libarray_find_index_glob]: Internal Error: a caller is required'}
+  shift
+  BS_LA_FIG_Op=${1:?'[libarray::fn_bs_libarray_find_index_glob]: Internal Error: an operator is required'}
+  shift
+  BS_LA_FIG_Expr=${1?'[libarray::fn_bs_libarray_find_index_glob]: Internal Error: an expression is required'}
+  shift
+
+  #=========================================================
+  #
+  #=========================================================
+  BS_LA_FIG_Fast=0
+  case ${c_BS_LIBARRAY_CFG__full_glob_support}:${c_BS_LIBARRAY_CFG__shell_supports_mbc}:${LC_ALL:-${LC_CTYPE:-${LANG:-C}}} in
+    1:1:*|1:0:C|1:0:POSIX)
+      BS_LA_FIG_Fast=1 ;;
+
+    0:1:*|0:0:C|0:0:POSIX)
+      case ${BS_LA_FIG_Expr} in
+      *[\\\(\)]*) BS_LA_FIG_Fast=0 ;;
+               *) BS_LA_FIG_Fast=1 ;;
+      esac ;;
+  esac
+
+  #=========================================================
+  #
+  #=========================================================
+  case ${BS_LA_FIG_Fast} in
+    1)
+      #-----------------------------------------------------
+      # As ever, `zsh` needs some settings changed or it
+      # will always fail.
+      #-----------------------------------------------------
+      case ${c_BS_LIBARRAY_CFG__use_zsh_setopt} in
+      1) setopt 'LOCAL_OPTIONS' 'SH_FILE_EXPANSION' 'SH_GLOB' \
+                'GLOB_SUBST'    'NONOMATCH'                   ;; ## cSpell:Ignore NONOMATCH
+      esac
+
+      #-----------------------------------------------------
+      #
+      #-----------------------------------------------------
+      BS_LA_FIG_Index=1
+      for BS_LA_FIG_Element
+      do
+        if  fn_bs_libarray_cmp_glob \
+              "${BS_LA_FIG_Caller}" \
+              "${BS_LA_FIG_Op}"     \
+              "${BS_LA_FIG_Expr}"   \
+              "${BS_LA_FIG_Element}"
+        then
+          printf '%d\n' "${BS_LA_FIG_Index}"
+          return
+        else
+          BS_LA_FIG_Index=$((BS_LA_FIG_Index + 1))
+        fi
+      done
+    ;;
+
+    0)
+      #-----------------------------------------------------
+      #
+      #-----------------------------------------------------
+      fn_bs_libarray_dbg_msg  \
+        "${BS_LA_FIG_Caller}" \
+        "Using emulated globs (expression '${BS_LA_FIG_Expr}')"
+
+      #-----------------------------------------------------
+      #
+      #-----------------------------------------------------
+      fn_bs_libarray_awk_run_script \
+        "${BS_LA_FIG_Caller}"       \
+        "${c_BS_LIBARRAY__awk_fn__glob_to_ere}"'
+          function bs_fn_main(argArray, argCount) {
+            BS_LA_Expr = bs_fn_glob_to_ere(argArray[1])
+            for (i = 2; i < argCount; ++i) {
+              if (argArray[i] '"${BS_LA_FIG_Op}"' BS_LA_Expr) {
+                print (i - 1)
+                exit
+              }
+            }
+          }
+        '                   \
+        "${BS_LA_FIG_Expr}" \
+        "$@"
+    ;;
+  esac
+} #<: `fn_bs_libarray_find_index_glob()`
+
+#_______________________________________________________________________________
+#; ---------------------------------------------------------
+#;
+#; ### `fn_bs_libarray_find_index_grep`
+#;
+#; Use `grep` to find the first array element that matches an expression and
+#; print the index of that element to `STDOUT`.
+#;
+#; Exit status will be zero _only_ if a match was found, otherwise it will be
+#; non-zero.
+#;
+#; _SYNOPSIS_
+#; <!-- - -->
+#;
+#;     fn_bs_libarray_find_index_grep <CALLER> <MODE> <OPERATOR> <REGEX> [<VALUE>...]
+#;
+#; _ARGUMENTS_
+#; <!-- -- -->
+#;
+#; `CALLER` \[in]
+#;
+#; : Name of the calling command.
+#; : Used for any error message.
+#;
+#; `MODE` \[in]
+#;
+#; : Either `-G` or `-E` indicating whether `REGEX` is a
+#;   _BRE_ (`-G`) or an _ERE_ (`-E`).
+#; : _NOT_ tested for correctness.
+#;
+#; `OPERATOR` \[in]
+#;
+#; : Either `~` or `!~` indicating whether a match (`~`) or
+#;   a non-match (`!~`) is being tested.
+#; : _NOT_ tested for correctness.
+#;
+#; `REGEX` \[in]
+#;
+#; : A ["Basic Regular Expressions" (_BRE_)][posix_bre] if
+#;   `MODE` is `-G`, an
+#;   ["Extended Regular Expressions" (_ERE_)][posix_ere]
+#;   otherwise.
+#;
+#; `VALUE` \[in]
+#;
+#; : Can be null.
+#; : Can contain any arbitrary text excluding any
+#;   embedded `\0` (`<NUL>`) characters.
+#;
+#; _NOTES_
+#; <!-- -->
+#;
+#; - `MODE` is assumed to be `-G` unless specified as `-E`.
+#;
+#. _IMPLEMENTATION NOTES_
+#. <!-- ------------- -->
+#.
+#. - Some platforms do not support `grep -E` but support the non-standard
+#.   `egrep`. This allows for either case.
+#.
+#_______________________________________________________________________________
+fn_bs_libarray_find_index_grep() {  ## cSpell:Ignore BS_LA_FIG_
+  BS_LA_FIG_Caller=${1:?'[libarray::fn_bs_libarray_find_index_grep]: Internal Error: a caller is required'}
+  shift
+  BS_LA_FIG_Mode=${1?'[libarray::fn_bs_libarray_find_index_grep]: Internal Error: a mode is required'}
+  shift
+  BS_LA_FIG_Op=${1:?'[libarray::fn_bs_libarray_find_index_grep]: Internal Error: an operator is required'}
+  shift
+  BS_LA_FIG_Expr=${1?'[libarray::fn_bs_libarray_find_index_grep]: Internal Error: an expression is required'}
+  shift
+
+  #=========================================================
+  # It _should_ be possible to use a single parameter for
+  # the whole command to be used, unfortunately, this
+  # relies on the value of `IFS` - additionally some shells
+  # (e.g. `osh`) do not seem to properly split the value
+  # regardless of `IFS`.
+  #=========================================================
+  case ${c_BS_LIBARRAY_CFG__use_grep_E}:${BS_LA_FIG_Mode} in
+  0':-E') BS_LA_FIG_grep_cmd='egrep'; BS_LA_FIG_grep_args=;    ;;
+  1':-E') BS_LA_FIG_grep_cmd='grep';  BS_LA_FIG_grep_args='E'; ;;
+       *) BS_LA_FIG_grep_cmd='grep';  BS_LA_FIG_grep_args=;    ;;
+  esac
+
+  #=========================================================
+  # If the array values contain `<newline>` characters,
+  # `grep` has to be used to check each value in turn -
+  # there is no real way to check them all at once,
+  # otherwise all the values can be checked in a single
+  # call.
+  #=========================================================
+  if fn_bs_libarray_any_contain_newline "${BS_LA_FIG_Caller}" "$@"
+  then
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    BS_LA_FIG_Index=1
+    for BS_LA_FIG_Element
+    do
+      if  BS_LA_FIG_Ignored=$(
+              {
+                printf '%s\n' "${BS_LA_FIG_Element}"
+              } | {
+                ${BS_LA_FIG_grep_cmd} \
+                  ${BS_LA_FIG_grep_args:+"-${BS_LA_FIG_grep_args}"} \
+                  "${BS_LA_FIG_Expr}"
+              }
+            )
+      then
+        case ${BS_LA_FIG_Op} in  '~') printf '%d\n' "${BS_LA_FIG_Index}"; return ;; esac
+      else
+        case ${BS_LA_FIG_Op} in '!~') printf '%d\n' "${BS_LA_FIG_Index}"; return ;; esac
+      fi
+
+      BS_LA_FIG_Index=$((BS_LA_FIG_Index + 1))
+    done
+  else
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Using the `-n` option to `grep` gives us the index
+    # without having to calculate it directly, however, note
+    # the value is _one_ based.
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    case ${BS_LA_FIG_Op} in
+    '!~') BS_LA_FIG_grep_args="${BS_LA_FIG_grep_args-}vn" ;;
+       *) BS_LA_FIG_grep_args="${BS_LA_FIG_grep_args-}n"  ;;
+    esac
+
+    {
+      printf '%s\n' "$@"
+    } | {
+      ${BS_LA_FIG_grep_cmd}       \
+        "-${BS_LA_FIG_grep_args}" \
+        "${BS_LA_FIG_Expr}"
+    } | {
+      # Need to use the `q` function in `sed` or multiple
+      # matches will cause errors.
+      sed -n -e '
+          s/:.*$//p
+          q
+        '
+    }
+  fi
+} #<: `fn_bs_libarray_find_index_grep()`
+
+#_______________________________________________________________________________
+#; ---------------------------------------------------------
+#;
+#; ### `fn_bs_libarray_find_index_sed`
+#;
+#; Use `sed` to find the first array element that matches a _BRE_ and print the
+#; index of that element to `STDOUT`.
+#;
+#; Exit status will be zero _only_ if a match was found, otherwise it will be
+#; non-zero.
+#;
+#; _SYNOPSIS_
+#; <!-- - -->
+#;
+#;     fn_bs_libarray_find_index_sed <CALLER> <OPERATOR> <BRE> [<VALUE>...]
+#;
+#; _ARGUMENTS_
+#; <!-- -- -->
+#;
+#; `CALLER` \[in]
+#;
+#; : Name of the calling command.
+#; : Used for any error message.
+#;
+#; `OPERATOR` \[in]
+#;
+#; : Either `~` or `!~` indicating whether a match (`~`) or
+#;   a non-match (`!~`) is being tested.
+#; : _NOT_ tested for correctness.
+#;
+#; `BRE` \[in]
+#;
+#; : A ["Basic Regular Expressions" (_BRE_)][posix_bre].
+#;
+#; `VALUE` \[in]
+#;
+#; : Can be specified zero or more times.
+#; : Can be null.
+#; : Can contain any arbitrary text excluding any
+#;   embedded `\0` (`<NUL>`) characters.
+#;
+#; _CAVEATS_
+#; <!-- - -->
+#;
+#; - **WARNING:** _Not all _BRE_ can be used portably._
+#; - See ["PATTERN MATCHING"](./README.MD#pattern-matching).
+#;
+#_______________________________________________________________________________
+fn_bs_libarray_find_index_sed() {  ## cSpell:Ignore BS_LA_FIS_
+  BS_LA_FIS_Caller=${1:?'[libarray::fn_bs_libarray_find_index_sed]: Internal Error: a caller is required'}
+  shift
+  BS_LA_FIS_Op=${1:?'[libarray::fn_bs_libarray_find_index_sed]: Internal Error: an operator is required'}
+  shift
+  BS_LA_FIS_Expr=${1?'[libarray::fn_bs_libarray_find_index_sed]: Internal Error: an expression is required'}
+  shift
+
+
+  #=========================================================
+  # The BRE is going to be used as part of a `sed` script,
+  # so literal `<newline>` characters along with `/`
+  # (`<slash>`) characters need to be escaped, or they will
+  # cause errors.
+  #
+  # NOTE: Although `sed` is supposed to support characters
+  #       other than `/` (`<slash>`) for "functions", some
+  #       implementations do not, so it's easier to always
+  #       use `/` (`<slash>`) than try to use something
+  #       else in cases when the BRE contains it.
+  #=========================================================
+  case ${BS_LA_FIS_Expr} in
+  *'/'*|*"${c_BS_LIBARRAY__newline}"*)
+    BS_LA_FIS_Expr=$(fn_bs_libarray_sanitize_sed_bre "${BS_LA_FIS_Expr}_") || return $?
+    BS_LA_FIS_Expr=${BS_LA_FIS_Expr%_} ;;
+  esac #<: `case ${BS_LA_FIS_Expr} in`
+
+  #=========================================================
+  #
+  #=========================================================
+  BS_LA_FIS_Index=1
+  for BS_LA_FIS_Element
+  do
+    if  fn_bs_libarray_cmp_sed  \
+          "${BS_LA_FIS_Caller}" \
+          "${BS_LA_FIS_Op}"     \
+          "${BS_LA_FIS_Expr}"   \
+          "${BS_LA_FIS_Element}"
+    then
+      printf '%s\n' "${BS_LA_FIS_Index}"
+      break
+    else
+      BS_LA_FIS_Index=$((BS_LA_FIS_Index + 1))
+    fi
+  done #<: `for BS_LA_FIS_Element`
+} #<: `fn_bs_libarray_find_index_sed()`
+
+#_______________________________________________________________________________
+#; ---------------------------------------------------------
+#;
+#; ### `fn_bs_libarray_find_index_awk`
+#;
+#; Use `awk` to find the first array element that matches a _ERE_ and print the
+#; index of that element to `STDOUT`.
+#;
+#; Exit status will be zero _only_ if a match was found, otherwise it will be
+#; non-zero.
+#;
+#; _SYNOPSIS_
+#; <!-- - -->
+#;
+#;     fn_bs_libarray_find_index_awk <CALLER> <OPERATOR> <ERE> [<VALUE>...]
+#;
+#; _ARGUMENTS_
+#; <!-- -- -->
+#;
+#; `CALLER` \[in]
+#;
+#; : Name of the calling command.
+#; : Used for any error message.
+#;
+#; `OPERATOR` \[in]
+#;
+#; : Either `~` or `!~` indicating whether a match (`~`) or
+#;   a non-match (`!~`) is being tested.
+#; : _NOT_ tested for correctness.
+#;
+#; `ERE` \[in]
+#;
+#; : An ["Extended Regular Expression" (_ERE_)][posix_ere].
+#;
+#; `VALUE` \[in]
+#;
+#; : Can be specified zero or more times.
+#; : Can be null.
+#; : Can contain any arbitrary text excluding any
+#;   embedded `\0` (`<NUL>`) characters.
+#;
+#; _CAVEATS_
+#; <!-- - -->
+#;
+#; - **WARNING:** _Not all _ERE_ can be used portably._
+#; - See ["PATTERN MATCHING"](./README.MD#pattern-matching).
+#;
+#_______________________________________________________________________________
+fn_bs_libarray_find_index_awk() {  ## cSpell:Ignore BS_LA_FIA_
+  BS_LA_FIA_Caller=${1:?'[libarray::fn_bs_libarray_find_index_awk]: Internal Error: a caller is required'}
+  shift
+  BS_LA_FIA_Op=${1:?'[libarray::fn_bs_libarray_find_index_awk]: Internal Error: an operator is required'}
+  shift
+  BS_LA_FIA_Expr=${1?'[libarray::fn_bs_libarray_find_index_awk]: Internal Error: an expression is required'}
+  shift
+
+  #=========================================================
+  #
+  #=========================================================
+  fn_bs_libarray_awk_run_script \
+    "${BS_LA_FIA_Caller}"       \
+    '
+      function bs_fn_main(argArray, argCount) {
+        BS_LA_Expr = argArray[1]
+        for (i = 2; i < argCount; ++i) {
+          if (argArray[i] '"${BS_LA_FIA_Op}"' BS_LA_Expr) {
+            print (i - 1)
+            exit
+          }
+        }
+      }
+    '                   \
+    "${BS_LA_FIA_Expr}" \
+    "$@"
+} #<: `fn_bs_libarray_find_index_awk()`
+
+#_______________________________________________________________________________
+## cSpell:Ignore notlike notmatch matchex notmatchex
+## cSpell:IgnoreRegExp -\w*[be]re\w*\b
+#; ---------------------------------------------------------
+#;
+#; ### `fn_bs_libarray_find_index`
 #;
 #; Search an array for an element and get the index of that element.
 #;
@@ -2630,314 +4520,941 @@ fn_bs_libarray_remove_by_range() { ## cSpell:Ignore BS_LARBR_
 #;
 #; `INDEX` \[out:ref]
 #;
-#; : Variable which will contain the index of the
-#;   found element; will be set to null if element
-#;   is not found.
+#; : Variable which will contain the index of the found
+#;   element; will be set to null if element is not found.
 #; : Any current contents will be lost.
-#; : MUST be a valid _POSIX.1_ name or a `-` (`<hyphen>`).
-#; : If specified as `-` (`<hyphen>`) index is written to `STDOUT`.
+#; : MUST be a valid _POSIX.1_ name or `-` (`<hyphen>`).
+#; : If specified as `-` (`<hyphen>`) index is written to
+#;   `STDOUT`.
 #; : If the variable is _not_ currently null, the value it
 #;   contains is used as an offset from which the search
 #;   should begin.
 #;
 #; `PRIMARY` \[in]
 #;
-#; : A test operator used with `EXPRESSION`.
+#; : A test operator used with EXPRESSION.
 #; : MUST be ONE of: `=`, `!=`, `-eq`, `-ne`, `-gt`, `-ge`,
-#;   `-lt`, `-le`, `-like`, or `-notlike`, `-bre`,
-#;   `-notbre`, `-ere`, or `-notere`.
-#; : The primaries `-gt`, `-ge`, `-lt`, and `-le`
-#;   are identical to the `test` primaries of the
-#;   same names, while `=`, `!=`, `-eq`, and `-ne`
-#;   are functionally similar, but do not distinguish
-#;   between numerical and string values.
-#; : The `-like` primary performs a `case` pattern
-#;   match and supports the glob characters as
-#;   supported by `case`, the `-notlike` primary is
-#;   identical, but with inverted meaning.
-#; : `-like` and `-notlike` support the normal `case`
-#;   pattern matching characters, and can consist of
-#;   multiple patterns delimited by the `|` character.
-#; : `-bre` supports ["Basic Regular Expression"][posix_bre]
-#;   sequences that are _always_ implicitly
-#;   anchored to the start of the value, the
-#;   `-notbre` primary is identical, but with
-#;   inverted meaning.
-#; : `-ere` supports ["Extended Regular Expression"][posix_ere]
-#;   sequences that are _always_ implicitly
-#;   anchored to the start of the value, the
-#;   `-notere` primary is identical, but with
-#;   inverted meaning.
-#; : The following aliases are also recognized:
-#;
-#;   > `-bre`    :   `-match`,       `-matchbre`
-#;   > `-notbre` :   `-notmatch`,    `-notmatchbre`
-#;   > `-ere`    :   `-matchex`,     `-matchere`
-#;   > `-notere` :   `-notmatchex`,  `-notmatchere`
+#;   `-lt`, `-le`, `-like`, `-notlike`, `-bre`, `-notbre`,
+#;   `-ere`, or `-notere`.
 #;
 #; `EXPRESSION` \[in]
 #;
 #; : Value to use with `PRIMARY`.
 #; : Can be null.
-#; : _EXPECTS_
-#;   - a _string_ when PRIMARY is `=` or `!=`
-#;   - a _number_ when PRIMARY is `-eq`, `-ne`,
-#;     `-gt`, `-ge`, `-lt`, or `-le`
-#;   - a `case` pattern when PRIMARY is `-like`
-#;     or `-notlike`
-#;   - a "Basic Regular Expression" when `PRIMARY` is
-#;     `-bre` or `-notbre`
-#;   - an "Extended Regular Expression" when
-#;     `PRIMARY` is `-ere` or `-notere`.
-#; : _ALLOWS_
-#;   - a _number_ when `PRIMARY` is `=` or `!=`
-#;   - a _string_ when `PRIMARY` is `-eq` or `-ne`.
-#; : `case` pattern allows the normal `case` pattern
-#;   matching characters: `*` (`<asterisk>`)
-#;   `?` (`<question-mark>`), and
-#;   `[` (`<left-square-bracket>`) with the same
-#;   meanings as with a standard `case` match;
-#;   also supported is the pattern delimiter `|`
-#;   (`<vertical-line>`) which can be used to separate
-#;   multiple patterns in a single `EXPRESSION`.
-#; : When a "Basic Regular Expression" or an
-#;   "Extended Regular Expression", the match is
-#;   _always_ anchored to the start of `VALUE`.
+#; : _EXPECTS_:
+#;   - a _string_ when `PRIMARY` is `=`, or `!=`
+#;   - a _number_ when `PRIMARY` is `-eq`, `-ne`,
+#;     `-gt`, `-ge`,  `-lt`, or `-le`
+#;   - a _pattern_ when `PRIMARY` is `-like`, or `-notlike`.
+#;   - a _BRE_ when `PRIMARY` is `-bre`, or `-notbre`.
+#;   - an _ERE_ when `PRIMARY` is `-ere`, or `-notere`.
 #;
 #; `VALUE` \[in]
 #;
-#; : Can be specified multiple times.
+#; : Can be specified zero or more times.
 #; : Can be null.
 #; : Can contain any arbitrary text excluding any
 #;   embedded `\0` (`<NUL>`) characters.
 #;
-#; **IMPORTANT NOTES**
-#; <!-- ---------- -->
+#; _CAVEATS_
+#; <!-- - -->
 #;
-#; - Support for "Extended Regular Expressions" depends on `awk` supporting
-#;   `match` and `ENVIRON`. If either of these are not supported then EREs
-#;   will not work.
+#; - **WARNING:** _Not all patterns, _BRE_, or _ERE_ can be used portably.
+#; - The `-like`/`-notlike` operators use the locale of the shell as invoked -
+#;   _it is **not** possible to change the locale of a running shell_.
+#; - See ["PATTERN MATCHING"](./README.MD#pattern-matching).
 #;
 #; _NOTES_
 #; <!-- -->
 #;
-#; - The performance of primaries varies, and is often implementation dependent
-#;   however, generally the expectation would be that:
-#;
-#;       -eq|-ne > -like|-notlike >> -bre|-notbre >> -ere|-notere
-#;
-#;   (The differences between the regular expression primaries is much more
-#;    likely to vary between implementations.)
-#; - See [`fn_bs_libarray_match_bre`](#fn_bs_libarray_match_bre) for more about
-#;   "Basic Regular Expression" matching, and
-#;   [`fn_bs_libarray_match_ere`](#fn_bs_libarray_match_ere)
-#;   for "Extended Regular Expression" matching
+#; - Several aliases are provided: `-[not]match` and `-[not]matchbre` for
+#;   `-[not]bre`; `-[not]matchex` and `-[not]matchere` for
+#;   `-[not]ere`. Additionally, `=~` for `-ere` and `!~` for `-notere`.
 #;
 #_______________________________________________________________________________
-fn_bs_libarray_find_index() { ## cSpell:Ignore BS_LAFI_
-  BS_LAFI_Caller="${1:?'[libarray::fn_bs_libarray_find_index]: Internal Error: a command name is required'}"
+fn_bs_libarray_find_index() { ## cSpell:Ignore BS_LA_FI_
+  BS_LA_FI_Caller=${1:?'[libarray::fn_bs_libarray_find_index]: Internal Error: a caller is required'}
   shift
-  BS_LAFI_refIndex="${1:?'[libarray::fn_bs_libarray_find_index]: Internal Error: an index variable is required'}"
+  BS_LA_FI_refIndex=${1:?'[libarray::fn_bs_libarray_find_index]: Internal Error: an index variable is required'}
   shift
-  BS_LAFI_Primary="${1:?'[libarray::fn_bs_libarray_find_index]: Internal Error: a primary is required'}"
+  BS_LA_FI_Primary=${1:?'[libarray::fn_bs_libarray_find_index]: Internal Error: a primary is required'}
   shift
-  BS_LAFI_Expression="${1:?'[libarray::fn_bs_libarray_find_index]: Internal Error: an expression is required'}"
+  BS_LA_FI_Expr=${1:?'[libarray::fn_bs_libarray_find_index]: Internal Error: an expression is required'}
   shift
 
-  #---------------------------------------------------------
-  #  CHECK ALL PARAMETERS FOR A MATCHING VALUE
-  BS_LAFI_Found=;  BS_LAFI_Index=0;
-  case ${BS_LAFI_Primary} in
-    #...................................
-    #> `case ${BS_LAFI_Primary} in`
-    #> ----------------------------
-    #
-    # MATCH: CASE PATTERN
+  : "${1?'[libarray::fn_bs_libarray_find_index]: Internal Error: one or more array values are required'}"
+
+  #=========================================================
+  # Keep a copy of the input primary for error messages.
+  #=========================================================
+  BS_LA_FI_TestPrimary=${BS_LA_FI_Primary}
+
+  #=========================================================
+  # Pre-match some common elements and remove them from the
+  # primary:
+  #
+  # - `-not<PRIMARY>` becomes `-<PRIMARY>`
+  # - `=~` becomes `-ere`
+  # - `!~` becomes `-ere`
+  #
+  # A flag is used to indicate the operator logic: `~` means
+  # a match is being looked for, `!~` means the opposite,
+  # and is only used for some primaries.
+  #
+  # Doing this significantly simplifies the subsequent code,
+  # but leaves open the potential for invalid primaries
+  # being specified. Most of these cases are handled later,
+  # but some are simply ignored. (To handle _all_ cases
+  # further complicates the code with little benefits - of
+  # note, the trailing specifiers `:s` and `:m` are ignored
+  # with `-[not]like` - there is no special case code for
+  # this combination, but semantically it makes sense for
+  # such operators them to exist.)
+  #=========================================================
+  BS_LA_FI_Op='~'
+  case ${BS_LA_FI_TestPrimary} in
+    '-not'*)
+      BS_LA_FI_TestPrimary=-${BS_LA_FI_TestPrimary#'-not'}
+      BS_LA_FI_Op='!~'
+    ;;
+
+    '=~')
+      BS_LA_FI_TestPrimary='-ere'
+      BS_LA_FI_Op='~'
+    ;;
+
+    '!~')
+      BS_LA_FI_TestPrimary='-ere'
+      BS_LA_FI_Op='!~'
+    ;;
+  esac #<: `case ${BS_LA_FI_TestPrimary} in`
+
+  #=========================================================
+  # CHECK ALL PARAMETERS FOR A MATCHING VALUE
+  #=========================================================
+  BS_LA_FI_Found=;
+  case ${BS_LA_FI_TestPrimary%:[sm]} in
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # GLOB
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     '-like')
-      fn_bs_libarray_as_safe_case_pattern 'BS_LAFI_Expression' || return $?
-      eval "for BS_LAFI_Element
-            do
-              case \${BS_LAFI_Element} in
-              ${BS_LAFI_Expression:-''})
-                BS_LAFI_Found=\"\${BS_LAFI_Index}\"
-                break ;;
-              *)
-                BS_LAFI_Index=\$((BS_LAFI_Index + 1)) ;;
-              esac
-            done" || return $?
-    ;;
+      #-----------------------------------------------------
+      #
+      #-----------------------------------------------------
+      BS_LA_FI_Found=$(
+          fn_bs_libarray_find_index_glob  \
+            "${BS_LA_FI_Caller}"          \
+            "${BS_LA_FI_Op}"              \
+            "${BS_LA_FI_Expr}"            \
+            "$@"
+        ) || return $?
+    ;; #<: `'-like')`
 
-    #...................................
-    #> `case ${BS_LAFI_Primary} in`
-    #> ----------------------------
-    #
-    # MATCH: CASE PATTERN [INVERTED]
-    '-notlike')
-      fn_bs_libarray_as_safe_case_pattern 'BS_LAFI_Expression' || return $?
-      eval "for BS_LAFI_Element
-            do
-              case \${BS_LAFI_Element} in
-              ${BS_LAFI_Expression:-''})
-                BS_LAFI_Index=\$((BS_LAFI_Index + 1))
-                continue ;;
-              *)
-                BS_LAFI_Found=\"\${BS_LAFI_Index}\"
-                break ;;
-              esac
-            done" || return $?
-    ;;
-
-    #...................................
-    #> `case ${BS_LAFI_Primary} in`
-    #> ----------------------------
-    #
-    #  MATCH A BRE
-    ## cSpell:IgnoreRegExp -\w*bre\w*\b
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # BRE
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     '-match'|'-matchbre'|'-bre')
-      for BS_LAFI_Element
-      do
-        if  fn_bs_libarray_match_bre  \
-              "${BS_LAFI_Element}"    \
-              "${BS_LAFI_Expression}"
-        then
-          BS_LAFI_Found="${BS_LAFI_Index}"
-          break
-        else
-          BS_LAFI_Index=$((BS_LAFI_Index + 1))
-        fi
-      done
-    ;;
+      case ${BS_LA_FI_TestPrimary} in
+        #...............................
+        # SINGLE LINE MODE
+        #...............................
+        *':s')
+          BS_LA_FI_Found=$(
+              fn_bs_libarray_find_index_grep \
+                "${BS_LA_FI_Caller}"         \
+                '-G'                         \
+                "${BS_LA_FI_Op}"             \
+                "${BS_LA_FI_Expr}"           \
+                "$@"
+            ) || return $? ;;
 
-    #...................................
-    #> `case ${BS_LAFI_Primary} in`
-    #> ----------------------------
-    #
-    #  MATCH A BRE (INVERTED)
-    '-notmatch'|'-notmatchbre'|'-notbre')
-      for BS_LAFI_Element
-      do
-        if  fn_bs_libarray_match_bre  \
-              "${BS_LAFI_Element}"    \
-              "${BS_LAFI_Expression}"
-        then
-          BS_LAFI_Index=$((BS_LAFI_Index + 1))
-        else
-          BS_LAFI_Found="${BS_LAFI_Index}"
-          break
-        fi
-      done
-    ;;
-
-    #...................................
-    #> `case ${BS_LAFI_Primary} in`
-    #> ----------------------------
-    #
-    #  MATCH AN ERE
-    ## cSpell:IgnoreRegExp -((\w*ere\w*)|(\w*matchex))\b
-    '-matchex'|'-matchere'|'-ere')
-      for BS_LAFI_Element
-      do
-        if  fn_bs_libarray_match_ere  \
-              "${BS_LAFI_Element}"    \
-              "${BS_LAFI_Expression}"
-        then
-          BS_LAFI_Found="${BS_LAFI_Index}"
-          break
-        else
-          BS_LAFI_Index=$((BS_LAFI_Index + 1))
-        fi
-      done
-    ;;
-
-    #...................................
-    #> `case ${BS_LAFI_Primary} in`
-    #> ----------------------------
-    #
-    #  MATCH AN ERE (INVERTED)
-    '-notmatchex'|'-notmatchere'|'-notere')
-      for BS_LAFI_Element
-      do
-        if  fn_bs_libarray_match_ere  \
-              "${BS_LAFI_Element}"    \
-              "${BS_LAFI_Expression}"
-        then
-          BS_LAFI_Index=$((BS_LAFI_Index + 1))
-        else
-          BS_LAFI_Found="${BS_LAFI_Index}"
-          break
-        fi
-      done
-    ;;
-
-    #...................................
-    #> `case ${BS_LAFI_Primary} in`
-    #> ----------------------------
-    #
-    #  MATCH: EQUALS
-    '-eq'|'=')
-      for BS_LAFI_Element
-      do
-        case ${BS_LAFI_Element} in
-        "${BS_LAFI_Expression}")
-          BS_LAFI_Found="${BS_LAFI_Index}"
-          break ;;
-        *) BS_LAFI_Index=$((BS_LAFI_Index + 1)) ;;
-        esac
-      done
-    ;;
-
-    #...................................
-    #> `case ${BS_LAFI_Primary} in`
-    #> ----------------------------
-    #
-    #  MATCH: NOT EQUALS
-    '-ne'|'!=')
-      for BS_LAFI_Element
-      do
-        case ${BS_LAFI_Element} in
-        "${BS_LAFI_Expression}")
-          BS_LAFI_Index=$((BS_LAFI_Index + 1))
-          continue ;;
+        #...............................
+        # MULTI-LINE MODE
+        #...............................
         *)
-          BS_LAFI_Found="${BS_LAFI_Index}"
-          break ;;
+          BS_LA_FI_Found=$(
+              fn_bs_libarray_find_index_sed \
+                "${BS_LA_FI_Caller}"        \
+                "${BS_LA_FI_Op}"            \
+                "${BS_LA_FI_Expr}"          \
+                "$@"
+            ) || return $? ;;
+      esac #<: `case ${BS_LA_FI_TestPrimary} in`
+    ;; #<: `'-match'|'-matchbre'|'-bre')`
+
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ERE
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    '-matchex'|'-matchere'|'-ere')
+      #-----------------------------------------------------
+      #
+      #-----------------------------------------------------
+      case ${BS_LA_FI_TestPrimary} in
+        #...............................
+        # SINGLE LINE MODE
+        #...............................
+        *':s')
+          BS_LA_FI_Found=$(
+              fn_bs_libarray_find_index_grep \
+                "${BS_LA_FI_Caller}"         \
+                '-E'                         \
+                "${BS_LA_FI_Op}"             \
+                "${BS_LA_FI_Expr}"           \
+                "$@"
+            ) || return $? ;;
+
+        #...............................
+        # MULTI-LINE MODE
+        #...............................
+        *)
+          BS_LA_FI_Found=$(
+              fn_bs_libarray_find_index_awk \
+                "${BS_LA_FI_Caller}"        \
+                "${BS_LA_FI_Op}"            \
+                "${BS_LA_FI_Expr}"          \
+                "$@"
+            ) || return $? ;;
+      esac #<: `case ${BS_LA_FI_TestPrimary} in`
+    ;; #<: `'-matchex'|'-matchere'|'-ere')`
+
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # STRING EQUALITY
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    '=')
+      case ${BS_LA_FI_TestPrimary} in
+        #---------------------------------------------------
+        #
+        #---------------------------------------------------
+        "${BS_LA_FI_Primary}")
+          BS_LA_FI_Index=1
+          for BS_LA_FI_Element
+          do
+            case ${BS_LA_FI_Element} in
+            "${BS_LA_FI_Expr}")
+              BS_LA_FI_Found=${BS_LA_FI_Index}
+              break ;;
+            esac
+            BS_LA_FI_Index=$((BS_LA_FI_Index + 1))
+          done #<: `for BS_LA_FI_Element`
+        ;; #<: `"${BS_LA_FI_Primary}")`
+
+        #---------------------------------------------------
+        # Invalid Primary (e.g. `-eq:s`)
+        #---------------------------------------------------
+        *)  fn_bs_libarray_invalid_args \
+              "${BS_LA_FI_Caller}"      \
+              "invalid primary '${BS_LA_FI_Primary}'"
+            return "${c_BS_LIBARRAY__EX_USAGE}" ;;
+      esac #<: `case ${BS_LA_FI_TestPrimary} in`
+    ;; #<: `'=')`
+
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # STRING INEQUALITY
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    '!=')
+      case ${BS_LA_FI_TestPrimary} in
+        #---------------------------------------------------
+        #
+        #---------------------------------------------------
+        "${BS_LA_FI_Primary}")
+          BS_LA_FI_Index=1
+          for BS_LA_FI_Element
+          do
+            case ${BS_LA_FI_Element} in
+              "${BS_LA_FI_Expr}")
+                BS_LA_FI_Index=$((BS_LA_FI_Index + 1))
+                continue ;;
+
+              *)
+                BS_LA_FI_Found=${BS_LA_FI_Index}
+                break ;;
+            esac
+          done #<: `for BS_LA_FI_Element`
+        ;; #<: `"${BS_LA_FI_Primary}")`
+
+        #---------------------------------------------------
+        # Invalid Primary (e.g. `-ne:s`)
+        #---------------------------------------------------
+        *)  fn_bs_libarray_invalid_args \
+              "${BS_LA_FI_Caller}"      \
+              "invalid primary '${BS_LA_FI_Primary}'"
+            return "${c_BS_LIBARRAY__EX_USAGE}" ;;
+      esac #<: `case ${BS_LA_FI_TestPrimary} in`
+    ;; #<: `'!=')`
+
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # NUMERICAL COMPARISON
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    '-eq'|'-ne'|'-gt'|'-ge'|'-lt'|'-le')
+      case ${BS_LA_FI_TestPrimary} in
+        #---------------------------------------------------
+        #
+        #---------------------------------------------------
+        "${BS_LA_FI_Primary}")
+          BS_LA_FI_Index=1
+          for BS_LA_FI_Element
+          do
+            if test "${BS_LA_FI_Element}" \
+                    "${BS_LA_FI_Primary}" \
+                    "${BS_LA_FI_Expr}"
+            then
+              BS_LA_FI_Found=${BS_LA_FI_Index}
+              break
+            else
+              BS_LA_FI_Index=$((BS_LA_FI_Index + 1))
+            fi
+          done
+        ;; #<: `"${BS_LA_FI_Primary}")`
+
+        #---------------------------------------------------
+        # Invalid Primary (e.g. `-gt:s`)
+        #---------------------------------------------------
+        *)  fn_bs_libarray_invalid_args \
+              "${BS_LA_FI_Caller}"      \
+              "invalid primary '${BS_LA_FI_Primary}'"
+            return "${c_BS_LIBARRAY__EX_USAGE}" ;;
+      esac #<: `case ${BS_LA_FI_TestPrimary} in`
+    ;; #<: `'-gt'|'-ge'|'-lt'|'-le')`
+
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # INVALID
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    *)  fn_bs_libarray_invalid_args \
+          "${BS_LA_FI_Caller}"      \
+          "invalid primary '${BS_LA_FI_Primary}'"
+        return "${c_BS_LIBARRAY__EX_USAGE}" ;;
+  esac #<: `case ${BS_LA_FI_TestPrimary%:[sm]} in`
+
+  #=========================================================
+  # SAVE
+  #=========================================================
+  eval "${BS_LA_FI_refIndex}=\${BS_LA_FI_Found}"
+} #<: `fn_bs_libarray_find_index()`
+
+#_______________________________________________________________________________
+#; ---------------------------------------------------------
+#;
+#; ### `fn_bs_libarray_split_fixed`
+#;
+#; Split text into an array using fixed text.
+#;
+#; _SYNOPSIS_
+#; <!-- - -->
+#;
+#;     fn_bs_libarray_split_fixed <CALLER> <TEXT> <DELIMITER>
+#;
+#; _ARGUMENTS_
+#; <!-- -- -->
+#;
+#; `CALLER` \[in]
+#;
+#; : Name of the calling command.
+#; : Used for any error message.
+#;
+#; `TEXT` \[in]
+#;
+#; : Text to split into array elements.
+#; : Can be null.
+#; : Can contain any arbitrary text excluding any
+#;   embedded `\0` (`<NUL>`) characters.
+#;
+#; `DELIMITER` \[in]
+#;
+#; : Expression used to split `TEXT`.
+#; : Can contain any arbitrary text excluding
+#;   any embedded `\0` (`<NUL>`) characters.
+#;
+#_______________________________________________________________________________
+fn_bs_libarray_split_fixed() { ## cSpell:Ignore BS_LA_SF_
+  BS_LA_SF_Caller=${1:?'[libarray::fn_bs_libarray_split_fixed]: Internal Error: a caller is required'}
+    BS_LA_SF_Text=${2?'[libarray::fn_bs_libarray_split_fixed]: Internal Error: text to split is required'}
+   BS_LA_SF_Delim=${3?'[libarray::fn_bs_libarray_split_fixed]: Internal Error: a delimiter is required'}
+
+  #=========================================================
+  #
+  #=========================================================
+  case ${BS_LA_SF_Text:+1}:${BS_LA_SF_Text} in
+    #-------------------------------------------------------
+    #
+    #-------------------------------------------------------
+    1:*"${BS_LA_SF_Delim}"*)
+      #.................................
+      #
+      #.................................
+      while :
+      do
+        # Use of `${#...}` is safe here
+        # even in presence of multi-byte
+        # characters as it is used for
+        # comparison only.
+        BS_LA_SF_PrevLen=${#BS_LA_SF_Text}
+          BS_LA_SF_Value=${BS_LA_SF_Text%%"${BS_LA_SF_Delim}"*}
+
+        array_value "${BS_LA_SF_Value}" || return $?
+
+        BS_LA_SF_Text=${BS_LA_SF_Text#*"${BS_LA_SF_Delim}"}
+        case ${BS_LA_SF_Text:+1}:${BS_LA_SF_PrevLen} in
+        :*|"1:${#BS_LA_SF_Text}") break ;;
         esac
       done
+
+      #.................................
+      # Trailing whitespace is required
+      #.................................
+      echo ' '
     ;;
 
-    #...................................
-    #> `case ${BS_LAFI_Primary} in`
-    #> ----------------------------
+    #-------------------------------------------------------
     #
-    #  MATCH: TEST EXPRESSION
-    '-gt'|'-ge'|'-lt'|'-le')
-      for BS_LAFI_Element
+    #-------------------------------------------------------
+    1:*)
+      array_value "${BS_LA_SF_Text}" || return $?
+
+      #.................................
+      # Trailing whitespace is required
+      #.................................
+      echo ' '
+    ;;
+
+    #-------------------------------------------------------
+    #
+    #-------------------------------------------------------
+    *) ;;
+  esac #<: `case ${BS_LA_SF_Text:+1}:${BS_LA_SF_Text} in`
+} #<: `fn_bs_libarray_split_fixed()`
+
+#_______________________________________________________________________________
+#; ---------------------------------------------------------
+#;
+#; ### `fn_bs_libarray_split_glob`
+#;
+#; Split text into an array using a shell pattern (aka glob) expression.
+#;
+#; _SYNOPSIS_
+#; <!-- - -->
+#;
+#;     fn_bs_libarray_split_glob <CALLER> <TEXT> <DELIMITER>
+#;
+#; _ARGUMENTS_
+#; <!-- -- -->
+#;
+#; `CALLER` \[in]
+#;
+#; : Name of the calling command.
+#; : Used for any error message.
+#;
+#; `TEXT` \[in]
+#;
+#; : Text to split into array elements.
+#; : Can be null.
+#; : Can contain any arbitrary text excluding any
+#;   embedded `\0` (`<NUL>`) characters.
+#;
+#; `DELIMITER` \[in]
+#;
+#; : Expression used to split `TEXT`.
+#; : Shell ["Pattern Matching Notation"][posix_glob] value.
+#; : Can contain any arbitrary text excluding any
+#;   embedded `\0` (`<NUL>`) characters.
+#;
+#; _CAVEATS_
+#; <!-- - -->
+#;
+#; - **WARNING:** _Not all characters can be used portably._
+#; - The locale used is that of the shell as invoked -
+#;   _it is **not** possible to change the locale of a running shell_.
+#; - See ["PATTERN MATCHING"](./README.MD#pattern-matching).
+#;
+#_______________________________________________________________________________
+fn_bs_libarray_split_glob() { ## cSpell:Ignore BS_LA_SG_
+  BS_LA_SG_Caller=${1:?'[libarray::fn_bs_libarray_split_glob]: Internal Error: a caller is required'}
+    BS_LA_SG_Text=${2?'[libarray::fn_bs_libarray_split_glob]: Internal Error: text to split is required'}
+   BS_LA_SG_Delim=${3?'[libarray::fn_bs_libarray_split_glob]: Internal Error: a delimiter is required'}
+
+  #=========================================================
+  #
+  #=========================================================
+  BS_LA_SG_Fast=0
+  case ${c_BS_LIBARRAY_CFG__full_glob_support}:${c_BS_LIBARRAY_CFG__shell_supports_mbc}:${LC_ALL:-${LC_CTYPE:-${LANG:-C}}} in
+    1:1:*|1:0:C|1:0:POSIX)
+      BS_LA_SG_Fast=1 ;;
+
+    0:1:*|0:0:C|0:0:POSIX)
+      case ${BS_LA_SG_Delim} in
+      *[\\\(\)]*) BS_LA_SG_Fast=0 ;;
+               *) BS_LA_SG_Fast=1 ;;
+      esac ;;
+  esac
+
+  #=========================================================
+  #
+  #=========================================================
+  case ${BS_LA_SG_Fast} in
+    1)
+      #-----------------------------------------------------
+      # As ever, `zsh` needs some settings changed or it
+      # will always fail.
+      #-----------------------------------------------------
+      case ${c_BS_LIBARRAY_CFG__use_zsh_setopt} in
+      1) setopt 'LOCAL_OPTIONS' 'SH_FILE_EXPANSION' 'SH_GLOB' \
+                'GLOB_SUBST'    'NONOMATCH'                   ;; ## cSpell:Ignore NONOMATCH
+      esac
+
+      #-----------------------------------------------------
+      # SC2295: Expansions inside ${..} need to be quoted
+      #         separately, otherwise they will match as a
+      #         pattern.
+      # EXCEPT: Want globbing to happen here.
+      # shellcheck disable=SC2295
+      #-----------------------------------------------------
+      while :
       do
-        if test "${BS_LAFI_Element}"    \
-                "${BS_LAFI_Primary}"    \
-                "${BS_LAFI_Expression}"
-        then
-          BS_LAFI_Found="${BS_LAFI_Index}"
-          break
-        else
-          BS_LAFI_Index=$((BS_LAFI_Index + 1))
-        fi
+        BS_LA_SG_PrevLen=${#BS_LA_SG_Text}
+          BS_LA_SG_Value=${BS_LA_SG_Text%%${BS_LA_SG_Delim}*}
+
+        array_value "${BS_LA_SG_Value}" || return $?
+
+        BS_LA_SG_Text=${BS_LA_SG_Text#*${BS_LA_SG_Delim}}
+        case ${BS_LA_SG_Text:+1}:${BS_LA_SG_PrevLen} in
+        :*|"1:${#BS_LA_SG_Text}") break ;;
+        esac
       done
+
+      #.................................
+      # Trailing whitespace is required
+      #.................................
+      echo ' '
     ;;
 
-    #...................................
-    #> `case ${BS_LAFI_Primary} in`
-    #> ----------------------------
-    #
-    # INVALID
-    *)  fn_bs_libarray_invalid_args \
-          "${BS_LAFI_Caller}"       \
-          "invalid primary '${BS_LAFI_Primary}'"
-        return "${c_BS_LIBARRAY__EX_USAGE}" ;;
-  esac #<: `case ${BS_LAFI_Primary} in`
+    0)
+      #-----------------------------------------------------
+      #
+      #-----------------------------------------------------
+      fn_bs_libarray_dbg_msg \
+        "${BS_LA_SG_Caller}" \
+        "Using emulated globs (expression '${BS_LA_SG_Delim}')"
 
-  eval "${BS_LAFI_refIndex}=\"\${BS_LAFI_Found}\""          #< SAVE
-}
+      #-----------------------------------------------------
+      #
+      #-----------------------------------------------------
+      fn_bs_libarray_awk_run_script \
+        "${BS_LA_SG_Caller}"        \
+        " ${c_BS_LIBARRAY__awk_fn__glob_to_ere}
+          ${c_BS_LIBARRAY__awk_fn__array_print}"'
+          function bs_fn_main(argArray, argCount) {
+            BS_LA_Text  = argArray[1]
+            BS_LA_Delim = bs_fn_glob_to_ere(argArray[2])
+
+            iSplitCount = split(BS_LA_Text, BS_LA_aSplitText, BS_LA_Delim)
+            for (i = 1; i <= iSplitCount; i = i + 1) {
+              bs_fn_array_print(BS_LA_aSplitText[i])
+            }
+            printf(" \n")
+          }
+        '                   \
+        "${BS_LA_SG_Text}"  \
+        "${BS_LA_SG_Delim}"
+    ;;
+  esac
+} #<: `fn_bs_libarray_split_glob()`
+
+#_______________________________________________________________________________
+#; ---------------------------------------------------------
+#;
+#; ### `fn_bs_libarray_split_bre`
+#;
+#; Split text into an array using a ["Basic Regular Expression"][posix_bre].
+#;
+#; _SYNOPSIS_
+#; <!-- - -->
+#;
+#;     fn_bs_libarray_split_bre <CALLER> <TEXT> <DELIMITER>
+#;
+#; _ARGUMENTS_
+#; <!-- -- -->
+#;
+#; `CALLER` \[in]
+#;
+#; : Name of the calling command.
+#; : Used for any error message.
+#;
+#; `TEXT` \[in]
+#;
+#; : Text to split into array elements.
+#; : Can be null.
+#; : Can contain any arbitrary text excluding any
+#;   embedded `\0` (`<NUL>`) characters.
+#;
+#; `DELIMITER` \[in]
+#;
+#; : Expression used to split `TEXT`.
+#; : A ["Basic Regular Expression"][posix_bre].
+#; : Can contain any arbitrary text excluding
+#;   any embedded `\0` (`<NUL>`) characters.
+#;
+#; _CAVEATS_
+#; <!-- - -->
+#;
+#; - **WARNING:** _Not all _BRE_ can be used portably._
+#; - See ["PATTERN MATCHING"](./README.MD#pattern-matching).
+#; - If `DELIMITER` contains any `'` (`<apostrophe>`) characters the
+#;   performance of this function will be significantly slower than if it does
+#;   not. This is unavoidable.
+#; - Some `sed` implementations have significant limits on the amount of data
+#;   they can process. As this command needs to process all input at once, it
+#;   is likely that these limitations will be an issue for relatively short
+#;   input values. Unfortunately, it is not possible to avoid this.
+#;
+#. _IMPLEMENTATION NOTES_
+#. <!-- ------------- -->
+#.
+#. - Earlier versions of this (i.e. libarray.sh v1.x.x) were all subtly, but
+#.   badly broken. This reworked version is significantly more robust and fixes
+#.   most of the issues previously present. However, the command is complicated
+#.   and subject to many edge cases that are not immediately obvious.
+#. - The current implementation makes the assumption that `sed` matches are
+#.   always "greedy". This is _not_ explicitly stated in the standard, but is
+#.   implied and is what all tested implementations use. If an implementation
+#.   is shown to use "non-greedy" matches an alternative algorithm should be
+#.   easy to create, but without such an implementation is untestable.
+#. - The additional assumption is made that anchors (i.e. `^` and `$`) apply to
+#.   the whole text and not single lines - that is, `^` matches the start of the
+#.   `sed` pattern space and `$` matches the end regardless of any `<newline>`
+#.   characters. This is what the standard requires, but implementations may
+#.   vary. Again, it would be possible to create `sed` scripts that account for
+#.   this, but there is no point in doing this unless it's shown as necessary.
+#.
+#_______________________________________________________________________________
+fn_bs_libarray_split_bre() { ## cSpell:Ignore BS_LA_SBRE_
+  BS_LA_SBRE_Caller=${1:?'[libarray::fn_bs_libarray_split_bre]: Internal Error: a caller is required'}
+    BS_LA_SBRE_Text=${2?'[libarray::fn_bs_libarray_split_bre]: Internal Error: text to split is required'}
+   BS_LA_SBRE_Delim=${3?'[libarray::fn_bs_libarray_split_bre]: Internal Error: a delimiter is required'}
+
+  #=========================================================
+  # The BRE is going to be used as part of a `sed` script,
+  # so literal `<newline>` characters along with `/`
+  # (`<slash>`) characters need to be escaped, or they will
+  # cause errors.
+  #
+  # NOTE: Although `sed` is supposed to support characters
+  #       other than `/` (`<slash>`) for "functions", some
+  #       implementations do not, so it's easier to always
+  #       use `/` (`<slash>`) than try to use something
+  #       else in cases when the BRE contains it.
+  #=========================================================
+  case ${BS_LA_SBRE_Delim} in
+  *'/'*|*"${c_BS_LIBARRAY__newline}"*)
+    BS_LA_SBRE_Delim=$(fn_bs_libarray_sanitize_sed_bre "${BS_LA_SBRE_Delim}_") || return $?
+    BS_LA_SBRE_Delim=${BS_LA_SBRE_Delim%_} ;;
+  esac
+
+  #=========================================================
+  # Split the text
+  #
+  # If `DELIMITER` contains `'` (`<apostrophe>`) characters
+  # splitting becomes much more complex as it's necessary to
+  # isolate all array values before they can be turned into
+  # proper array elements by quoting, and escaping as
+  # required. When `DELIMITER` does _not_ contain `'`
+  # (`<apostrophe>`) characters escaping can occur to the
+  # entire input text _before_ splitting, making the
+  # process much simpler. (Escaping changes the text so
+  # changes what needs matched by `DELIMITER` in a way that
+  # is not easy to fix automatically.)
+  #=========================================================
+  case ${BS_LA_SBRE_Delim} in
+    #-------------------------------------------------------
+    # CONTAINS `'` (`<apostrophe>`) CHARACTERS
+    #-------------------------------------------------------
+    *"'"*)
+      #.....................................................
+      # `sed` matches are greedy, so the only way to isolate
+      # the array values is matching them at the **end** of
+      # the input text - given how the rest of the script
+      # needs to work this means the values must be output
+      # in _reverse_ order. While unfortunate, this is easy
+      # to fix, but does involve a significant amount of
+      # additional work - some of which will repeat actions
+      # already made by the split script, but are
+      # unavoidable.
+      #.....................................................
+      BS_LA_SBRE_Array=$(
+          {
+            printf '%s\n' "${BS_LA_SBRE_Text}"
+          } | {
+            sed -e "
+                :INPUT
+                  \$!N
+                  \$!b INPUT
+                :SPLIT
+                  /${BS_LA_SBRE_Delim}/{
+                    h
+                    s/.*${BS_LA_SBRE_Delim}//
+                    s/'/'\\\\''/g
+                    s/^/'/
+                    s/\$/' \\\\/
+                    p
+                    x
+                    s/\(.*\)${BS_LA_SBRE_Delim}.*/\1/
+                    b SPLIT
+                  }
+                s/'/'\\\\''/g
+                s/^/'/
+                s/\$/' \\\\/
+              "
+          } && {
+            echo ' '
+          }
+        ) || return $?
+
+      #.....................................................
+      #
+      #.....................................................
+      case ${BS_LA_SBRE_Array:+1} in 1) ;; *) return ;; esac
+
+      #.....................................................
+      #
+      #.....................................................
+      eval "set 'BS_DUMMY_PARAM' ${BS_LA_SBRE_Array} && shift" || return $?
+
+      #.....................................................
+      #
+      #.....................................................
+      fn_bs_libarray_create_count_reverse \
+        "${BS_LA_SBRE_Caller}"            \
+        $#                                \
+        "$@"                              || return $?
+      echo ' '
+    ;; #<: `*"'"*`
+
+    #-------------------------------------------------------
+    # DOES NOT CONTAIN `'` (`<apostrophe>`) CHARACTERS
+    #-------------------------------------------------------
+    *)
+      #.....................................................
+      #
+      #.....................................................
+      {
+        printf '%s\n' "${BS_LA_SBRE_Text}"
+      } | {
+        sed -e "
+            :INPUT
+              \$!N
+              \$!b INPUT
+            s/'/'\\\\''/g
+            s/^/'/
+            s/\$/' \\\\/
+            s/${BS_LA_SBRE_Delim}/' \\\\\\
+'/g"
+      } && {
+        echo ' '
+      }
+    ;; #<: `*)`
+  esac #<: `case ${BS_LA_SBRE_Delim} in`
+} #<: `fn_bs_libarray_split_bre()`
+
+#_______________________________________________________________________________
+#; ---------------------------------------------------------
+#;
+#; ### `fn_bs_libarray_split_ere`
+#;
+#; Split text into an array using an ["Extended Regular Expression"][posix_ere].
+#;
+#; _SYNOPSIS_
+#; <!-- - -->
+#;
+#;     fn_bs_libarray_split_ere <CALLER> <TEXT> <DELIMITER>
+#;
+#; _ARGUMENTS_
+#; <!-- -- -->
+#;
+#; `CALLER` \[in]
+#;
+#; : Name of the calling command.
+#; : Used for any error message.
+#;
+#; `TEXT` \[in]
+#;
+#; : Text to split into array elements.
+#; : Can be null.
+#; : Can contain any arbitrary text excluding any
+#;   embedded `\0` (`<NUL>`) characters.
+#;
+#; `DELIMITER` \[in]
+#;
+#; : Expression used to split `TEXT`.
+#; : An ["Extended Regular Expression"][posix_ere].
+#; : Can contain any arbitrary text excluding
+#;   any embedded `\0` (`<NUL>`) characters.
+#;
+#; _CAVEATS_
+#; <!-- - -->
+#;
+#; - **WARNING:** _Not all _ERE_ can be used portably._
+#; - See ["PATTERN MATCHING"](./README.MD#pattern-matching).
+#;
+#. _IMPLEMENTATION NOTES_
+#. <!-- ------------- -->
+#.
+#. - Earlier versions of this (i.e. libarray.sh v1.x.x) were somewhat broken,
+#.   with some security issues and cases that would not work (but should have).
+#.   The current version is far more robust and should avoid most of the issues
+#.   of previous versions, while remaining relatively similar in performance.
+#.
+#_______________________________________________________________________________
+fn_bs_libarray_split_ere() { ## cSpell:Ignore BS_LA_SERE_
+  BS_LA_SERE_Caller=${1:?'[libarray::fn_bs_libarray_split_ere]: Internal Error: a caller is required'}
+    BS_LA_SERE_Text=${2?'[libarray::fn_bs_libarray_split_ere]: Internal Error: text to split is required'}
+   BS_LA_SERE_Delim=${3?'[libarray::fn_bs_libarray_split_ere]: Internal Error: a delimiter is required'}
+
+  #=========================================================
+  #
+  #=========================================================
+  fn_bs_libarray_awk_run_script \
+    "${BS_LA_SERE_Caller}"      \
+    " ${c_BS_LIBARRAY__awk_fn__array_print}"'
+      function bs_fn_main(argArray, argCount) {
+        BS_LA_Text  = argArray[1]
+        BS_LA_Delim = argArray[2]
+
+        iSplitCount = split(BS_LA_Text, BS_LA_aSplitText, BS_LA_Delim)
+        for (i = 1; i <= iSplitCount; i = i + 1) {
+          bs_fn_array_print(BS_LA_aSplitText[i])
+        }
+        printf(" \n")
+      }
+    '                     \
+    "${BS_LA_SERE_Text}"  \
+    "${BS_LA_SERE_Delim}"
+} #<: `fn_bs_libarray_split_ere()`
+
+#_______________________________________________________________________________
+#; ---------------------------------------------------------
+#;
+#; ### `fn_bs_libarray_create_from_path`
+#;
+#; Create an array (printed to `STDOUT`) from the paths contained in the given
+#; path.
+#;
+#; _SYNOPSIS_
+#; <!-- - -->
+#;
+#;     fn_bs_libarray_create_from_path <CALLER> <FLAG> <PATH>
+#;
+#; _ARGUMENTS_
+#; <!-- -- -->
+#;
+#; `CALLER` \[in]
+#;
+#; : Name of the calling command.
+#; : Used for any error message.
+#;
+#; `FLAG` \[in]
+#;
+#; : A flag indicating if "dot files" should be included.
+#; : If `0` "dot files" are omitted, otherwise they are
+#;   included.
+#; : Values other than `0` (`<zero>`) only make sense if
+#;   `PATH` is a directory.
+#;
+#; `PATH` \[in]
+#;
+#; : A valid path for the current platform.
+#; : Path MUST be suitable for appending a glob pattern.
+#; : Partial paths are permitted.
+#; : Interpreted literally (i.e. glob characters will not be
+#;   used as glob characters).
+#;
+#. _IMPLEMENTATION NOTES_
+#. <!-- ------------- -->
+#.
+#. - This implements [`array_from_path`](#array_from_path) and was previously
+#.   written inline. Unfortunately, some shells (e.g. `posh`) have problems
+#.   with parentheses inside `$(...)`. While this can be solved by using
+#.   backticks instead of `$(...)`, using a function also works and does not
+#.   have the issues that backticks are known for. (Note that the use of a
+#.   function _inside_ `$(...)` causes some shells to create a subshell where
+#.   they otherwise might not have - meaning a reduction in performance. This
+#.   is unlikely to have an effect here, but may need testing to be sure.)
+#. - Uses `ls` as a more portable replacement for `test -e` which
+#.   [`autoconf` docs][autoconf_portable] suggest is not universally available.
+#.   This may be unnecessary and is likely to be less performant, however it is
+#.   only used in a relatively unlikely branch and it is probable that the costs
+#.   will not be an issue in practice. Since any path being tested may begin
+#.   with `-` (and therefore be incorrectly matched as an option for `ls`) the
+#.   path is modified in this case to have `./` prepended. This _should_ be an
+#.   identical path, but one that is not mistaken for an option. While it would
+#.   be possible to use the special `--` argument for this purpose, the current
+#.   code should be the most portable of all possible implementations.
+#.
+#_______________________________________________________________________________
+fn_bs_libarray_create_from_path() { ## cSpell:Ignore BS_LA_CFP_
+    BS_LA_CFP_Caller=${1:?'[libarray::fn_bs_libarray_create_from_path]: Internal Error: a caller is required'}
+  BS_LA_CFP_DotFiles=${2:?'[libarray::fn_bs_libarray_create_from_path]: Internal Error: a flag is required'}
+      BS_LA_CFP_Path=${3:?'[libarray::fn_bs_libarray_create_from_path]: Internal Error: a path is required'}
+
+  #=========================================================
+  # Z Shell needs some options set or the subsequent
+  # code will fail
+  #=========================================================
+  case ${c_BS_LIBARRAY_CFG__use_zsh_setopt} in
+  1) setopt 'LOCAL_OPTIONS' 'SH_FILE_EXPANSION' 'SH_GLOB' \
+            'GLOB_SUBST'    'NONOMATCH'                   ;; ## cSpell:Ignore NONOMATCH
+  esac
+
+  #=========================================================
+  # Iterate over the set of globs
+  #=========================================================
+  BS_LA_CFP_FoundPaths=0
+  for BS_LA_CFP_Glob in '*' '.[!.]*' '..?*'
+  do
+    # Expand the glob. (This sets the current positional
+    # parameters to each matched path)
+    #
+    # If there are no files, the first parameter will be
+    # set to the glob, so there will be a single path -
+    # to deal with this case, when a single path is
+    # generated, need to test for existence. For maximum
+    # performance, 'ls' is used for this rather than
+    # 'test -e' as the latter may not be available.
+    # To avoid using the '--' argument the test path is
+    # modified so it does not begin with '-'.
+    #
+    # SC2086: Double quote to prevent globbing
+    #         and word splitting.
+    # EXCEPT: Want globbing to happen here
+    # shellcheck disable=SC2086
+    set 'BS_DUMMY_PARAM' "${BS_LA_CFP_Path}"${BS_LA_CFP_Glob}
+    case $# in
+      1)  ;; #< Should never match
+
+      2)  case $2 in
+          -*) BS_LA_CFP_GlobPath=./$2 ;;
+           *) BS_LA_CFP_GlobPath=$2   ;;
+          esac
+          if BS_LA_CFP_Ignored=$(ls -d "${BS_LA_CFP_GlobPath}" 2>&1)
+          then
+            BS_LA_CFP_FoundPaths=1
+            array_value "$2" || return $?
+          fi ;;
+
+      *)  shift #< Remove BS_DUMMY_PARAM
+          BS_LA_CFP_FoundPaths=1
+          for BS_LA_CFP_GlobPath
+          do
+            array_value "${BS_LA_CFP_GlobPath}" || return $?
+          done ;;
+    esac #<: case $# in
+
+    case ${BS_LA_CFP_DotFiles} in 0) break ;; esac
+  done #<: for BS_LA_CFP_Glob in '*' '.[!.]*' '..?*'
+
+  #=========================================================
+  # Trailing whitespace is always required (if there are
+  # any elements)
+  #=========================================================
+  case ${BS_LA_CFP_FoundPaths:-0} in 1) echo ' ' ;; esac
+} #<: `fn_bs_libarray_create_from_path()`
 
 #===============================================================================
 #===============================================================================
@@ -2980,7 +5497,7 @@ fn_bs_libarray_find_index() { ## cSpell:Ignore BS_LAFI_
 #: _EXAMPLES_
 #: <!-- - -->
 #:
-#:     ArrayValue="$(array_value 'Value')"
+#:     ArrayValue=$(array_value 'Value')
 #:     Array="$(
 #:       for ArrayValue in "$@"
 #:       do
@@ -2990,26 +5507,28 @@ fn_bs_libarray_find_index() { ## cSpell:Ignore BS_LAFI_
 #:     )"
 #:
 #_______________________________________________________________________________
-array_value() { ## cSpell:Ignore BS_LAValue_
+array_value() { ## cSpell:Ignore BS_LA_Value_
+  #=========================================================
+  # Validate arguments
+  #=========================================================
   case $# in
   1)  ;;
-  *)  fn_bs_libarray_expected 'array_value' 'a value'
+  *)  fn_bs_libarray_expected 'array_value' 'a single value'
       return "${c_BS_LIBARRAY__EX_USAGE}" ;;
   esac
 
-  #---------------------------------------------------------
+  #=========================================================
   # It is much faster to only invoke `sed` if required
   # to escape quote characters (even when taking into
   # account the cost of testing for the quote)
   # NOTES:
   # - due to quoting rules for shells '\\\\' results
   #   in a single escape in the final string
+  #=========================================================
   case $1 in
-    #.......................................................
-    #> `case $1 in`
-    #> ------------
-    #
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Has `<apostrophe>` characters
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     *"'"*)
       {
         printf '%s\n' "$1"
@@ -3029,16 +5548,16 @@ array_value() { ## cSpell:Ignore BS_LAValue_
                 1s/^/'/
                 \$s/\$/' \\\\/"
       }
-    ;;
+    ;; #<: `*"'"*)`
 
-    #.......................................................
-    #> `case $1 in`
-    #> ------------
-    #
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # No `<apostrophe>` characters
-    *)  printf "'%s' \\\\\n" "$1" ;;
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    *)
+      printf "'%s' \\\\\n" "$1"
+    ;;
   esac #<: `case $1 in`
-}
+} #<: `array_value()`
 
 #_______________________________________________________________________________
 #: ---------------------------------------------------------
@@ -3053,7 +5572,7 @@ array_value() { ## cSpell:Ignore BS_LAValue_
 #:
 #:     ... | array_new
 #:
-#:     array_new [--reverse|--reversed|-r] <ARRAY> [<VALUE>...]
+#:     array_new [--reverse|--reversed|-r] [--] <ARRAY> [<VALUE>...]
 #:
 #: _ARGUMENTS_
 #: <!-- -- -->
@@ -3064,11 +5583,17 @@ array_value() { ## cSpell:Ignore BS_LAValue_
 #:   will be the last array element, etc.
 #: : Can _not_ be used for arrays created from `STDIN`.
 #:
+#: `--` \[in]
+#:
+#: : Causes all remaining arguments to be interpreted
+#:   as `ARRAY` followed by `VALUE`s (i.e. disables
+#:   further option processing).
+#:
 #: `ARRAY` \[out:ref]
 #:
 #: : Variable that will contain the new array.
 #: : Any current contents will be lost.
-#: : MUST be a valid _POSIX.1_ name or a `-` (`<hyphen>`).
+#: : MUST be a valid _POSIX.1_ name or `-` (`<hyphen>`).
 #: : If specified as `-` (`<hyphen>`) array is written to
 #:   `STDOUT`.
 #: : REQUIRED if _any_ other argument is specified.
@@ -3091,8 +5616,8 @@ array_value() { ## cSpell:Ignore BS_LAValue_
 #: _EXAMPLES_
 #: <!-- - -->
 #:
-#:     Array="$(grep -e 'ERROR' /var/log/syslog | array_new)"
-#:     Array="$(array_new - "$Value1" ... "$ValueN")"
+#:     Array=$(grep -e 'ERROR' /var/log/syslog | array_new)
+#:     Array=$(array_new - "$Value1" ... "$ValueN")
 #:     array_new 'Array' "$Value1" ... "$ValueN"
 #:     array_new --reverse 'Array' "$@"
 #:
@@ -3104,9 +5629,9 @@ array_value() { ## cSpell:Ignore BS_LAValue_
 #: _NOTES_
 #: <!-- -->
 #:
-#: - When given no arguments, will read array values from `STDIN`; if
-#:   this is erroneously used without `STDIN` directed into the
-#:   command this will block indefinitely.
+#: - When given no arguments, will read array values from `STDIN`; if this is
+#:   erroneously used without `STDIN` directed into the command this will block
+#:   indefinitely.
 #: - An array created from `STDIN` will have one element per line of input;
 #:   if values need to contain embedded `<newline>` characters the array
 #:   must be created with arguments.
@@ -3121,9 +5646,12 @@ array_value() { ## cSpell:Ignore BS_LAValue_
 #:   difference is unlikely to be measurable in most cases.
 #:
 #_______________________________________________________________________________
-array_new() { ## cSpell:Ignore BS_LANew_
-  #---------------------------------------------------------
+array_new() { ## cSpell:Ignore BS_LA_New_
+  #=========================================================
+  #=========================================================
   # FROM STDIN
+  #=========================================================
+  #=========================================================
   case $# in
   0)  sed -e "s/'/'\\\\''/g
               s/^/'/
@@ -3132,76 +5660,85 @@ array_new() { ## cSpell:Ignore BS_LANew_
       return ;;
   esac
 
-  #---------------------------------------------------------
+  #=========================================================
+  #=========================================================
   # FROM PARAMETERS
-   BS_LANew_Reverse=0
-  BS_LANew_refArray=;
+  #=========================================================
+  #=========================================================
 
-  #.....................................
-  # Extract Options
-  while : #< [ $# -gt 0 ]
+  #=========================================================
+  # Process Arguments
+  #=========================================================
+
+  #---------------------------------------------------------
+  # Option(s) must be first
+  #---------------------------------------------------------
+  BS_LA_New_Reverse=0
+  while :
   do
-    #> LOOP TEST --------------
-    case $# in 0) break ;; esac #< [ $# -gt 0 ]
-    #> ------------------------
-    case $1 in
-      #'''''''''''''''''''''''''''''''''
-      #> `case $1 in`
-      #> ------------
-      '--reverse'|'--reversed'|'-reverse'|'-reversed'|'-r')
-        case ${BS_LANew_Reverse}:$# in
-        1:*)  fn_bs_libarray_expected           \
-                'array_new'                     \
-                'a --reverse option (optional)' \
-                'an array variable'             \
-                'zero or more values'
-              return "${c_BS_LIBARRAY__EX_USAGE}" ;;
-        *:1)  fn_bs_libarray_invalid_args \
-                'array_new'               \
-                "an array variable is required with '--reverse'"
-              return "${c_BS_LIBARRAY__EX_USAGE}" ;;
-        esac
-        BS_LANew_Reverse=1
-      ;;
+    case ${1-} in
+    '--reverse'|'--reversed'|'-reverse'|'-reversed'|'-r')
+      BS_LA_New_Reverse=1
+      shift ;;
 
-      #'''''''''''''''''''''''''''''''''
-      #> `case $1 in`
-      #> ------------
-      *)
-        case ${BS_LANew_refArray:+1} in
-        1)  break ;;
-        *)  BS_LANew_refArray="$1"
-            fn_bs_libarray_validate_name_hyphen \
-              'array_new'                       \
-              "${BS_LANew_refArray}"            || return $? ;;
-        esac
-      ;;
-    esac #<: `case $1 in`
-    shift
-  done #<: `while : #< [ $# -gt 0 ]`
+    '--') shift; break ;;
 
-  #.....................................
-  # Create Array
+       *) break ;;
+    esac #<: `case ${1-} in`
+  done
+
+  #---------------------------------------------------------
+  # Other arguments follow
+  #---------------------------------------------------------
   case $# in
-  0)  BS_LANew_Array=; ;;
-  *)  case ${BS_LANew_Reverse} in
-      0) BS_LANew_Count=$#          ;;
-      1) BS_LANew_Count=$((0 - $#)) ;;
-      esac
-
-      BS_LANew_Array="$(
-          fn_bs_libarray_create \
-            'array_new'         \
-            "${BS_LANew_Count}" \
-            "$@"
-        )" || return $? ;;
-  esac #<: `case $# in`
-
-  case ${BS_LANew_refArray} in
-  -) printf '%s\n' "${BS_LANew_Array}" ;;                   #< OUTPUT
-  *) eval "${BS_LANew_refArray}=\"\${BS_LANew_Array}\"" ;;  #< SAVE
+  0)  fn_bs_libarray_expected           \
+        'array_new'                     \
+        'a --reverse option (optional)' \
+        'an array variable'             \
+        'zero or more values'
+      return "${c_BS_LIBARRAY__EX_USAGE}" ;;
   esac
-}
+
+  BS_LA_New_refArray=$1
+  fn_bs_libarray_validate_name_hyphen \
+    'array_new'                       \
+    "${BS_LA_New_refArray}"            || return $?
+  shift
+
+  #=========================================================
+  # Create the array
+  #=========================================================
+  case $#:${BS_LA_New_Reverse} in
+  0:*)  BS_LA_New_Array='' ;;
+  *:0)  BS_LA_New_Array=$(
+            {
+              fn_bs_libarray_create \
+                'array_new'         \
+                "$@"
+            } && {
+              echo ' '
+            }
+          ) || return $? ;;
+  *:1)  BS_LA_New_Array=$(
+            {
+              fn_bs_libarray_create_count_reverse \
+                'array_new'                       \
+                $#                                \
+                "$@"
+            } && {
+              echo ' '
+            }
+          ) || return $? ;;
+  esac
+
+  #=========================================================
+  # Save/Output
+  #=========================================================
+  case ${BS_LA_New_refArray} in
+  -) printf '%s\n' "${BS_LA_New_Array}" ;;                   #< OUTPUT
+  *) eval "${BS_LA_New_refArray}=\${BS_LA_New_Array}" ;;      #< SAVE
+  esac
+} #<: `array_new()`
 
 #_______________________________________________________________________________
 #: ---------------------------------------------------------
@@ -3235,28 +5772,31 @@ array_new() { ## cSpell:Ignore BS_LANew_
 #: _EXAMPLES_
 #: <!-- - -->
 #:
-#:     Size="$(array_size 'Array')"
-#:     Size="$(array_size 'Array' -)"
+#:     Size=$(array_size 'Array')
+#:     Size=$(array_size 'Array' -)
 #:     array_size 'Array' 'Size'
 #:
 #_______________________________________________________________________________
-array_size() { ## cSpell:Ignore BS_LASize_
+array_size() { ## cSpell:Ignore BS_LA_Size_
+  #=========================================================
+  # Process Arguments
+  #=========================================================
   case $# in
-  1)  BS_LASize_refArray="$1"
+  1)  BS_LA_Size_refArray=$1
       fn_bs_libarray_validate_name \
         'array_size'               \
-        "${BS_LASize_refArray}"    || return $?
-      BS_LASize_refSize='-' ;;
+        "${BS_LA_Size_refArray}"    || return $?
+      BS_LA_Size_refSize='-' ;;
 
-  2)  BS_LASize_refArray="$1"
+  2)  BS_LA_Size_refArray=$1
       fn_bs_libarray_validate_name \
         'array_size'               \
-        "${BS_LASize_refArray}"    || return $?
+        "${BS_LA_Size_refArray}"    || return $?
 
-      BS_LASize_refSize="$2"
+      BS_LA_Size_refSize=$2
       fn_bs_libarray_validate_name_hyphen \
         'array_size'                      \
-        "${BS_LASize_refSize}"            || return $? ;;
+        "${BS_LA_Size_refSize}"            || return $? ;;
 
   *)  fn_bs_libarray_expected \
         'array_size'          \
@@ -3265,14 +5805,20 @@ array_size() { ## cSpell:Ignore BS_LASize_
       return "${c_BS_LIBARRAY__EX_USAGE}" ;;
   esac #<: `case $# in`
 
-  eval "BS_LASize_Array=\"\${${BS_LASize_refArray}-}\""    || return $?
-  eval "set 'BS_DUMMY_PARAM' ${BS_LASize_Array?} && shift" || return $?
+  #=========================================================
+  # Unpack
+  #=========================================================
+  eval "BS_LA_Size_Array=\${${BS_LA_Size_refArray}-}"        || return $?
+  eval "set 'BS_DUMMY_PARAM' ${BS_LA_Size_Array?} && shift" || return $?
 
-  case ${BS_LASize_refSize} in
-  -) printf '%d\n' $# ;;                                    #< OUTPUT
-  *) eval "${BS_LASize_refSize}=$#" ;;                      #< SAVE
+  #=========================================================
+  # Return value
+  #=========================================================
+  case ${BS_LA_Size_refSize} in
+  -) printf '%d\n' $# ;;                #< OUTPUT
+  *) eval "${BS_LA_Size_refSize}=$#" ;;  #< SAVE
   esac
-}
+} #<: `array_size()`
 
 #_______________________________________________________________________________
 #: ---------------------------------------------------------
@@ -3305,7 +5851,7 @@ array_size() { ## cSpell:Ignore BS_LASize_
 #:
 #: : Variable that will contain the element value.
 #: : Any current contents will be lost.
-#: : MUST be a valid _POSIX.1_ name or a `-` (`<hyphen>`).
+#: : MUST be a valid _POSIX.1_ name or `-` (`<hyphen>`).
 #: : If not specified, or specified as `-` (`<hyphen>`)
 #:   value is written to `STDOUT`.
 #:
@@ -3313,14 +5859,13 @@ array_size() { ## cSpell:Ignore BS_LASize_
 #: <!-- - -->
 #:
 #:     array_get 'Array' 4 'ValueVar'
-#:     ValueVar="$(array_get 'Array' 4)"
-#:     ValueVar="$(array_get 'Array' 4 -)"
+#:     ValueVar=$(array_get 'Array' 4)
+#:     ValueVar=$(array_get 'Array' 4 -)
 #:
 #: _NOTES_
 #: <!-- -->
 #:
-#: - Supports zero-based, one-based, or negative indexing
-#:   (see
+#: - Supports zero-based, one-based, or negative indexing (see
 #:   [`BS_LIBARRAY_CONFIG_START_INDEX_ONE`](#bs_libarray_config_start_index_one)).
 #: - If value is output to `STDOUT` data _may_ be lost if the array value ends
 #:   with a `\n` (`<newline>`) (_POSIX.1_ rules state that newlines should be
@@ -3333,26 +5878,29 @@ array_size() { ## cSpell:Ignore BS_LASize_
 #.   means some operations will add 1 to the index used.
 #.
 #_______________________________________________________________________________
-array_get() { ## cSpell:Ignore BS_LAGet_
+array_get() { ## cSpell:Ignore BS_LA_Get_
+  #=========================================================
+  # Process Arguments
+  #=========================================================
   case $# in
-  2)  BS_LAGet_refArray="$1"
+  2)  BS_LA_Get_refArray=$1
       fn_bs_libarray_validate_name \
         'array_get'                \
-         "${BS_LAGet_refArray}"    || return $?
+         "${BS_LA_Get_refArray}"    || return $?
 
-         BS_LAGet_Index="$2"
-      BS_LAGet_refValue='-' ;;
+         BS_LA_Get_Index=$2
+      BS_LA_Get_refValue='-' ;;
 
-  3)  BS_LAGet_refArray="$1"
+  3)  BS_LA_Get_refArray=$1
       fn_bs_libarray_validate_name \
         'array_get'                \
-         "${BS_LAGet_refArray}"    || return $?
+         "${BS_LA_Get_refArray}"    || return $?
 
-         BS_LAGet_Index="$2"
-      BS_LAGet_refValue="$3"
+         BS_LA_Get_Index=$2
+      BS_LA_Get_refValue=$3
       fn_bs_libarray_validate_name_hyphen \
         'array_get'                       \
-        "${BS_LAGet_refValue}"            || return $? ;;
+        "${BS_LA_Get_refValue}"            || return $? ;;
 
   *)  fn_bs_libarray_expected \
         'array_get'           \
@@ -3362,9 +5910,15 @@ array_get() { ## cSpell:Ignore BS_LAGet_
       return "${c_BS_LIBARRAY__EX_USAGE}" ;;
   esac #<: `case $# in`
 
-  eval "BS_LAGet_Array=\"\${${BS_LAGet_refArray}-}\""     || return $?
-  eval "set 'BS_DUMMY_PARAM' ${BS_LAGet_Array?} && shift" || return $?
+  #=========================================================
+  # Unpack
+  #=========================================================
+  eval "BS_LA_Get_Array=\${${BS_LA_Get_refArray}-}"     || return $?
+  eval "set 'BS_DUMMY_PARAM' ${BS_LA_Get_Array?} && shift" || return $?
 
+  #=========================================================
+  # Validate the array
+  #=========================================================
   case $# in
   0)  fn_bs_libarray_invalid_args \
         'array_get'               \
@@ -3372,25 +5926,35 @@ array_get() { ## cSpell:Ignore BS_LAGet_
       return "${c_BS_LIBARRAY__EX_USAGE}" ;;
   esac
 
+  #=========================================================
   # Process and validate the index
-  # NOTES: `BS_LAGet_Index` is zero-based
+  # NOTES: Resulting `BS_LA_Get_Index` is zero-based
+  #=========================================================
   fn_bs_libarray_process_index \
     'array_get'                \
-    'BS_LAGet_Index'           \
+    'BS_LA_Get_Index'           \
     $#                         || return $?
 
-  #  Lookup the value
-  BS_LAGet_Value=;
-  fn_bs_libarray_get_param  \
-    'BS_LAGet_Value'        \
-    $((BS_LAGet_Index + 1)) \
-    "$@"                    || return $?
+  #=========================================================
+  # Lookup the value
+  #=========================================================
+  BS_LA_Get_Value=;
+  case ${c_BS_LIBARRAY_CFG__use_multidigit_param:-0} in
+  1)  eval "BS_LA_Get_Value=\${$((BS_LA_Get_Index + 1))}" ;;
+  0)  fn_bs_libarray_get_multidigit_param  \
+        'BS_LA_Get_Value'                   \
+        $((BS_LA_Get_Index + 1))            \
+        "$@"                               ;;
+  esac || return $?
 
-  case ${BS_LAGet_refValue} in
-  -) printf '%s\n' "${BS_LAGet_Value}" ;;                   #< OUTPUT
-  *) eval "${BS_LAGet_refValue}=\"\${BS_LAGet_Value}\"" ;;  #< SAVE
+  #=========================================================
+  # Return value
+  #=========================================================
+  case ${BS_LA_Get_refValue} in
+  -) printf '%s\n' "${BS_LA_Get_Value}" ;;                   #< OUTPUT
+  *) eval "${BS_LA_Get_refValue}=\${BS_LA_Get_Value}" ;;      #< SAVE
   esac
-}
+} #<: `array_get()`
 
 #_______________________________________________________________________________
 #: ---------------------------------------------------------
@@ -3434,8 +5998,7 @@ array_get() { ## cSpell:Ignore BS_LAGet_
 #: _NOTES_
 #: <!-- -->
 #:
-#: - Supports zero-based, one-based, or negative indexing
-#:   (see
+#: - Supports zero-based, one-based, or negative indexing (see
 #:   [`BS_LIBARRAY_CONFIG_START_INDEX_ONE`](#bs_libarray_config_start_index_one)).
 #:
 #. _IMPLEMENTATION NOTES_
@@ -3445,26 +6008,38 @@ array_get() { ## cSpell:Ignore BS_LAGet_
 #.   means some operations will add 1 to the index used.
 #.
 #_______________________________________________________________________________
-array_set() { ## cSpell:Ignore BS_LASet_
+array_set() { ## cSpell:Ignore BS_LA_Set_
+  #=========================================================
+  # Process Arguments
+  #=========================================================
   case $# in
-  3)  BS_LASet_refArray="$1"
-         BS_LASet_Index="$2"
-      BS_LASet_NewValue="$3" ;;
+  3)  BS_LA_Set_refArray=$1
+         BS_LA_Set_Index=$2
+      BS_LA_Set_NewValue=$3 ;;
   *)  fn_bs_libarray_expected \
         'array_set'           \
         'an array variable'   \
         'an array index'      \
         'a value'
       return "${c_BS_LIBARRAY__EX_USAGE}" ;;
-  esac #<: `case $# in`
+  esac
 
+  #=========================================================
+  # Validate the reference
+  #=========================================================
   fn_bs_libarray_validate_name \
     'array_set'                \
-    "${BS_LASet_refArray}"     || return $?
+    "${BS_LA_Set_refArray}"     || return $?
 
-  eval "BS_LASet_Array=\"\${${BS_LASet_refArray}-}\""    || return $?
-  eval "set 'BS_DUMMY_PARAM' ${BS_LASet_Array} && shift" || return $?
+  #=========================================================
+  # Unpack
+  #=========================================================
+  eval "BS_LA_Set_Array=\${${BS_LA_Set_refArray}-}"        || return $?
+  eval "set 'BS_DUMMY_PARAM' ${BS_LA_Set_Array} && shift" || return $?
 
+  #=========================================================
+  # Validate the array
+  #=========================================================
   case $# in
   0)  fn_bs_libarray_invalid_args \
         'array_set'               \
@@ -3472,60 +6047,51 @@ array_set() { ## cSpell:Ignore BS_LASet_
       return "${c_BS_LIBARRAY__EX_USAGE}" ;;
   esac
 
+  #=========================================================
   # Process and validate the index
-  # NOTES: `BS_LASet_Index` is zero-based
+  # NOTES: The returned `BS_LA_Set_Index` is zero-based
+  #=========================================================
   fn_bs_libarray_process_index \
     'array_set'                \
-    'BS_LASet_Index'           \
+    'BS_LA_Set_Index'           \
     $#                         || return $?
 
-  #  Resave up to the indexed value
-  case ${BS_LASet_Index} in
-  0) BS_LASet_Array=; ;;
-  *) BS_LASet_Array="$(
+  #=========================================================
+  # Set the new value:
+  #  - resave up to the indexed value
+  #  - skip the set value
+  #  - set the new value
+  #  - save any remaining values
+  #
+  # NOTE: This uses `test` rather than `case` as some shells
+  #       do not support the use of `case` inside `$(...)`
+  #       (applies at least to `posh`).
+  #=========================================================
+  BS_LA_Set_Array=$(
+      while [ "${BS_LA_Set_Index}" -gt 0 ]
+      do
+        array_value "$1" || return $?
+        shift
+        BS_LA_Set_Index=$((BS_LA_Set_Index - 1))
+      done #<: `while [ "${BS_LA_Set_Index}" -gt 0 ]`
+
+      shift
+      array_value "${BS_LA_Set_NewValue}" || return $?
+
+      {
         fn_bs_libarray_create \
           'array_set'         \
-          "${BS_LASet_Index}" \
           "$@"
-      )" || return $? ;;
-  esac
+      } && {
+        echo ' '
+      }
+    ) || return $?
 
-  # `shift` all the values no longer needed
-  # (i.e. everything up to and including the index)
-  #
-  # NOTES:
-  # - `BS_LASet_Index` is zero-based, while shell
-  #   parameters are one-based, so an extra `shift`
-  #   is performed
-  case ${c_BS_LIBARRAY_CFG_USE__shift_n:-0} in
-  1)  shift $((BS_LASet_Index + 1)) ;;
-  0)  while : #< [ "${BS_LASet_Index}" -ge 0 ]
-      do
-        #> LOOP TEST ------------------------------
-        case ${BS_LASet_Index} in -1) break ;; esac #< [ "${BS_LASet_Index}" -ge 0 ]
-        #> ----------------------------------------
-        shift
-        BS_LASet_Index=$((BS_LASet_Index - 1))
-      done ;;
-  esac
-
-  # Set the value & append remaining values
-  #
-  # NOTES:
-  # - no need to deal with "$@" specially here as even if
-  #   the shell creates a parameter when it should not,
-  #   the count is used to create the array and it will
-  #   be correct
-  BS_LASet_Array="${BS_LASet_Array}$(
-      fn_bs_libarray_create    \
-        'array_set'            \
-        $(($# + 1))            \
-        "${BS_LASet_NewValue}" \
-        "$@"
-    )" || return $?
-
-  eval "${BS_LASet_refArray}=\"\${BS_LASet_Array}\""        #< SAVE
-}
+  #=========================================================
+  # SAVE
+  #=========================================================
+  eval "${BS_LA_Set_refArray}=\${BS_LA_Set_Array}"
+} #<: `array_set()`
 
 #_______________________________________________________________________________
 #: ---------------------------------------------------------
@@ -3570,8 +6136,7 @@ array_set() { ## cSpell:Ignore BS_LASet_
 #: _NOTES_
 #: <!-- -->
 #:
-#: - Supports zero-based, one-based, or negative indexing
-#:   (see
+#: - Supports zero-based, one-based, or negative indexing (see
 #:   [`BS_LIBARRAY_CONFIG_START_INDEX_ONE`](#bs_libarray_config_start_index_one)).
 #:
 #. _IMPLEMENTATION NOTES_
@@ -3581,100 +6146,88 @@ array_set() { ## cSpell:Ignore BS_LASet_
 #.   means some operations will add 1 to the index used.
 #.
 #_______________________________________________________________________________
-array_insert() { ## cSpell:Ignore BS_LAInsert_
+array_insert() { ## cSpell:Ignore BS_LA_Insert_
+  #=========================================================
+  # Process Arguments
+  #=========================================================
   case $# in
-  0|1|2)
-      fn_bs_libarray_expected \
-        'array_insert'        \
-        'an array variable'   \
-        'an array index'      \
-        'one or more values'
-      return "${c_BS_LIBARRAY__EX_USAGE}" ;;
-
-  *)  BS_LAInsert_refArray="$1"
-      fn_bs_libarray_validate_name \
-        'array_insert'             \
-        "${BS_LAInsert_refArray}"  || return $?
-      shift
-
-      BS_LAInsert_Index="$1"
-      shift ;;
-  esac #<: `case $# in`
-
-  #  Create a new array from the values to insert (this
-  #+ needs done here as the old array must be unpacked and
-  #+ will overwrite the positional parameters)
-  BS_LAInset_Inserted="$(
-      fn_bs_libarray_create \
-        'array_insert'      \
-        $#                  \
-        "$@"
-    )" || return $?
-
-  #  Unpack the existing array
-  eval "BS_LAInsert_Array=\"\${${BS_LAInsert_refArray}-}\""  || return $?
-  eval "set 'BS_DUMMY_PARAM' ${BS_LAInsert_Array?} && shift" || return $?
-
-  # Process and validate the index
-  # NOTES: `BS_LAInsert_Index` is zero-based
-  fn_bs_libarray_process_index \
-    'array_insert'             \
-    'BS_LAInsert_Index'        \
-    $#                         || return $?
-
-  #---------------------------------------------------------
-  # Resave current values up to the index and
-  # append the inserted values
-  case ${BS_LAInsert_Index} in
-  0) BS_LAInsert_Array="${BS_LAInset_Inserted}"; ;;
-  *) BS_LAInsert_Array="$(
-        fn_bs_libarray_create    \
-          'array_insert'         \
-          "${BS_LAInsert_Index}" \
-          "$@"
-      )${BS_LAInset_Inserted}" || return $? ;;
+  0|1|2)  fn_bs_libarray_expected \
+            'array_insert'        \
+            'an array variable'   \
+            'an array index'      \
+            'one or more values'
+          return "${c_BS_LIBARRAY__EX_USAGE}"
+  ;;
   esac
 
-  #---------------------------------------------------------
-  # Append any remaining values from the original array
-  case $# in
-    #...................................
-    #> `case $# in`
-    #> ------------
-    #
-    #  NOTHING ELSE TO ADD
-    "${BS_LAInsert_Index}") ;;
+  BS_LA_Insert_refArray=$1
+  fn_bs_libarray_validate_name \
+    'array_insert'             \
+    "${BS_LA_Insert_refArray}"  || return $?
+  shift
 
-    #...................................
-    #> `case $# in`
-    #> ------------
-    #
-    # ONE OR MORE VALUES TO ADD
-    *)
-      # `shift` all the values already added
-      case ${c_BS_LIBARRAY_CFG_USE__shift_n:-0} in
-      1)  shift "${BS_LAInsert_Index}" ;;
-      0)  while : #< [ "${BS_LAInsert_Index}" -ge 0 ]
-          do
-            #> LOOP TEST --------------------------------
-            case ${BS_LAInsert_Index} in 0) break ;; esac #< [ "${BS_LAInsert_Index}" -ge 0 ]
-            #> ------------------------------------------
-            shift
-            BS_LAInsert_Index=$((BS_LAInsert_Index - 1))
-          done ;;
-      esac
+  BS_LA_Insert_Index=$1
+  shift
 
-      # Append the remaining values
-      BS_LAInsert_Array="${BS_LAInsert_Array}$(
-          fn_bs_libarray_create \
-            'array_insert'      \
-            $#                  \
-            "$@"
-        )" || return $? ;;
-  esac #<: `case $# in`
+  #=========================================================
+  # Create a new array from the values to insert (this
+  # needs done here as the old array must be unpacked and
+  # will overwrite the positional parameters)
+  #
+  # NOTE: This is **not** a true array - the trailing
+  #       whitespace is omitted. This will be added later.
+  #=========================================================
+  BS_LA_Insert_Inserted=$(fn_bs_libarray_create 'array_insert' "$@") || return $?
 
-  eval "${BS_LAInsert_refArray}=\"\${BS_LAInsert_Array}\""  #< SAVE
-}
+  #=========================================================
+  # Unpack the existing array
+  #=========================================================
+  eval "BS_LA_Insert_Array=\${${BS_LA_Insert_refArray}-}"  || return $?
+  eval "set 'BS_DUMMY_PARAM' ${BS_LA_Insert_Array?} && shift" || return $?
+
+  #=========================================================
+  # Process and validate the index
+  # NOTES: Resulting `BS_LA_Insert_Index` is zero-based
+  #=========================================================
+  fn_bs_libarray_process_index \
+    'array_insert'             \
+    'BS_LA_Insert_Index'        \
+    $#                         || return $?
+
+  #=========================================================
+  # Insert the values:
+  #   - save everything up to the insert index
+  #   - insert the new values
+  #   - save any remaining values
+  #
+  # NOTE: This uses `test` rather than `case` as some shells
+  #       do not support the use of `case` inside `$(...)`
+  #       (applies at least to `posh`).
+  #=========================================================
+  BS_LA_Insert_Array=$(
+      while [ "${BS_LA_Insert_Index}" -gt 0 ]
+      do
+        array_value "$1" || return $?
+        shift
+        BS_LA_Insert_Index=$((BS_LA_Insert_Index - 1))
+      done #<: `while [ "${BS_LA_Insert_Index}" -gt 0 ]`
+
+      printf '%s\n' "${BS_LA_Insert_Inserted}"
+
+      {
+        fn_bs_libarray_create \
+          'array_insert'      \
+          "$@"
+      } && {
+        echo ' '
+      }
+    ) || return $?
+
+  #=========================================================
+  # Save
+  #=========================================================
+  eval "${BS_LA_Insert_refArray}=\${BS_LA_Insert_Array}"
+} #<: `array_insert()`
 
 #_______________________________________________________________________________
 #: ---------------------------------------------------------
@@ -3732,129 +6285,158 @@ array_insert() { ## cSpell:Ignore BS_LAInsert_
 #:
 #: : A test operator used with EXPRESSION.
 #: : MUST be ONE of: `=`, `!=`, `-eq`, `-ne`, `-gt`, `-ge`,
-#:   `-lt`, `-le`, `-like`, or `-notlike`.
-#: : The primaries `-gt`, `-ge`, `-lt`, and `-le` are
-#:   identical to the `test` primaries of the same
-#:   names, while `=`, `!=`, `-eq`, and `-ne` are
-#:   functionally similar, but do not distinguish
-#:   between numerical and string values.
-#: : The `-like` primary performs a `case` pattern
-#:   match and supports the glob characters as
-#:   supported by `case`, the `-notlike` primary is
-#:   identical, but with inverted meaning.
-#: : `-like` and `-notlike` support the normal `case`
-#:   pattern matching characters, and can consist of
-#:   multiple patterns delimited by the `|` character.
+#:   `-lt`, `-le`, `-like`, `-notlike`, `-bre`, `-notbre`,
+#:   `-ere`, or `-notere`.
 #:
 #: `EXPRESSION` \[in]
 #:
 #: : Value to use with `PRIMARY`.
 #: : Can be null.
-#: : _EXPECTS_
-#:   - a _string_ when `PRIMARY` is `=` or `!=`
+#: : _EXPECTS_:
+#:   - a _string_ when `PRIMARY` is `=`, or `!=`
 #:   - a _number_ when `PRIMARY` is `-eq`, `-ne`,
-#:     `-gt`, `-ge`, `-lt`, or `-le`
-#:   - a `case` pattern when `PRIMARY` is `-like`
-#:     or `-notlike`.
-#: : _ALLOWS_
-#:   - a _number_ when `PRIMARY` is `=` or `!=`
-#:   - a _string_ when `PRIMARY` is `-eq` or `-ne`.
-#: : `case` pattern allows the normal `case` pattern
-#:   matching characters: `*` (`<asterisk>`)
-#:   `?` (`<question-mark>`), and
-#:   `[` (`<left-square-bracket>`) with the same
-#:   meanings as with a standard `case` match;
-#:   also supported is the pattern delimiter `|`
-#:   (`<vertical-line>`) which can be used to separate
-#:   multiple patterns in a single `EXPRESSION`.
+#:     `-gt`, `-ge`,  `-lt`, or `-le`
+#:   - a _wildcard pattern_ when `PRIMARY` is `-like`, or
+#:     `-notlike`.
+#:   - a _BRE_ when `PRIMARY` is `-bre`, or `-notbre`.
+#:   - an _ERE_ when `PRIMARY` is `-ere`, or `-notere`.
 #:
 #: _EXAMPLES_
 #: <!-- - -->
 #:
 #:     array_remove 'Array' 2
 #:     array_remove 'Array' '4:7'
-#:     array_remove 'Array' -like '*an error*|*a warning*'
-#:     array_remove 'Array' -notlike '*an error*|*a warning*'
+#:     array_remove 'Array' -bre '.*an error.*'
+#:     array_remove 'Array' -ere '.*an error.*|.*a warning.*'
+#:
+#: _BREAKING CHANGES_
+#: <!-- --------- -->
+#:
+#: As of `v2.0.0`:
+#:
+#: - `-like`/`-notlike`: no longer support the `|` (`<vertical-line>`) operator;
+#: - `-eq`/`-ne`: _require_ numerical values.
+#:
+#: _CAVEATS_
+#: <!-- - -->
+#:
+#: - Removal requires unpacking then rebuilding the array, as such it is likely
+#:   to be a relatively slow operation and should be avoided in performance
+#:   critical sections of code.
+#: - Not all wildcard patterns, _BRE_, or _ERE_ can be used portably.
+#: - For _wildcard patterns_ the locale in effect is that of the shell as invoked -
+#:   _it is **not** possible to change the locale of a running shell_.
+#: - In some cases wildcard pattern matches will be implemented using fallback
+#:   code - this is unavoidable as not all implementations provide the expected
+#:   behavior for all expressions. See
+#:   ["PATTERN MATCHING"](./README.MD#pattern-matching),
+#:   [`BS_LIBARRAY_CONFIG_SHELL_SUPPORTS_MBC`](#bs_libarray_config_shell_supports_mbc),
+#:   and [`BS_LIBARRAY_CONFIG_SHELL_SUPPORTS_PORTABLE_GLOB`](#bs_libarray_config_shell_supports_portable_glob).
+#:
+#: _NOTES_
+#: <!-- -->
+#:
+#: - Several aliases are provided: `-[not]match` and `-[not]matchbre` for
+#:   `-[not]bre`; `-[not]matchex` and `-[not]matchere` for
+#:   `-[not]ere`. Additionally, `=~` for `-ere` and `!~` for `-notere`.
+#: - `-eq`, `-ne`, `-gt`, `-ge`, `-lt`, and `-le` are implemented using `test`
+#:   and behave as with the `test` command.
+#: - `=` and `!=` are functionally identical to the `test` operators of the same
+#:   name, but do _not_ use `test`.
+#: - `-like` and `-notlike` support ["Pattern Matching Notation"][posix_glob]
+#:   (aka globs or wildcards).
+#: - `-bre` and `-notbre` support ["Basic Regular Expressions"][posix_bre].
+#: - `-ere` and `-notere` support ["Extended Regular Expressions"][posix_ere].
+#: - `-bre`, `-notbre`, `-ere`, and `-notere` may also be specified with the
+#:   suffix `:s` or `:m` (e.g. `-bre:s`), where `s` indicates _Single Line Mode_
+#:   and `m` indicates _Multi-line Mode_ (and is the default). Using `s` can
+#:   have significant performance advantages, but the regular expressions can
+#:   **not** match `<newline>` characters explicitly (e.g. `\n`) _or_ implicitly
+#:   (e.g. `.`). _Multi-line Mode_ is implemented using `sed` or `awk`, while
+#:   _Single Line Mode_ uses `grep` or `grep -E` - it is therefore possible that
+#:   the supported expressions differ between these modes.
 #:
 #. _IMPLEMENTATION NOTES_
 #. <!-- ------------- -->
 #.
-#. - See
-#.   [`fn_bs_libarray_process_range`](#fn_bs_libarray_process_range)
-#.   and
-#.   [`fn_bs_libarray_create_from_unfiltered`](#fn_bs_libarray_create_from_unfiltered)
-#.   for further details of the supported formats for `INDEX`, `RANGE`,
-#.   `PRIMARY` and `EXPRESSION`
+#. - Earlier versions of this (i.e. libarray.sh v1.x.x) were all broken.
+#.   This reworked version is significantly more robust and fixes most (all?) of
+#.   the issues previously present. The current version is also faster in
+#.   some cases, while most other cases should have similar performance.
 #.
 #_______________________________________________________________________________
-array_remove() { ## cSpell:Ignore BS_LARemove_
+array_remove() { ## cSpell:Ignore BS_LA_Remove_
+  #=========================================================
+  # Process Arguments
+  #=========================================================
   case $# in
-    #-----------------------------------
-    #> `case $# in`
-    #> ------------
-    #
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # REMOVE by RANGE or INDEX
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     2)
-      BS_LARemove_refArray="$1"
+      BS_LA_Remove_refArray=$1
       fn_bs_libarray_validate_name \
         'array_remove'             \
-        "${BS_LARemove_refArray}"  || return $?
+        "${BS_LA_Remove_refArray}"  || return $?
 
-       BS_LARemove_Range="$2"
+       BS_LA_Remove_Range=$2
        fn_bs_libarray_remove_by_range \
         'array_remove'                \
-        "${BS_LARemove_refArray}"     \
-        "${BS_LARemove_Range}"
-    ;;
+        "${BS_LA_Remove_refArray}"     \
+        "${BS_LA_Remove_Range}"
+    ;; #<: `2)`
 
-    #-----------------------------------
-    #> `case $# in`
-    #> ------------
-    #
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # REMOVE by FILTER
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     3)
-      BS_LARemove_refArray="$1"
+      BS_LA_Remove_refArray=$1
       fn_bs_libarray_validate_name \
         'array_remove'             \
-        "${BS_LARemove_refArray}"  || return $?
+        "${BS_LA_Remove_refArray}"  || return $?
 
-         BS_LARemove_Primary="$2"
-      BS_LARemove_Expression="$3"
+      BS_LA_Remove_Primary=$2
+         BS_LA_Remove_Expr=$3
 
-      #  Unpack the array
-      eval "BS_LARemove_Array=\"\${${BS_LARemove_refArray}-}\""  || return $?
-      eval "set 'BS_DUMMY_PARAM' ${BS_LARemove_Array?} && shift" || return $?
+      # Unpack the array
+      eval "BS_LA_Remove_Array=\${${BS_LA_Remove_refArray}-}"      || return $?
+      eval "set 'BS_DUMMY_PARAM' ${BS_LA_Remove_Array?} && shift" || return $?
 
       case $# in
-      0)  BS_LARemove_Array=; ;;
-      *)  #  Create a new filtered array
-          BS_LARemove_Array="$(
-            fn_bs_libarray_create_from_unfiltered \
-              'array_remove'                      \
-              "${BS_LARemove_Primary}"            \
-              "${BS_LARemove_Expression}"         \
-              "$@"
-          )" || return $? ;;
+        0)  BS_LA_Remove_Array='' ;;
+        *)  BS_LA_Remove_Array=$(
+                fn_bs_libarray_remove_by_filter \
+                  'array_remove'                \
+                  "${BS_LA_Remove_Primary}"      \
+                  "${BS_LA_Remove_Expr}"         \
+                  "$@"
+              ) || return $?
+
+            # In some cases, the above command can add
+            # whitespace for empty arrays - it's easier to
+            # remove here than deal with elsewhere.
+            case ${BS_LA_Remove_Array} in
+            "${c_BS_LIBARRAY__newline} "|' ') BS_LA_Remove_Array=; ;;
+            esac
+        ;;
       esac
 
-      #  Save the new array
-      eval "${BS_LARemove_refArray}=\"\${BS_LARemove_Array}\"" #< SAVE
-    ;;
+      # Save the new array
+      eval "${BS_LA_Remove_refArray}=\${BS_LA_Remove_Array}"  #< SAVE
+    ;; #<: `3)`
 
-    #-----------------------------------
-    #> `case $# in`
-    #> ------------
-    #
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # INVALID
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     *)
       fn_bs_libarray_expected \
         'array_remove'        \
         'an array variable'   \
         'an index, range, or glob'
       return "${c_BS_LIBARRAY__EX_USAGE}"
-    ;;
+    ;; #<: `*)`
   esac #<: `case $# in`
-}
+} #<: `array_remove()`
 
 #_______________________________________________________________________________
 #: ---------------------------------------------------------
@@ -3900,35 +6482,56 @@ array_remove() { ## cSpell:Ignore BS_LARemove_
 #:   are not measurably different given the same input.
 #:
 #_______________________________________________________________________________
-array_push() { ## cSpell:Ignore BS_LAPush_
+array_push() { ## cSpell:Ignore BS_LA_Push_
+  #=========================================================
+  # Process Arguments
+  #=========================================================
   case $# in
-  0)  fn_bs_libarray_expected \
-        'array_push'          \
-        'an array variable'   \
-        'zero or more values'
-       return "${c_BS_LIBARRAY__EX_USAGE}" ;;
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # INVALID
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    0)  fn_bs_libarray_expected \
+          'array_push'          \
+          'an array variable'   \
+          'zero or more values'
+        return "${c_BS_LIBARRAY__EX_USAGE}" ;;
 
-  1)  #  No values, but still need to validate array name
-      fn_bs_libarray_validate_name \
-        'array_push'               \
-        "$1"                       || return $? ;;
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # No values, but still need to validate array name
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    1)  fn_bs_libarray_validate_name \
+          'array_push'               \
+          "$1"                       || return $?
+        return ;;
 
-  *)  BS_LAPush_refArray="$1"
-      fn_bs_libarray_validate_name \
-        'array_push'               \
-        "${BS_LAPush_refArray}"    || return $?
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # One or more values
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    *)  BS_LA_Push_refArray=$1
+        fn_bs_libarray_validate_name \
+          'array_push'               \
+          "${BS_LA_Push_refArray}"    || return $?
         shift ;;
   esac #<: `case $# in`
 
-  BS_LAPush_New="$(
-      fn_bs_libarray_create \
-        'array_push'        \
-        $#                  \
-        "$@"
-    )" || return $?
+  #=========================================================
+  # Create an array from new values
+  #=========================================================
+  BS_LA_Push_New=$(
+      {
+        fn_bs_libarray_create \
+          'array_push'        \
+          "$@"
+      } && {
+        echo ' '
+      }
+    ) || return $?
 
-  eval "${BS_LAPush_refArray}=\"\${${BS_LAPush_refArray}-}\${BS_LAPush_New}\""  #< SAVE
-}
+  #=========================================================
+  # Save both old array and new array concatenated
+  #=========================================================
+  eval "${BS_LA_Push_refArray}=\${${BS_LA_Push_refArray}-}\${BS_LA_Push_New}"
+} #<: `array_push()`
 
 #_______________________________________________________________________________
 #: ---------------------------------------------------------
@@ -3969,28 +6572,38 @@ array_push() { ## cSpell:Ignore BS_LAPush_
 #:   null.
 #:
 #_______________________________________________________________________________
-array_pop() { ## cSpell:Ignore BS_LAPop_
+array_pop() { ## cSpell:Ignore BS_LA_Pop_
+  #=========================================================
+  # Process Arguments
+  #=========================================================
   case $# in
-  2)  BS_LAPop_refArray="$1"
-      fn_bs_libarray_validate_name \
-        'array_pop'                \
-        "${BS_LAPop_refArray}"     || return $?
+    2)  BS_LA_Pop_refArray=$1
+        fn_bs_libarray_validate_name \
+          'array_pop'                \
+          "${BS_LA_Pop_refArray}"     || return $?
 
-      BS_LAPop_refValue="$2"
-      fn_bs_libarray_validate_name \
-        'array_pop'                \
-        "${BS_LAPop_refValue}"     || return $? ;;
+        BS_LA_Pop_refValue=$2
+        fn_bs_libarray_validate_name \
+          'array_pop'                \
+          "${BS_LA_Pop_refValue}"     || return $?
+    ;;
+    *)  fn_bs_libarray_expected \
+          'array_pop'           \
+          'an array variable'   \
+          'an output variable'
+        return "${c_BS_LIBARRAY__EX_USAGE}"
+    ;;
+  esac
 
-  *)  fn_bs_libarray_expected \
-        'array_pop'           \
-        'an array variable'   \
-        'an output variable'
-      return "${c_BS_LIBARRAY__EX_USAGE}" ;;
-  esac #<: `case $# in`
+  #=========================================================
+  #
+  #=========================================================
+  eval "BS_LA_Pop_Array=\${${BS_LA_Pop_refArray}-}"        || return $?
+  eval "set 'BS_DUMMY_PARAM' ${BS_LA_Pop_Array} && shift" || return $?
 
-  eval "BS_LAPop_Array=\"\${${BS_LAPop_refArray}-}\""    || return $?
-  eval "set 'BS_DUMMY_PARAM' ${BS_LAPop_Array} && shift" || return $?
-
+  #=========================================================
+  #
+  #=========================================================
   case $# in
   0)  fn_bs_libarray_invalid_args \
         'array_pop'               \
@@ -3998,25 +6611,40 @@ array_pop() { ## cSpell:Ignore BS_LAPop_
       return "${c_BS_LIBARRAY__EX_USAGE}" ;;
   esac
 
-  #  Save the popped value
-  BS_LAGet_Value=;
-  fn_bs_libarray_get_param \
-    "${BS_LAPop_refValue}" \
-    $#                     \
-    "$@"                   || return $?
+  #=========================================================
+  # Save the popped value
+  #=========================================================
+  case ${c_BS_LIBARRAY_CFG__use_multidigit_param:-0} in
+  1)  eval "${BS_LA_Pop_refValue}=\${$#}"   ;;
+  0)  fn_bs_libarray_get_multidigit_param  \
+        "${BS_LA_Pop_refValue}"             \
+        $#                                 \
+        "$@"                               ;;
+  esac || return $?
 
-  #  Resave everything else
+  #=========================================================
+  # Resave everything else
+  #=========================================================
   case $# in
-  1)  eval "${BS_LAPop_refArray}=" ;;                                           #< SAVE (EMPTY)
-  *)  BS_LAPop_Array="$(
-          fn_bs_libarray_create \
-            'array_pop'         \
-            $(($# - 1))         \
-            "$@"
-        )" || return $?
-      eval "${BS_LAPop_refArray}=\"\${BS_LAPop_Array}\"" ;;                     #< SAVE
+    0|1)
+      eval "${BS_LA_Pop_refArray}="                          #< SAVE (EMPTY)
+    ;;
+
+    *)
+      BS_LA_Pop_Array=$(
+          {
+            fn_bs_libarray_create_count \
+              'array_pop'               \
+              $(($# - 1))               \
+              "$@"
+          } && {
+            echo ' '
+          }
+        ) || return $?
+      eval "${BS_LA_Pop_refArray}=\${BS_LA_Pop_Array}"        #< SAVE
+    ;;
   esac
-}
+} #<: `array_pop()`
 
 #_______________________________________________________________________________
 #: ---------------------------------------------------------
@@ -4062,37 +6690,56 @@ array_pop() { ## cSpell:Ignore BS_LAPop_
 #:   are not measurably different given the same input.
 #:
 #_______________________________________________________________________________
-array_unshift() { ## cSpell:Ignore BS_LAUnshift_
+array_unshift() { ## cSpell:Ignore BS_LA_Unshift_
+  #=========================================================
+  # Process Arguments
+  #=========================================================
   case $# in
-  0)  fn_bs_libarray_expected \
-        'array_unshift'       \
-        'an array variable'   \
-        'zero or more values'
-      return "${c_BS_LIBARRAY__EX_USAGE}" ;;
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # INVALID
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    0)  fn_bs_libarray_expected \
+          'array_unshift'       \
+          'an array variable'   \
+          'zero or more values'
+        return "${c_BS_LIBARRAY__EX_USAGE}" ;;
 
-  1)  #  No values, but still need to validate array name
-      fn_bs_libarray_validate_name \
-        'array_unshift'            \
-        "$1"                       || return $? ;;
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # No values, but still need to validate array name
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    1)  fn_bs_libarray_validate_name \
+          'array_unshift'            \
+          "$1"                       || return $?
+        return ;;
 
-  *)  BS_LAUnshift_refArray="$1"
-      fn_bs_libarray_validate_name \
-        'array_unshift'            \
-        "${BS_LAUnshift_refArray}" || return $?
-      shift ;;
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # One or more values
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    *)  BS_LA_Unshift_refArray=$1
+        fn_bs_libarray_validate_name \
+          'array_unshift'            \
+          "${BS_LA_Unshift_refArray}" || return $?
+        shift ;;
   esac #<: `case $# in`
 
-  #  Create new array from unshifted values
-  BS_LAUnshift_New="$(#
-      fn_bs_libarray_create \
-        'array_unshift'     \
-        $#                  \
-        "$@"
-    )" || return $?
+  #=========================================================
+  # Create an array from new values
+  #=========================================================
+  BS_LA_Unshift_New=$(
+      {
+        fn_bs_libarray_create \
+          'array_unshift'     \
+          "$@"
+      } && {
+        echo ' '
+      }
+    ) || return $?
 
-  #  Prepend new values to old array
-  eval "${BS_LAUnshift_refArray}=\"\${BS_LAUnshift_New}\${${BS_LAUnshift_refArray}-}\""  #< SAVE
-}
+  #=========================================================
+  # Save both old array and new array concatenated
+  #=========================================================
+  eval "${BS_LA_Unshift_refArray}=\${BS_LA_Unshift_New}\${${BS_LA_Unshift_refArray}-}"
+} #<: `array_unshift()`
 
 #_______________________________________________________________________________
 #: ---------------------------------------------------------
@@ -4133,28 +6780,36 @@ array_unshift() { ## cSpell:Ignore BS_LAUnshift_
 #:   null
 #:
 #_______________________________________________________________________________
-array_shift() { ## cSpell:Ignore BS_LAShift_
+array_shift() { ## cSpell:Ignore BS_LA_Shift_
+  #=========================================================
+  # Process Arguments
+  #=========================================================
   case $# in
-  2)  BS_LAShift_refArray="$1"
+  2)  BS_LA_Shift_refArray=$1
       fn_bs_libarray_validate_name \
         'array_shift'              \
-        "${BS_LAShift_refArray}"   || return $?
+        "${BS_LA_Shift_refArray}"   || return $?
 
-      BS_LAShift_refValue="$2"
+      BS_LA_Shift_refValue=$2
       fn_bs_libarray_validate_name \
         'array_shift'              \
-        "${BS_LAShift_refValue}"   || return $? ;;
-
+        "${BS_LA_Shift_refValue}"   || return $? ;;
   *)  fn_bs_libarray_expected \
         'array_shift'         \
         'an array variable'   \
         'an output variable'
       return "${c_BS_LIBARRAY__EX_USAGE}" ;;
-  esac #<: `case $# in`
+  esac
 
-  eval "BS_LAShift_Array=\"\${${BS_LAShift_refArray}-}\""  || return $?
-  eval "set 'BS_DUMMY_PARAM' ${BS_LAShift_Array} && shift" || return $?
+  #=========================================================
+  #
+  #=========================================================
+  eval "BS_LA_Shift_Array=\${${BS_LA_Shift_refArray}-}"      || return $?
+  eval "set 'BS_DUMMY_PARAM' ${BS_LA_Shift_Array} && shift" || return $?
 
+  #=========================================================
+  #
+  #=========================================================
   case $# in
   0)  fn_bs_libarray_invalid_args \
         'array_shift'             \
@@ -4162,22 +6817,34 @@ array_shift() { ## cSpell:Ignore BS_LAShift_
       return "${c_BS_LIBARRAY__EX_USAGE}" ;;
   esac
 
-  #  Save the shifted value
-  eval "${BS_LAShift_refValue}=\"\$1\"" || return $? #< SAVE
+  #=========================================================
+  # Save the shifted value
+  #=========================================================
+  eval "${BS_LA_Shift_refValue}=\$1" || return $?
 
-  #  Resave everything else
+  #=========================================================
+  # Resave everything else
+  #=========================================================
   case $# in
-  1)  eval "${BS_LAShift_refArray}=" ;; #< SAVE (EMPTY)
-  *)  shift
-      BS_LAShift_Array="$(
-          fn_bs_libarray_create \
-            'array_shift'       \
-            $#                  \
-            "$@"
-        )" || return $?
-      eval "${BS_LAShift_refArray}=\"\${BS_LAShift_Array}\"" ;; #< SAVE
+    0|1)
+      eval "${BS_LA_Shift_refArray}="                        #< SAVE (EMPTY)
+    ;;
+
+    *)
+      shift
+      BS_LA_Shift_Array=$(
+          {
+            fn_bs_libarray_create \
+              'array_shift'       \
+              "$@"
+          } && {
+            echo ' '
+          }
+        ) || return $?
+      eval "${BS_LA_Shift_refArray}=\${BS_LA_Shift_Array}"    #< SAVE
+    ;;
   esac
-}
+} #<: `array_shift()`
 
 #_______________________________________________________________________________
 #: ---------------------------------------------------------
@@ -4204,7 +6871,7 @@ array_shift() { ## cSpell:Ignore BS_LAShift_
 #:
 #: : Variable that will contain the reversed array.
 #: : Any current contents will be lost.
-#: : MUST be a valid _POSIX.1_ name or a `-` (`<hyphen>`).
+#: : MUST be a valid _POSIX.1_ name or `-` (`<hyphen>`).
 #: : If specified as `-` (`<hyphen>`) reversed array is
 #:   written to `STDOUT`.
 #: : If not specified the array is reversed in-place
@@ -4215,27 +6882,30 @@ array_shift() { ## cSpell:Ignore BS_LAShift_
 #:
 #:     array_reverse 'Array'
 #:     array_reverse 'Array' 'ReversedArrayVar'
-#:     ReversedArrayVar="$(array_reverse 'Array' -)"
+#:     ReversedArrayVar=$(array_reverse 'Array' -)
 #:
 #_______________________________________________________________________________
-array_reverse() { ## cSpell:Ignore BS_LAReverse_
+array_reverse() { ## cSpell:Ignore BS_LA_Reverse_
+  #=========================================================
+  # Process Arguments
+  #=========================================================
   case $# in
-  1)  BS_LAReverse_refArray="$1"
+  1)  BS_LA_Reverse_refArray=$1
       fn_bs_libarray_validate_name \
         'array_reverse'            \
-        "${BS_LAReverse_refArray}" || return $?
+        "${BS_LA_Reverse_refArray}" || return $?
 
-      BS_LAReverse_refReversed="${BS_LAReverse_refArray}" ;;
+      BS_LA_Reverse_refReversed=${BS_LA_Reverse_refArray} ;;
 
-  2)  BS_LAReverse_refArray="$1"
+  2)  BS_LA_Reverse_refArray=$1
       fn_bs_libarray_validate_name \
         'array_reverse'            \
-        "${BS_LAReverse_refArray}" || return $?
+        "${BS_LA_Reverse_refArray}" || return $?
 
-      BS_LAReverse_refReversed="$2"
+      BS_LA_Reverse_refReversed=$2
       fn_bs_libarray_validate_name_hyphen \
         'array_reverse'                   \
-        "${BS_LAReverse_refReversed}"     || return $? ;;
+        "${BS_LA_Reverse_refReversed}"     || return $? ;;
 
   *)  fn_bs_libarray_expected \
         'array_reverse'       \
@@ -4244,30 +6914,37 @@ array_reverse() { ## cSpell:Ignore BS_LAReverse_
       return "${c_BS_LIBARRAY__EX_USAGE}" ;;
   esac #<: `case $# in`
 
-  eval "BS_LAReverse_Array=\"\${${BS_LAReverse_refArray}-}\"" || return $?
-  eval "set 'BS_DUMMY_PARAM' ${BS_LAReverse_Array} && shift"  || return $?
+  #=========================================================
+  #
+  #=========================================================
+  eval "BS_LA_Reverse_Array=\${${BS_LA_Reverse_refArray}-}"    || return $?
+  eval "set 'BS_DUMMY_PARAM' ${BS_LA_Reverse_Array} && shift" || return $?
 
-  #  Early out if no values
+  #=========================================================
+  #
+  #=========================================================
   case $# in
-  0)  case ${BS_LAReverse_refReversed} in
-      -) echo ;;                                            #< OUTPUT (EMPTY)
-      *) eval "${BS_LAReverse_refReversed}=;" ;;            #< SAVE (EMPTY)
-      esac
-      return ;;
+  0)  BS_LA_Reverse_Array='' ;;
+  *)  BS_LA_Reverse_Array=$(
+          {
+            fn_bs_libarray_create_count_reverse \
+              'array_reverse'                   \
+              $#                                \
+              "$@"
+          } && {
+            echo ' '
+          }
+        ) || return $? ;;
   esac
 
-  BS_LAReverse_Array="$(
-      fn_bs_libarray_create \
-        'array_reverse'     \
-        $((0 - $#))         \
-        "$@"
-    )" || return $?
-
-  case ${BS_LAReverse_refReversed} in
-  -) printf '%s\n' "${BS_LAReverse_Array}" ;;                         #< OUTPUT
-  *) eval "${BS_LAReverse_refReversed}=\"\${BS_LAReverse_Array}\"" ;; #< SAVE
+  #=========================================================
+  #
+  #=========================================================
+  case ${BS_LA_Reverse_refReversed} in
+  -) printf '%s\n' "${BS_LA_Reverse_Array}" ;;                       #< OUTPUT
+  *) eval "${BS_LA_Reverse_refReversed}=\${BS_LA_Reverse_Array}" ;;   #< SAVE
   esac
-}
+} #<: `array_reverse()`
 
 #_______________________________________________________________________________
 #: ---------------------------------------------------------
@@ -4314,7 +6991,7 @@ array_reverse() { ## cSpell:Ignore BS_LAReverse_
 #:
 #: : Variable that will contain the array slice.
 #: : Any current contents will be lost.
-#: : MUST be a valid _POSIX.1_ name or a `-` (`<hyphen>`).
+#: : MUST be a valid _POSIX.1_ name or `-` (`<hyphen>`).
 #: : If not specified, or specified as `-` (`<hyphen>`)
 #:   array slice is written to `STDOUT`.
 #:
@@ -4327,41 +7004,42 @@ array_reverse() { ## cSpell:Ignore BS_LAReverse_
 #:     array_slice 'Array' '4:2'  'SlicedArrayVar'
 #:     array_slice 'Array' '4#-2' 'SlicedArrayVar'
 #:
-#: NOTES:
+#: _NOTES_
+#: <!-- -->
 #:
-#: - Supports zero-based, one-based, or negative indexing
-#:   (see
+#: - Supports zero-based, one-based, or negative indexing (see
 #:   [`BS_LIBARRAY_CONFIG_START_INDEX_ONE`](#bs_libarray_config_start_index_one)).
 #:
 #. _IMPLEMENTATION NOTES_
 #. <!-- ------------- -->
 #.
-#. - See
-#.   [`fn_bs_libarray_process_range`](#fn_bs_libarray_process_range)
+#. - See [`fn_bs_libarray_process_range`](#fn_bs_libarray_process_range)
 #.   for further details of the supported formats for `RANGE`.
 #.
 #_______________________________________________________________________________
-array_slice() { ## cSpell:Ignore BS_LASlice_
-  #-----------------
+array_slice() { ## cSpell:Ignore BS_LA_Slice_
+  #=========================================================
+  # Process Arguments
+  #=========================================================
   case $# in
-  2)  BS_LASlice_refArray="$1"
+  2)  BS_LA_Slice_refArray=$1
       fn_bs_libarray_validate_name \
         'array_slice'              \
-        "${BS_LASlice_refArray}"   || return $?
+        "${BS_LA_Slice_refArray}"   || return $?
 
-         BS_LASlice_Range="$2"
-      BS_LASlice_refSlice='-' ;;
+         BS_LA_Slice_Range=$2
+      BS_LA_Slice_refSlice='-' ;;
 
-  3)  BS_LASlice_refArray="$1"
+  3)  BS_LA_Slice_refArray=$1
       fn_bs_libarray_validate_name \
         'array_slice'              \
-        "${BS_LASlice_refArray}"   || return $?
+        "${BS_LA_Slice_refArray}"   || return $?
 
-         BS_LASlice_Range="$2"
-      BS_LASlice_refSlice="$3"
+         BS_LA_Slice_Range=$2
+      BS_LA_Slice_refSlice=$3
       fn_bs_libarray_validate_name_hyphen \
         'array_slice'                     \
-        "${BS_LASlice_refSlice}"          || return $? ;;
+        "${BS_LA_Slice_refSlice}"          || return $? ;;
 
   *)  fn_bs_libarray_expected     \
         'array_slice'             \
@@ -4371,9 +7049,15 @@ array_slice() { ## cSpell:Ignore BS_LASlice_
       return "${c_BS_LIBARRAY__EX_USAGE}" ;;
   esac #<: `case $# in`
 
-  eval "BS_LASlice_Array=\"\${${BS_LASlice_refArray}-}\""  || return $?
-  eval "set 'BS_DUMMY_PARAM' ${BS_LASlice_Array} && shift" || return $?
+  #=========================================================
+  #
+  #=========================================================
+  eval "BS_LA_Slice_Array=\${${BS_LA_Slice_refArray}-}"      || return $?
+  eval "set 'BS_DUMMY_PARAM' ${BS_LA_Slice_Array} && shift" || return $?
 
+  #=========================================================
+  #
+  #=========================================================
   case $# in
   0)  fn_bs_libarray_invalid_args \
         'array_slice'             \
@@ -4381,44 +7065,67 @@ array_slice() { ## cSpell:Ignore BS_LASlice_
       return "${c_BS_LIBARRAY__EX_USAGE}" ;;
   esac
 
-  #---------------------------------------------------------
-  #  Process Slice Range...
-  BS_LASlice_Start=;   BS_LASlice_Length=;
+  #=========================================================
+  # Process Slice Range...
+  #=========================================================
+  BS_LA_Slice_Start=;   BS_LA_Slice_Length=;
   fn_bs_libarray_process_range \
     'array_slice'              \
-    'BS_LASlice_Start'         \
-    'BS_LASlice_Length'        \
-    "${BS_LASlice_Range}"      \
+    'BS_LA_Slice_Start'         \
+    'BS_LA_Slice_Length'        \
+    "${BS_LA_Slice_Range}"      \
     $#                         || return $?
 
-  #---------------------------------------------------------
-  #  `shift` to the start of the slice
-  case ${c_BS_LIBARRAY_CFG_USE__shift_n:-0} in
-  0)  while : #< [ "${BS_LASlice_Start}" -gt 0 ]
+  #=========================================================
+  # `shift` to the start of the slice
+  #=========================================================
+  case ${c_BS_LIBARRAY_CFG__use_shift_n:-0} in
+  0)  while : #<: `[ "${BS_LA_Slice_Start}" -gt 0 ]`
       do
-        #> LOOP TEST -------------------------------
-        case ${BS_LASlice_Start} in 0) break ;; esac #< [ "${BS_LASlice_Start}" -gt 0 ]
-        #> -----------------------------------------
+        #> LOOP TEST ---------------------------------------
+        case ${BS_LA_Slice_Start} in 0) break ;; esac #<: `[ "${BS_LA_Slice_Start}" -gt 0 ]`
+        #< -------------------------------------------------
+
         shift
-        BS_LASlice_Start=$((BS_LASlice_Start - 1))
+        BS_LA_Slice_Start=$((BS_LA_Slice_Start - 1))
       done ;;
-  1) shift "${BS_LASlice_Start}" ;;
+  1) shift "${BS_LA_Slice_Start}" ;;
   esac
 
-  #---------------------------------------------------------
-  #  Create Slice...
-  BS_LASlice_Array="$(
-      fn_bs_libarray_create    \
-        'array_slice'          \
-        "${BS_LASlice_Length}" \
-        "$@"
-    )" || return $?
-
-  case ${BS_LASlice_refSlice} in
-  -) printf '%s\n' "${BS_LASlice_Array}" ;;                    #< OUTPUT
-  *) eval "${BS_LASlice_refSlice}=\"\${BS_LASlice_Array}\"" ;; #< SAVE
+  #=========================================================
+  # Create Slice...
+  #=========================================================
+  case ${BS_LA_Slice_Length} in
+  -*) BS_LA_Slice_Array=$(
+          {
+            fn_bs_libarray_create_count_reverse \
+              'array_slice'                     \
+              $(( -BS_LA_Slice_Length ))         \
+              "$@"
+          } && {
+            echo ' '
+          }
+        ) || return $? ;;
+   *) BS_LA_Slice_Array=$(
+          {
+            fn_bs_libarray_create_count \
+              'array_slice'             \
+              "${BS_LA_Slice_Length}"    \
+              "$@"
+          } && {
+            echo ' '
+          }
+        ) || return $?;;
   esac
-}
+
+  #=========================================================
+  # Return values
+  #=========================================================
+  case ${BS_LA_Slice_refSlice} in
+  -) printf '%s\n' "${BS_LA_Slice_Array}" ;;                 #< OUTPUT
+  *) eval "${BS_LA_Slice_refSlice}=\${BS_LA_Slice_Array}" ;;  #< SAVE
+  esac
+} #<: `array_slice()`
 
 #_______________________________________________________________________________
 #: ---------------------------------------------------------
@@ -4445,7 +7152,7 @@ array_slice() { ## cSpell:Ignore BS_LASlice_
 #:
 #: : Variable that will contain the sorted array.
 #: : Any current contents will be lost.
-#: : MUST be a valid _POSIX.1_ name or a `-` (`<hyphen>`).
+#: : MUST be a valid _POSIX.1_ name or `-` (`<hyphen>`).
 #: : If specified as `-` (`<hyphen>`) sorted array is
 #:   written to `STDOUT`.
 #: : If not specified array is sorted "in-place".
@@ -4469,25 +7176,26 @@ array_slice() { ## cSpell:Ignore BS_LASlice_
 #:     array_sort 'Array' -r
 #:     array_sort 'Array' -- -r
 #:     array_sort 'Array' 'SortedArrayVar' -r
-#:     SortedArrayVar="$(array_sort 'Array' - -r)"
+#:     SortedArrayVar=$(array_sort 'Array' - -r)
 #:
-#: _NOTES_
-#: <!-- -->
+#: _CAVEATS_
+#: <!--  -->
 #:
-#: - Because `sort` works on lines, values containing `<newline>` characters
-#:   have to be modified to be a single line. This _will_ affect sort order in
-#:   some cases (i.e. the output may _not_ be strictly lexicographically
-#:   correct with regards to any embedded `<newline>` characters), however the
-#:   sort order of these values _will_ be stable.
+#: - Because the `sort` command works on lines, values containing `<newline>`
+#:   characters have to be modified to be a single line. This _will_ affect sort
+#:   order in some cases (i.e. the output may _not_ be strictly
+#:   lexicographically correct with regards to any embedded `<newline>`
+#:   characters), however the sort order of these values _will_ be stable.
 #:
 #_______________________________________________________________________________
-array_sort() { ## cSpell:Ignore BS_LASort_
+array_sort() { ## cSpell:Ignore BS_LA_Sort_
+  #=========================================================
+  # Process Arguments
+  #=========================================================
   case $# in
-    #...................................
-    #> `case $# in`
-    #> ------------
-    #
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # INVALID
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     0)
       fn_bs_libarray_expected           \
         'array_sort'                    \
@@ -4495,107 +7203,93 @@ array_sort() { ## cSpell:Ignore BS_LASort_
         'an output variable (optional)' \
         'sort arguments (optional)'
       return "${c_BS_LIBARRAY__EX_USAGE}"
-    ;;
+    ;; #<: `0)`
 
-    #.....................................
-    #> `case $# in`
-    #> ------------
-    #
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # ARRAY ONLY
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     1)
-      BS_LASort_refArray="$1"
+      BS_LA_Sort_refArray=$1
       fn_bs_libarray_validate_name \
         'array_sort'               \
-        "${BS_LASort_refArray}"    || return $?
+        "${BS_LA_Sort_refArray}"    || return $?
       shift
 
-      BS_LASort_refSorted="${BS_LASort_refArray}"
-    ;;
+      BS_LA_Sort_refSorted=${BS_LA_Sort_refArray}
+    ;; #<: `1)`
 
-    #.....................................
-    #> `case $# in`
-    #> ------------
-    #
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # MULTIPLE ARGUMENTS
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     *)
-      BS_LASort_refArray="$1"
+      BS_LA_Sort_refArray=$1
       fn_bs_libarray_validate_name \
         'array_sort'               \
-        "${BS_LASort_refArray}"    || return $?
+        "${BS_LA_Sort_refArray}"    || return $?
       shift
 
       case $1 in
-       --)  BS_LASort_refSorted="${BS_LASort_refArray}"
+       --)  BS_LA_Sort_refSorted=${BS_LA_Sort_refArray}
             shift ;;
-      -?*)  BS_LASort_refSorted="${BS_LASort_refArray}" ;;
-        *)  BS_LASort_refSorted="$1"
+      -?*)  BS_LA_Sort_refSorted=${BS_LA_Sort_refArray} ;;
+        *)  BS_LA_Sort_refSorted=$1
             fn_bs_libarray_validate_name_hyphen \
               'array_sort'                      \
-              "${BS_LASort_refSorted}"          || return $?
+              "${BS_LA_Sort_refSorted}"          || return $?
             shift
             case ${1-} in --) shift ;; esac ;;
       esac #<: `case $1 in`
-    ;;
+    ;; #<: `*)`
   esac #<: `case $# in`
 
-  eval "BS_LASort_Array=\"\${${BS_LASort_refArray}-}\"" || return $?
+  eval "BS_LA_Sort_Array=\${${BS_LA_Sort_refArray}-}" || return $?
 
-  #---------------------------------------------------------
-  #  Early out if empty array
-  case ${BS_LASort_Array:+1} in
-  1) ;; *)  case ${BS_LASort_refSorted} in
+  #=========================================================
+  # Early out if empty array
+  #=========================================================
+  case ${BS_LA_Sort_Array:+1} in
+  1) ;; *)  case ${BS_LA_Sort_refSorted} in
             -) echo ;;                                      #< OUTPUT (EMPTY)
-            *) eval "${BS_LASort_refSorted}=;" ;;           #< SAVE (EMPTY)
+            *) eval "${BS_LA_Sort_refSorted}=;" ;;           #< SAVE (EMPTY)
             esac
             return ;;
   esac
 
-  #---------------------------------------------------------
-  #  Set the `sort` command
-  #
-  # NOTES:
-  # - setting the command like this is more portable than
-  #   using `sort "$@"` or `sort ${1+"$@"}` later
-  #
-  # - an alternative to this might be to use the XBD
-  #   argument '-' (i.e. "`STDIN`") if no other
-  #   arguments are given (i.e. `set -`) but this also
-  #   suffers from portability issues.
-  #
-  #  SC2121: To assign a variable, use just
-  #          var=value, not set ...
-  #  EXCEPT: It's not an assignment
-  #  shellcheck disable=SC2121
-  case $# in
-  0) set sort      ;;
-  *) set sort "$@" ;;
-  esac
-
-  #---------------------------------------------------------
-  #  Sort the array
-  BS_LASort_SortedArray="$(
+  #=========================================================
+  # Sort the array
+  #=========================================================
+  BS_LA_Sort_SortedArray=$(
       {
         # Convert values to be on single lines and print them all.
-        # See [`fn_bs_libarray_escape_newlines`](#fn_bs_libarray_escape_newlines)
-        fn_bs_libarray_escape_newlines \
+        # See [`fn_bs_libarray_escape_for_sort`](#fn_bs_libarray_escape_for_sort)
+        fn_bs_libarray_escape_for_sort \
           'array_sort'                 \
-          'BS_LASort_Array'
+          'BS_LA_Sort_Array'
       } | {
-        #  Sort the flattened values
-        "$@"
+        # Sort the flattened values
+        sort ${1+"$@"}
       } | {
         # Undo the conversion and turn each
         # value back into an array value
-        sed -e "${c_BS_LIBARRAY__sed_sort_unescape}"
+        sed -e "
+            s/'/'\\\\''/g
+            s/^/'/
+            s/\$/' \\\\/
+            s/ \\\\n/\\
+/g
+            s/\\\\\\\\/\\\\/g"
+        echo ' '
       }
-      echo ' '
-    )"
+    )
 
-  case ${BS_LASort_refSorted} in
-  -) printf '%s\n' "${BS_LASort_SortedArray}" ;;                    #< OUTPUT
-  *) eval "${BS_LASort_refSorted}=\"\${BS_LASort_SortedArray}\"" ;; #< SAVE
+  #=========================================================
+  #
+  #=========================================================
+  case ${BS_LA_Sort_refSorted} in
+  -) printf '%s\n' "${BS_LA_Sort_SortedArray}" ;;                #< OUTPUT
+  *) eval "${BS_LA_Sort_refSorted}=\${BS_LA_Sort_SortedArray}" ;; #< SAVE
   esac
-}
+} #<: `array_sort()`
 
 #_______________________________________________________________________________
 #: ---------------------------------------------------------
@@ -4626,7 +7320,7 @@ array_sort() { ## cSpell:Ignore BS_LASort_
 #: : Variable which will contain the index of the
 #:   found element, or will be set to null otherwise.
 #: : Any current contents will be lost.
-#: : MUST be a valid _POSIX.1_ name or a `-` (`<hyphen>`).
+#: : MUST be a valid _POSIX.1_ name or `-` (`<hyphen>`).
 #: : If not specified, or specified as `-` (`<hyphen>`)
 #:   index is written to `STDOUT`.
 #: : If the variable specified is _not_ null, the
@@ -4637,101 +7331,130 @@ array_sort() { ## cSpell:Ignore BS_LASort_
 #:
 #: : A test operator used with EXPRESSION.
 #: : MUST be ONE of: `=`, `!=`, `-eq`, `-ne`, `-gt`, `-ge`,
-#:   `-lt`, `-le`, `-like`, or `-notlike`.
-#: : The primaries `-gt`, `-ge`, `-lt`, and `-le` are
-#:   identical to the `test` primaries of the same
-#:   names, while `=`, `!=`, `-eq`, and `-ne` are
-#:   functionally similar, but do not distinguish
-#:   between numerical and string values.
-#: : The `-like` primary performs a `case` pattern
-#:   match and supports the glob characters as
-#:   supported by `case`, the `-notlike` primary is
-#:   identical, but with inverted meaning.
-#: : `-like` and `-notlike` support the normal `case`
-#:   pattern matching characters, and can consist of
-#:   multiple patterns delimited by the `|` character.
-#: : If not specified the primary `=` is used.
+#:   `-lt`, `-le`, `-like`, `-notlike`, `-bre`, `-notbre`,
+#:   `-ere`, or `-notere`.
+#: : If not specified `=` is used.
 #:
 #: `EXPRESSION` \[in]
 #:
-#: : Value to use with PRIMARY.
+#: : Value to use with `PRIMARY`.
 #: : Can be null.
-#: : _EXPECTS_
-#:   - a _string_ when PRIMARY is `=` or `!=`
-#:   - a _number_ when PRIMARY is `-eq`, `-ne`,
-#:     `-gt`, `-ge`, `-lt`, or `-le`
-#:   - a `case` pattern when PRIMARY is `-like`
-#:     or `-notlike`.
-#: : _ALLOWS_
-#:   - a _number_ when PRIMARY is `=` or `!=`
-#:   - a _string_ when PRIMARY is `-eq` or `-ne`.
-#: : `case` pattern allows the normal `case` pattern
-#:   matching characters: `*` (`<asterisk>`)
-#:   `?` (`<question-mark>`), and
-#:   `[` (`<left-square-bracket>`) with the same
-#:   meanings as with a standard `case` match;
-#:   also supported is the pattern delimiter `|`
-#:   (`<vertical-line>`) which can be used to separate
-#:   multiple patterns in a single `EXPRESSION`.
+#: : _EXPECTS_:
+#:   - a _string_ when `PRIMARY` is `=`, or `!=`
+#:   - a _number_ when `PRIMARY` is `-eq`, `-ne`,
+#:     `-gt`, `-ge`,  `-lt`, or `-le`
+#:   - a _wildcard pattern_ when `PRIMARY` is `-like`, or
+#:     `-notlike`.
+#:   - a _BRE_ when `PRIMARY` is `-bre`, or `-notbre`.
+#:   - an _ERE_ when `PRIMARY` is `-ere`, or `-notere`.
 #:
 #: _EXAMPLES_
 #: <!-- - -->
 #:
-#:     while array_search 'Array' 'Location' -like '*an error*|*a warning*'
+#:     while array_search 'Array' 'Location' -like '*an error*'
 #:     do
 #:       ...
 #:     done
+#:
+#: _BREAKING CHANGES_
+#: <!-- --------- -->
+#:
+#: As of `v2.0.0`:
+#:
+#: - `-like`/`-notlike`: no longer support the `|` (`<vertical-line>`) operator;
+#:   can not (portably) use the `\` (`<backslash>`) character (in any way).
+#: - the `-bre`/`-notbre` primaries: no longer use `expr`; are no longer
+#:   anchored to the start of a value.
+#: - the `-ere`/`-notere` primaries: no longer anchored to the start of a value.
+#: - `-eq`/`-ne`: _require_ numerical values.
+#:
+#: _CAVEATS_
+#: <!-- - -->
+#:
+#: - Not all wildcard patterns, _BRE_, or _ERE_ can be used portably.
+#: - For _wildcard patterns_ the locale in effect is that of the shell as invoked -
+#:   _it is **not** possible to change the locale of a running shell_.
+#: - In some cases wildcard pattern matches will be implemented using fallback
+#:   code - this is unavoidable as not all implementations provide the expected
+#:   behavior for all expressions. See
+#:   ["PATTERN MATCHING"](./README.MD#pattern-matching),
+#:   [`BS_LIBARRAY_CONFIG_SHELL_SUPPORTS_MBC`](#bs_libarray_config_shell_supports_mbc),
+#:   and [`BS_LIBARRAY_CONFIG_SHELL_SUPPORTS_PORTABLE_GLOB`](#bs_libarray_config_shell_supports_portable_glob).
 #:
 #: _NOTES_
 #: <!-- -->
 #:
 #: - See [`array_contains`](#array_contains) for an alternative when INDEX is
 #:   not required.
+#: - Several aliases are provided: `-[not]match` and `-[not]matchbre` for
+#:   `-[not]bre`; `-[not]matchex` and `-[not]matchere` for
+#:   `-[not]ere`. Additionally, `=~` for `-ere` and `!~` for `-notere`.
+#: - `-eq`, `-ne`, `-gt`, `-ge`, `-lt`, and `-le` are implemented using `test`
+#:   and behave as with the `test` command.
+#: - `=` and `!=` are functionally identical to the `test` operators of the same
+#:   name, but do _not_ use `test`.
+#: - `-like` and `-notlike` support ["Pattern Matching Notation"][posix_glob]
+#:   (aka globs or wildcards).
+#: - `-bre` and `-notbre` support ["Basic Regular Expressions"][posix_bre].
+#: - `-ere` and `-notere` support ["Extended Regular Expressions"][posix_ere].
+#: - `-bre`, `-notbre`, `-ere`, and `-notere` may also be specified with the
+#:   suffix `:s` or `:m` (e.g. `-bre:s`), where `s` indicates _Single Line Mode_
+#:   and `m` indicates _Multi-line Mode_ (and is the default). Using `s` can
+#:   have significant performance advantages, but the regular expressions can
+#:   **not** match `<newline>` characters explicitly (e.g. `\n`) _or_ implicitly
+#:   (e.g. `.`). _Multi-line Mode_ is implemented using `sed` or `awk`, while
+#:   _Single Line Mode_ uses `grep` or `grep -E` - it is therefore possible that
+#:   the supported expressions differ between these modes.
 #:
+#. _IMPLEMENTATION NOTES_
+#. <!-- ------------- -->
+#.
+#. - Earlier versions of this (i.e. libarray.sh v1.x.x) were all broken.
+#.   This reworked version is significantly more robust and fixes most (all?) of
+#.   the issues previously present. The current version is also faster in
+#.   some cases, while most other cases should have similar performance.
+#. - Found index is **ONE** based, regardless of configuration - this simplifies
+#.   some code (while for other code there is no real difference).
+#.
 #_______________________________________________________________________________
-array_search() { ## cSpell:Ignore BS_LASearch_
+array_search() { ## cSpell:Ignore BS_LA_Search_
+  #=========================================================
+  # Process Arguments
+  #=========================================================
   case $# in
-    #...................................
-    #> `case $# in`
-    #> ------------
-    #
-    #  WITHOUT INDEX AND PRIMARY
-    2)    BS_LASearch_refArray="$1"
-          BS_LASearch_refIndex='-'
-          BS_LASearch_Primary='='
-        BS_LASearch_Expression="$2" ;;
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # WITHOUT INDEX AND PRIMARY
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    2)  BS_LA_Search_refArray=$1
+        BS_LA_Search_refIndex='-'
+         BS_LA_Search_Primary='='
+            BS_LA_Search_Expr=$2 ;;
 
-    #...................................
-    #> `case $# in`
-    #> ------------
-    #
-    #  WITHOUT INDEX OR PRIMARY
-    3)  BS_LASearch_refArray="$1"
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # WITHOUT INDEX OR PRIMARY
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    3)  BS_LA_Search_refArray=$1
         case $2 in
-        '-'?*|'='|'!=')
-          BS_LASearch_refIndex='-'
-          BS_LASearch_Primary="$2" ;;
+        '-'?*|'='|'!='|'=~'|'!~')
+          BS_LA_Search_refIndex='-'
+           BS_LA_Search_Primary=$2 ;;
         *)
-          BS_LASearch_refIndex="$2"
-          BS_LASearch_Primary='=' ;;
+          BS_LA_Search_refIndex=$2
+           BS_LA_Search_Primary='=' ;;
         esac
-        BS_LASearch_Expression="$3" ;;
+        BS_LA_Search_Expr=$3 ;;
 
-    #...................................
-    #> `case $# in`
-    #> ------------
-    #
-    #  WITH ALL PARAMETERS
-    4)    BS_LASearch_refArray="$1"
-          BS_LASearch_refIndex="$2"
-          BS_LASearch_Primary="$3"
-        BS_LASearch_Expression="$4" ;;
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # WITH ALL PARAMETERS
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    4)  BS_LA_Search_refArray=$1
+        BS_LA_Search_refIndex=$2
+         BS_LA_Search_Primary=$3
+            BS_LA_Search_Expr=$4 ;;
 
-    #...................................
-    #> `case $# in`
-    #> ------------
-    #
-    #  INVALID
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # INVALID
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     *)  fn_bs_libarray_expected                 \
           'array_search'                        \
           'an array variable'                   \
@@ -4741,73 +7464,88 @@ array_search() { ## cSpell:Ignore BS_LASearch_
         return "${c_BS_LIBARRAY__EX_USAGE}" ;;
   esac #<: `case $# in`
 
+  #=========================================================
+  #
+  #=========================================================
   fn_bs_libarray_validate_name \
     'array_search'             \
-    "${BS_LASearch_refArray}"  || return $?
+    "${BS_LA_Search_refArray}"  || return $?
 
-  eval "BS_LASearch_Array=\"\${${BS_LASearch_refArray}-}\""  || return $?
-  eval "set 'BS_DUMMY_PARAM' ${BS_LASearch_Array?} && shift" || return $?
+  #=========================================================
+  #
+  #=========================================================
+  eval "BS_LA_Search_Array=\${${BS_LA_Search_refArray}-}"      || return $?
+  eval "set 'BS_DUMMY_PARAM' ${BS_LA_Search_Array?} && shift" || return $?
 
-  #---------------------------------------------------------
-  #  Skip elements
-  case ${BS_LASearch_refIndex} in
+  #=========================================================
+  # Skip elements
+  #=========================================================
+  case ${BS_LA_Search_refIndex} in
   [!-]*)
     fn_bs_libarray_validate_name \
       'array_search'             \
-      "${BS_LASearch_refIndex}"  || return $?
+      "${BS_LA_Search_refIndex}"  || return $?
 
-    eval "BS_LASearch_SearchStart=\"\${${BS_LASearch_refIndex}-}\"" || return $?
+    eval "BS_LA_Search_SearchStart=\${${BS_LA_Search_refIndex}-}" || return $?
 
-    case ${BS_LASearch_SearchStart:+1} in
+    case ${BS_LA_Search_SearchStart:+1} in
     1)  fn_bs_libarray_process_index \
           'array_search'             \
-          'BS_LASearch_SearchStart'  \
+          'BS_LA_Search_SearchStart'  \
           $#                         || return $?
-        BS_LASearch_SearchStart=$((BS_LASearch_SearchStart + 1))
-        case ${c_BS_LIBARRAY_CFG_USE__shift_n:-0} in
-        1)  shift "${BS_LASearch_SearchStart}" ;;
-        0)  BS_LASearch_ShiftCount="${BS_LASearch_SearchStart}"
-            while : #< [ "${BS_LASearch_ShiftCount}" -ge 0 ]
+
+        BS_LA_Search_SearchStart=$((BS_LA_Search_SearchStart + 1))
+
+        case ${c_BS_LIBARRAY_CFG__use_shift_n:-0} in
+        1)  shift "${BS_LA_Search_SearchStart}" ;;
+        0)  BS_LA_Search_ShiftCount=${BS_LA_Search_SearchStart}
+            while : #<: `[ "${BS_LA_Search_ShiftCount}" -gt 0 ]`
             do
-              #> LOOP TEST -------------------------------------
-              case ${BS_LASearch_ShiftCount} in 0) break ;; esac #< [ "${BS_LASearch_ShiftCount}" -ge 0 ]
-              #> -----------------------------------------------
+              #> LOOP TEST ---------------------------------
+              case ${BS_LA_Search_ShiftCount} in 0) break ;; esac #<: `[ "${BS_LA_Search_ShiftCount}" -gt 0 ]`
+              #< -------------------------------------------
               shift
-              BS_LASearch_ShiftCount=$((BS_LASearch_ShiftCount - 1))
+              BS_LA_Search_ShiftCount=$((BS_LA_Search_ShiftCount - 1))
             done ;;
         esac
-        BS_LASearch_SearchStart=$((BS_LASearch_SearchStart + c_BS_LIBARRAY_CFG__StartIndex)) ;;
-    *)  BS_LASearch_SearchStart="${c_BS_LIBARRAY_CFG__StartIndex}" ;;
-    esac #<: `case ${BS_LASearch_SearchStart:+1} in`
+
+        BS_LA_Search_SearchStart=$((BS_LA_Search_SearchStart + c_BS_LIBARRAY_CFG__start_index)) ;;
+    *)  BS_LA_Search_SearchStart=${c_BS_LIBARRAY_CFG__start_index} ;;
+    esac #<: `case ${BS_LA_Search_SearchStart:+1} in`
   ;;
-  esac #<: `case ${BS_LASearch_refIndex} in`
+  esac #<: `case ${BS_LA_Search_refIndex} in`
 
-  #---------------------------------------------------------
-  #  Search the remaining array
-  BS_LASearch_Found=;
-  fn_bs_libarray_find_index     \
-    'array_search'              \
-    'BS_LASearch_Found'         \
-    "${BS_LASearch_Primary}"    \
-    "${BS_LASearch_Expression}" \
-    "$@"                        || return $?
+  #=========================================================
+  # Search the remaining array
+  #=========================================================
+  BS_LA_Search_Found=;
+  fn_bs_libarray_find_index   \
+    'array_search'            \
+    'BS_LA_Search_Found'       \
+    "${BS_LA_Search_Primary}"  \
+    "${BS_LA_Search_Expr}"     \
+    "$@"                      || return $?
 
-  #---------------------------------------------------------
-  # Report the results
-  case ${BS_LASearch_Found:+1} in
-  1)  # Index needs offset correctly
-      BS_LASearch_Found=$((BS_LASearch_Found + BS_LASearch_SearchStart))
-      case ${BS_LASearch_refIndex} in
-      -) printf '%s\n' "${BS_LASearch_Found}" ;;                      #< OUTPUT
-      *) eval "${BS_LASearch_refIndex}=\"\${BS_LASearch_Found}\"" ;;  #< SAVE
-      esac ;;
-  *)  case ${BS_LASearch_refIndex} in
-      -) echo ;;                             #< OUTPUT (EMPTY)
-      *) eval "${BS_LASearch_refIndex}=;" ;; #< SAVE (EMPTY)
-      esac
-      return 1 ;;
+  #=========================================================
+  #
+  #=========================================================
+  case ${BS_LA_Search_Found:+1} in
+  1)  BS_LA_Search_Found=$((BS_LA_Search_Found + BS_LA_Search_SearchStart - 1))
+      BS_LA_Search_ExitCode=0 ;;
+  *)  BS_LA_Search_Found=;
+      BS_LA_Search_ExitCode=1 ;;
   esac
-}
+
+  #=========================================================
+  # Report the results
+  #=========================================================
+  case ${BS_LA_Search_refIndex} in
+  -) printf '%s\n' "${BS_LA_Search_Found}" ;;                   #< OUTPUT
+  *) eval "${BS_LA_Search_refIndex}=\${BS_LA_Search_Found}" ;;  #< SAVE
+  esac
+
+  return ${BS_LA_Search_ExitCode}
+} #<: `array_search()`
 
 #_______________________________________________________________________________
 #: ---------------------------------------------------------
@@ -4815,8 +7553,7 @@ array_search() { ## cSpell:Ignore BS_LASearch_
 #: ### `array_contains`
 #:
 #: Identical to [`array_search`](#array_search) except the index is not returned
-#: (allowing this to be much faster when `PRIMARY` is
-#:  `=`, `!=`, `-eq`, or `-ne`).
+#: (allowing this to be much faster when `PRIMARY` is `=`, or `!=`).
 #:
 #: See [`array_search`](#array_search) for more information.
 #:
@@ -4834,45 +7571,47 @@ array_search() { ## cSpell:Ignore BS_LASearch_
 #: _EXAMPLES_
 #: <!-- - -->
 #:
-#:     if array_contains 'Array' -like '*an error*|*a warning*'
+#:     if array_contains 'Array' -like '*an error*'
 #:     then
 #:       ...
 #:     fi
 #:
+#: _NOTES_
+#: <!-- -->
+#:
+#: - As for [`array_search`](#array_search).
+#:
 #_______________________________________________________________________________
-array_contains() { ## cSpell:Ignore BS_LAContains_
+array_contains() { ## cSpell:Ignore BS_LA_Contains_
+  #=========================================================
+  # Process Arguments
+  #=========================================================
   case $# in
-    #...................................
-    #> `case $# in`
-    #> ------------
-    #
-    #  WITHOUT PRIMARY
-    2)  BS_LAContains_refArray="$1"
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # WITHOUT PRIMARY
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    2)  BS_LA_Contains_refArray=$1
         fn_bs_libarray_validate_name  \
           'array_contains'            \
-          "${BS_LAContains_refArray}" || return $?
+          "${BS_LA_Contains_refArray}" || return $?
 
-           BS_LAContains_Primary='='
-        BS_LAContains_Expression="$2" ;;
+        BS_LA_Contains_Primary='='
+           BS_LA_Contains_Expr=$2 ;;
 
-    #...................................
-    #> `case $# in`
-    #> ------------
-    #
-    #  WITH ALL PARAMETERS
-    3)  BS_LAContains_refArray="$1"
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # WITH ALL PARAMETERS
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    3)  BS_LA_Contains_refArray=$1
         fn_bs_libarray_validate_name  \
           'array_contains'            \
-          "${BS_LAContains_refArray}" || return $?
+          "${BS_LA_Contains_refArray}" || return $?
 
-           BS_LAContains_Primary="$2"
-        BS_LAContains_Expression="$3" ;;
+        BS_LA_Contains_Primary=$2
+           BS_LA_Contains_Expr=$3 ;;
 
-    #...................................
-    #> `case $# in`
-    #> ------------
-    #
-    #  INVALID
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # INVALID
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     *)  fn_bs_libarray_expected  \
           'array_contains'       \
           'an array variable'    \
@@ -4881,66 +7620,69 @@ array_contains() { ## cSpell:Ignore BS_LAContains_
         return "${c_BS_LIBARRAY__EX_USAGE}" ;;
   esac #<: `case $# in`
 
-  #---------------------------------------------------------
+  #=========================================================
   # Checking if an array contains/does not contain an exact
   # value can be very fast and does not required the array
   # is unpacked, so deal with those operations as a special
   # case
-  case ${BS_LAContains_Primary} in
-    #.......................................................
-    #> `case ${BS_LAContains_Primary} in`
-    #> ----------------------------------
-    '-eq'|'=')
-      BS_LAContains_Expression="$(array_value "${BS_LAContains_Expression}")" || return $?
+  #=========================================================
+  case ${BS_LA_Contains_Primary} in
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # STRING EQUALITY
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    '=')
+      BS_LA_Contains_Expr=$(array_value "${BS_LA_Contains_Expr}") || return $?
 
-      eval "BS_LAContains_Array=\"\${${BS_LAContains_refArray}-}\"" || return $?
-      case ${BS_LAContains_Array?} in
-      *"${BS_LAContains_Expression}"*) return 0 ;;
-                                    *) return 1 ;;
+      eval "BS_LA_Contains_Array=\${${BS_LA_Contains_refArray}-}" || return $?
+
+      case ${BS_LA_Contains_Array?} in
+      *"${BS_LA_Contains_Expr}"*) return 0 ;;
+                              *) return 1 ;;
       esac
-    ;;
+    ;; #<: `'=')`
 
-    #.......................................................
-    #> `case ${BS_LAContains_Primary} in`
-    #> ----------------------------------
-    '-ne'|'!=')
-      BS_LAContains_Expression="$(array_value "${BS_LAContains_Expression}")" || return $?
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # STRING INEQUALITY
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    '!=')
+      BS_LA_Contains_Expr=$(array_value "${BS_LA_Contains_Expr}") || return $?
 
-      eval "BS_LAContains_Array=\"\${${BS_LAContains_refArray}-}\"" || return $?
-      case ${BS_LAContains_Array?} in
-      *"${BS_LAContains_Expression}"*) return 1 ;;
-                                    *) return 0 ;;
+      eval "BS_LA_Contains_Array=\${${BS_LA_Contains_refArray}-}" || return $?
+
+      case ${BS_LA_Contains_Array?} in
+      *"${BS_LA_Contains_Expr}"*) return 1 ;;
+                              *) return 0 ;;
       esac
-    ;;
+    ;; #<: `'!=')`
 
-    #.......................................................
-    #> `case ${BS_LAContains_Primary} in`
-    #> ----------------------------------
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # OTHER
     #
     # Nothing much to be gained by having specialized
     # versions of the other operators, so delegate to
     # [`fn_bs_libarray_find_index`](#fn_bs_libarray_find_index)
     # - but ignore the found index.
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     *)
-      #  Unpack the array
-      eval "BS_LAContains_Array=\"\${${BS_LAContains_refArray}-}\"" || return $?
-      eval "set 'BS_DUMMY_PARAM' ${BS_LAContains_Array?} && shift"  || return $?
+      # Unpack the array
+      eval "BS_LA_Contains_Array=\${${BS_LA_Contains_refArray}-}"     || return $?
+      eval "set 'BS_DUMMY_PARAM' ${BS_LA_Contains_Array?} && shift"  || return $?
 
-      BS_LAContains_IgnoredIndex=;
+      BS_LA_Contains_IgnoredIndex=;
       fn_bs_libarray_find_index       \
         'array_contains'              \
-        'BS_LAContains_IgnoredIndex'  \
-        "${BS_LAContains_Primary}"    \
-        "${BS_LAContains_Expression}" \
+        'BS_LA_Contains_IgnoredIndex'  \
+        "${BS_LA_Contains_Primary}"    \
+        "${BS_LA_Contains_Expr}"       \
         "$@"                          || return $?
 
-      case ${BS_LAContains_IgnoredIndex:+1} in
+      case ${BS_LA_Contains_IgnoredIndex:+1} in
       1) return 0 ;;
       *) return 1 ;;
       esac
-    ;;
-  esac #<: `case ${BS_LAContains_Primary} in`
-}
+    ;; #<: `*)`
+  esac #<: `case ${BS_LA_Contains_Primary} in`
+} #<: `array_contains()`
 
 #_______________________________________________________________________________
 #: ---------------------------------------------------------
@@ -4967,15 +7709,15 @@ array_contains() { ## cSpell:Ignore BS_LAContains_
 #:
 #: : Value used to delimit joined values.
 #: : Can be null.
-#: : Can contain any escape sequences that
-#:   `printf` understands, however `%` (`<percent-sign>`)
+#: : Can contain any escape sequences that `printf`
+#:   understands, however `%` (`<percent-sign>`)
 #:   characters will be output literally.
 #:
 #: `OUTPUT` \[out:ref]
 #:
 #: : Variable that will contain the joined string.
 #: : Any current contents will be lost.
-#: : MUST be a valid _POSIX.1_ name or a `-` (`<hyphen>`).
+#: : MUST be a valid _POSIX.1_ name or `-` (`<hyphen>`).
 #: : If not specified, or specified as `-` (`<hyphen>`)
 #:   joined string is written to `STDOUT`.
 #:
@@ -4983,8 +7725,8 @@ array_contains() { ## cSpell:Ignore BS_LAContains_
 #: <!-- - -->
 #:
 #:     array_join 'Array' ',' 'JoinedTextVar'
-#:     JoinedTextVar="$(array_join 'Array' ',')"
-#:     JoinedTextVar="$(array_join 'Array' ',' -)"
+#:     JoinedTextVar=$(array_join 'Array' ',')
+#:     JoinedTextVar=$(array_join 'Array' ',' -)
 #:
 #: _NOTES_
 #: <!-- -->
@@ -5003,93 +7745,92 @@ array_contains() { ## cSpell:Ignore BS_LAContains_
 #.   character appended (then later removed) which avoids the loss of any data.
 #.
 #_______________________________________________________________________________
-array_join() { ## cSpell:Ignore BS_LAJoin_ Delim
+array_join() { ## cSpell:Ignore BS_LA_Join_ Delim
+  #=========================================================
+  # Process Arguments
+  #=========================================================
   case $# in
-  2)  BS_LAJoin_refArray="$1"
-      fn_bs_libarray_validate_name \
-        'array_join'               \
-        "${BS_LAJoin_refArray}"    || return $?
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    2)  BS_LA_Join_refArray=$1
+        fn_bs_libarray_validate_name \
+          'array_join'               \
+          "${BS_LA_Join_refArray}"    || return $?
 
-          BS_LAJoin_Delim="$2"
-      BS_LAJoin_refJoined='-' ;;
+            BS_LA_Join_Delim=$2
+        BS_LA_Join_refJoined='-' ;;
 
-  3)  BS_LAJoin_refArray="$1"
-      fn_bs_libarray_validate_name \
-        'array_join'               \
-        "${BS_LAJoin_refArray}"    || return $?
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    3)  BS_LA_Join_refArray=$1
+        fn_bs_libarray_validate_name \
+          'array_join'               \
+          "${BS_LA_Join_refArray}"    || return $?
 
-      BS_LAJoin_Delim="$2"
+        BS_LA_Join_Delim=$2
 
-      BS_LAJoin_refJoined="$3"
-      fn_bs_libarray_validate_name_hyphen \
-        'array_join'                      \
-        "${BS_LAJoin_refJoined}"          || return $? ;;
+        BS_LA_Join_refJoined=$3
+        fn_bs_libarray_validate_name_hyphen \
+          'array_join'                      \
+          "${BS_LA_Join_refJoined}"          || return $? ;;
 
-  *)  fn_bs_libarray_expected \
-        'array_join'          \
-        'an array variable'   \
-        'join text'           \
-        'an output variable (optional)'
-      return "${c_BS_LIBARRAY__EX_USAGE}" ;;
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # INVALID
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    *)  fn_bs_libarray_expected \
+          'array_join'          \
+          'an array variable'   \
+          'join text'           \
+          'an output variable (optional)'
+        return "${c_BS_LIBARRAY__EX_USAGE}" ;;
   esac #<: `case $# in`
 
-  eval "BS_LAJoin_Array=\"\${${BS_LAJoin_refArray}-}\""    || return $?
-  eval "set 'BS_DUMMY_PARAM' ${BS_LAJoin_Array?} && shift" || return $?
+  #=========================================================
+  #
+  #=========================================================
+  eval "BS_LA_Join_Array=\${${BS_LA_Join_refArray}-}"        || return $?
+  eval "set 'BS_DUMMY_PARAM' ${BS_LA_Join_Array?} && shift" || return $?
 
-  #-------------------------------------
-  #  Early out if array is empty
-  case $# in
-  0)  case ${BS_LAJoin_refJoined} in
-      -) echo ;;                            #< OUTPUT (EMPTY)
-      *) eval "${BS_LAJoin_refJoined}=;" ;; #< SAVE (EMPTY)
-      esac
-      return ;;
+  #=========================================================
+  # Early out if array is empty
+  #=========================================================
+  case $#:${BS_LA_Join_refJoined} in
+  0:-) echo; return ;;                            #< OUTPUT (EMPTY)
+  0:*) eval "${BS_LA_Join_refJoined}=;"; return ;; #< SAVE (EMPTY)
   esac
 
-  #-------------------------------------
-  #  Process DELIM to escape `printf`
-  #+ format characters
-  case ${BS_LAJoin_Delim} in
-  *'%'*)  BS_LAJoin_Delim="$(
-              {
-                printf '%s_\n' "${BS_LAJoin_Delim}"
-              } | {
-                sed -e 's/%/%%/g'
-              }
-            )"
-          BS_LAJoin_Delim="${BS_LAJoin_Delim%_}" ;;
-  esac
-
-  #-------------------------------------
-  #  Join the values
-  BS_LAJoin_Joined='_'
-  BS_LAJoin_Format="%s${BS_LAJoin_Delim}_"
-  while : #< [ $# -gt 1 ]
+  #=========================================================
+  # Join the values
+  #=========================================================
+  BS_LA_Join_Joined='_'
+  while : #<: `[ $# -gt 1 ]`
   do
-    #> LOOP TEST --------------
-    case $# in 1) break ;; esac #< [ $# -gt 1 ]
-    #> ------------------------
+    #> LOOP TEST -----------------------
+    case $# in 1) break ;; esac #<: `[ $# -gt 1 ]`
+    #< ---------------------------------
 
-    # SC2059: Don't use variables in the printf format
-    #         string. Use printf "..%s.." "$foo".
-    # EXCEPT: The intention here is to allow join text to
-    #         have printf format codes.
-    # shellcheck disable=SC2059
-    BS_LAJoin_Joined="${BS_LAJoin_Joined%_}$(
-        printf "${BS_LAJoin_Format}" "$1"
+    BS_LA_Join_Joined="${BS_LA_Join_Joined%_}$(
+        printf '%s%b_' "$1" "${BS_LA_Join_Delim}"
       )"
     shift
-  done #<: `while : #< [ $# -gt 1 ]`
+  done #<: `while [ $# -gt 1 ]`
 
+  #=========================================================
   # Join the last value after the loop
   # so DELIM is not appended to it
-  BS_LAJoin_Joined="${BS_LAJoin_Joined%_}$(printf '%s_' "$1")"
+  #=========================================================
+  BS_LA_Join_Joined="${BS_LA_Join_Joined%_}$(printf '%s_' "$1")"
 
-  case ${BS_LAJoin_refJoined} in
-  -) printf '%s\n' "${BS_LAJoin_Joined%_}" ;;                    #< OUTPUT
-  *) eval "${BS_LAJoin_refJoined}=\"\${BS_LAJoin_Joined%_}\"" ;; #< SAVE
+  #=========================================================
+  #
+  #=========================================================
+  case ${BS_LA_Join_refJoined} in
+  -) printf '%s\n' "${BS_LA_Join_Joined%_}" ;;                #< OUTPUT
+  *) eval "${BS_LA_Join_refJoined}=\${BS_LA_Join_Joined%_}" ;; #< SAVE
   esac
-}
+} #<: `array_join()`
 
 #_______________________________________________________________________________
 #: ---------------------------------------------------------
@@ -5101,29 +7842,42 @@ array_join() { ## cSpell:Ignore BS_LAJoin_ Delim
 #: _SYNOPSIS_
 #: <!-- - -->
 #:
-#:     array_split [<OPTION>] [--] [<ARRAY>] <TEXT> <SEPARATOR>
+#:     array_split [-E|--ere|--extended-regexp] [--] [<ARRAY>] <TEXT> <DELIMITER>
+#:
+#:     array_split -F|--text|--fixed-strings [--] [<ARRAY>] <TEXT> <DELIMITER>
+#:
+#:     array_split -G|--bre|--basic-regexp [--] [<ARRAY>] <TEXT> <DELIMITER>
+#:
+#:     array_split -W|--glob|--wildcard [--] [<ARRAY>] <TEXT> <DELIMITER>
 #:
 #: _ARGUMENTS_
 #: <!-- -- -->
 #:
 #: `-E`, `--ere`, `--extended-regexp` \[in]
 #:
-#: : Interpret `SEPARATOR` as an "Extended Regular Expression".
+#: : Interpret `DELIMITER` as an
+#:   ["Extended Regular Expression"][posix_ere].
 #: : This is the default.
 #:
-#: `-F`, `--fixed-strings` \[in]
+#: `-F`, `--text`, `--fixed-strings` \[in]
 #:
-#: : Interpret `SEPARATOR` as a fixed string.
+#: : Interpret `DELIMITER` as a fixed string.
 #:
 #: `-G`, `--bre`, `--basic-regexp` \[in]
 #:
-#: : Interpret `SEPARATOR` as a "Basic Regular Expression".
+#: : Interpret `DELIMITER` as a
+#:   ["Basic Regular Expression"][posix_bre].
+#:
+#: `-W`, `--glob`, `--wildcard` \[in]
+#:
+#: : Interpret `DELIMITER` as
+#:   ["Pattern Matching Notation"][posix_glob].
 #:
 #: `ARRAY` \[out:ref]
 #:
 #: : Variable that will contain the new array.
 #: : Any current contents will be lost.
-#: : MUST be a valid _POSIX.1_ name or a `-` (`<hyphen>`).
+#: : MUST be a valid _POSIX.1_ name or `-` (`<hyphen>`).
 #: : If not specified, or specified as `-` (`<hyphen>`)
 #:   joined string is written to `STDOUT`.
 #:
@@ -5134,228 +7888,202 @@ array_join() { ## cSpell:Ignore BS_LAJoin_ Delim
 #: : Can contain any arbitrary text excluding any
 #:   embedded `\0` (`<NUL>`) characters.
 #:
-#: `SEPARATOR` \[in]
+#: `DELIMITER` \[in]
 #:
 #: : Expression used to split `TEXT`.
+#: : _EXPECTS_:
+#:   - an _ERE_ with `-E`, `--ere`, or`--extended-regexp`.
+#:   - a _string_ with `-F`, `--text`, `--fixed-strings`.
+#:   - a _BRE_ with `-G`, `--bre`, or`--basic-regexp`.
+#:   - a _wildcard pattern_ with `-W`, `--glob`, or
+#:     `--wildcard`.
 #: : Can contain any arbitrary text excluding any
 #:   embedded `\0` (`<NUL>`) characters.
-#: : Is interpreted as a _POSIX.1_
-#:   ["Extended Regular Expression"][posix_ere] _unless_
-#:   exactly _one_ character when it is interpreted
-#:   literally.
-#: : Is used with the `awk` command `split`.
 #:
 #: _EXAMPLES_
 #: <!-- - -->
 #:
 #:     array_split 'Array' "$PATH" ':'
-#:     Array="$(array_split -F "$PATH" ':')"
-#:     Array="$(array_split - "$PATH" ':')"
+#:     Array=$(array_split -F "$PATH" ':')
+#:     Array=$(array_split - "$PATH" ':')
 #:
 #: _CAVEATS_
 #: <!-- - -->
 #:
-#: - "Enhanced Regular Expression" mode (the default if no mode is specified)
-#:   is provided by the `split` function from `awk`. This requires a version of
-#:   `awk` that is "new awk" (or "nawk") like - "traditional" `awk` is _not_
-#:   supported. (Notably, even as of 2024 this affects the default version of
-#:   `awk` in Oracle Solaris.)
+#: - **_BRE_**: If `DELIMITER` contains any `'` (`<apostrophe>`) characters the
+#:   performance of this function may be significantly slower than if it does
+#:   not.
+#: - **_ERE_**: A single character `DELIMITER` in "Extended Regular Expression"
+#:   mode will **not** match as a regular expression. This is due to the
+#:   behavior of the `split` function in `awk` which treats single characters
+#:   literally.
+#: - An empty (i.e. null) `DELIMITER` is **not** permitted.
+#: - Not all wildcard patterns, _BRE_, or _ERE_ can be used portably.
+#: - For _wildcard patterns_ the locale in effect is that of the shell as invoked -
+#:   _it is **not** possible to change the locale of a running shell_.
+#: - In some cases wildcard pattern matches will be implemented using fallback
+#:   code - this is unavoidable as not all implementations provide the expected
+#:   behavior for all expressions. See
+#:   ["PATTERN MATCHING"](./README.MD#pattern-matching),
+#:   [`BS_LIBARRAY_CONFIG_SHELL_SUPPORTS_MBC`](#bs_libarray_config_shell_supports_mbc),
+#:   and [`BS_LIBARRAY_CONFIG_SHELL_SUPPORTS_PORTABLE_GLOB`](#bs_libarray_config_shell_supports_portable_glob).
 #:
 #: _NOTES_
 #: <!-- -->
 #:
-#: - The default mode is "Enhanced Regular Expression" mode as this was the only
-#:   mode offered by the first version of this command.
-#: - "Basic Regular Expression" mode is likely to be the most performant of the
-#:   options available.
-#: - Manually ensuring any regular expression characters are correctly escaped
-#:   can be used in place of "Fixed String" mode. This may offer better
-#:   performance.
+#: - The default mode is "Extended Regular Expression" mode as this was the only
+#:   mode offered by the first version of this command. New uses should always
+#:   specify a mode explicitly.
 #:
 #. _IMPLEMENTATION NOTES_
 #. <!-- ------------- -->
 #.
 #. - Option names are taken from GNU `grep` since these are likely widely known
-#.   and are extensions of the standard `grep` options.
+#.   and are extensions of the standard `grep` options. (There is no equivalent
+#.   to "wildcard" mode in GNU `grep`, but `-W` is unused and the obvious
+#.   alternative (`-H`) is used for another purpose.)
+#. - Earlier versions of this (i.e. libarray.sh v1.x.x) were all broken.
+#.   This reworked version is significantly more robust and fixes most (all?) of
+#.   the issues previously present. The current version is also faster in
+#.   some cases, while most other cases should have similar performance.
 #.
 #_______________________________________________________________________________
-array_split() { ## cSpell:Ignore BS_LASplit_ gsub
+array_split() { ## cSpell:Ignore BS_LA_Split_ gsub
+  #=========================================================
+  # Argument Processing
+  #=========================================================
+
+  #---------------------------------------------------------
   # Check for options
-  BS_LASplit_Mode=;
+  #---------------------------------------------------------
+  BS_LA_Split_Mode=E
   case ${1-} in
-  '-G' | '--bre'  | '--basic-regexp'   ) BS_LASplit_Mode=G; shift ;;
-  '-E' | '--ere'  | '--extended-regexp') BS_LASplit_Mode=E; shift ;;
-  '-F' | '--text' | '--fixed-strings'  ) BS_LASplit_Mode=F; shift ;;
-                                      *) BS_LASplit_Mode=E ;;
+  '-E' | '--ere'  | '--extended-regexp') BS_LA_Split_Mode=E; shift ;;
+  '-F' | '--text' | '--fixed-strings'  ) BS_LA_Split_Mode=F; shift ;;
+  '-G' | '--bre'  | '--basic-regexp'   ) BS_LA_Split_Mode=G; shift ;;
+  '-W' | '--glob' | '--wildcard'       ) BS_LA_Split_Mode=W; shift ;;
   esac
 
+  #---------------------------------------------------------
   # Skip any option delimiter
+  #---------------------------------------------------------
   case ${1-} in --) shift ;; esac
 
+  #---------------------------------------------------------
   # Process operands
+  #---------------------------------------------------------
   case $# in
-  2)   BS_LASplit_refArray='-'
-           BS_LASplit_Text="$1"
-      BS_LASplit_Separator="$2" ;;
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    2)   BS_LA_Split_refArray='-'
+             BS_LA_Split_Text=$1
+        BS_LA_Split_Delimiter=$2 ;;
 
-  3)  BS_LASplit_refArray="$1"
-      fn_bs_libarray_validate_name_hyphen \
-        'array_split'                     \
-        "${BS_LASplit_refArray}"          || return $?
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    3)  BS_LA_Split_refArray=$1
+        fn_bs_libarray_validate_name_hyphen \
+          'array_split'                     \
+          "${BS_LA_Split_refArray}"          || return $?
 
-           BS_LASplit_Text="$2"
-      BS_LASplit_Separator="$3" ;;
+             BS_LA_Split_Text=$2
+        BS_LA_Split_Delimiter=$3 ;;
 
-  *)  fn_bs_libarray_expected          \
-        'array_split'                  \
-        'one of -B|--bre|--basic-regexp, -E|--ere|--extended-regexp, or -F|--text|--fixed-strings (optional)' \
-        'an array variable (optional)' \
-        'input text'                   \
-        'a separator'
-      return "${c_BS_LIBARRAY__EX_USAGE}" ;;
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # INVALID
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    *)  fn_bs_libarray_expected          \
+          'array_split'                  \
+          'one of -G|--bre|--basic-regexp, -E|--ere|--extended-regexp, -F|--text|--fixed-strings, or -W|--glob|--wildcard (optional)' \
+          'an array variable (optional)' \
+          'input text'                   \
+          'a delimiter'
+        return "${c_BS_LIBARRAY__EX_USAGE}" ;;
   esac #<: `case $# in`
 
+  #=========================================================
+  # Argument Verification & Early Out
+  #
   # Check for null input:
-  #  - null SEPARATOR is an error
+  #  - null DELIMITER is an error
   #  - early out for null TEXT
-  case ${BS_LASplit_Separator:+1}:${BS_LASplit_Text:+1} in
+  #=========================================================
+  case ${BS_LA_Split_Delimiter:+1}:${BS_LA_Split_Text:+1} in
   1:1)  ;;
-  1: )  case ${BS_LASplit_refArray} in
-        -) echo ;;                            #< OUTPUT (EMPTY)
-        *) eval "${BS_LASplit_refArray}=;" ;; #< SAVE (EMPTY)
+  1: )  case ${BS_LA_Split_refArray} in
+        -) echo ;;                                          #< OUTPUT (EMPTY)
+        *) eval "${BS_LA_Split_refArray}=;" ;;               #< SAVE (EMPTY)
         esac
         return ;;
    :*)  fn_bs_libarray_invalid_args \
           'array_split'             \
-          'split separator can not be null'
+          'split delimiter can not be null'
         return "${c_BS_LIBARRAY__EX_USAGE}" ;;
   esac
 
-  # Escape SEPARATOR if/when required:
-  #  - BRE and Fixed use `sed`, which escapes `'` characters
-  #    in the input text _before_ the split is done, as it
-  #    allows the script to be simpler, but means that
-  #    those characters in the split text need to also be
-  #    escaped or they won't match as expected.
-  #  - Fixed strings also escape BRE special characters.
-  case ${BS_LASplit_Mode}:${BS_LASplit_Separator-} in
-  G:*"'"*)
-    BS_LASplit_Separator="$(
-      {
-        printf '%s_\n' "${BS_LASplit_Separator}"
-      } | {
-        sed "s/'/'\\\\\\\\''/g"
-      }
-    )" 
-    BS_LASplit_Separator="${BS_LASplit_Separator%?_}" ;;
+  #=========================================================
+  # SPLIT
+  #=========================================================
+  case ${BS_LA_Split_Mode} in
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # ERE
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    E)
+      BS_LA_Split_Array=$(
+          fn_bs_libarray_split_ere    \
+            'array_split'             \
+            "${BS_LA_Split_Text}"      \
+            "${BS_LA_Split_Delimiter}"
+        ) || return $?
+    ;; #<: `E)`
 
-  F:*[.[\\*$^\']*)
-    BS_LASplit_Separator="$(
-        {
-          printf '%s_\n' "${BS_LASplit_Separator}"
-        } | {
-          sed "s/'/'\\\\''/g
-               s/[.[\\*$]/[&]/g
-               s/\^/\\\^/g"
-        }
-      )" 
-    BS_LASplit_Separator="${BS_LASplit_Separator%?_}" ;;
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Fixed Strings
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    F)
+      BS_LA_Split_Array=$(
+          fn_bs_libarray_split_fixed  \
+            'array_split'             \
+            "${BS_LA_Split_Text}"      \
+            "${BS_LA_Split_Delimiter}"
+        ) || return $?
+    ;; #<: `F)`
+
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # BRE
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    G)
+      BS_LA_Split_Array=$(
+          fn_bs_libarray_split_bre    \
+            'array_split'             \
+            "${BS_LA_Split_Text}"      \
+            "${BS_LA_Split_Delimiter}"
+        ) || return $?
+    ;; #<: `G)`
+
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Wildcard
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    W)
+      BS_LA_Split_Array=$(
+          fn_bs_libarray_split_glob   \
+            'array_split'             \
+            "${BS_LA_Split_Text}"      \
+            "${BS_LA_Split_Delimiter}"
+        ) || return $?
+    ;; #<: `W)`
+  esac #<: `case ${BS_LA_Split_Mode} in`
+
+  #=========================================================
+  # OUTPUT/SAVE
+  #=========================================================
+  case ${BS_LA_Split_refArray} in
+  -) printf '%s\n' "${BS_LA_Split_Array}" ;;                 #< OUTPUT
+  *) eval "${BS_LA_Split_refArray}=\${BS_LA_Split_Array}" ;;  #< SAVE
   esac
-
-  # Split
-  case ${BS_LASplit_Mode} in
-  [GF])
-    case ${c_BS_LIBARRAY_CFG_USE__sed_slash_n:-0} in
-    1)  BS_LASplit_Script="
-          :INPUT
-            \$!N
-            \$!b INPUT
-          s/'/'\\\\''/g
-          s/^/'/
-          s/\$/' \\\\/
-          s/${BS_LASplit_Separator}/' \\\\\n'/g" ;;
-
-    0)  BS_LASplit_Script="
-          :INPUT
-            \$!N
-            \$!b INPUT
-          s/'/'\\\\''/g
-          s/^/'/
-          s/\$/' \\\\/
-          :SPLIT
-            /${BS_LASplit_Separator}/{
-              h
-              s/^.*${BS_LASplit_Separator}\(.*\)$/'\1/
-              x
-              s/^\(.*\)${BS_LASplit_Separator}.*$/\1' \\\\/
-              G
-              /${BS_LASplit_Separator}/b SPLIT
-            }" ;;
-    esac
-
-    BS_LASplit_Array="$(
-        {
-          printf '%s\n' "${BS_LASplit_Text}"
-        } | {
-          sed "${BS_LASplit_Script}"
-        }
-        echo ' '
-      )" || return $?
-
-    BS_LASplit_Array="${BS_LASplit_Array%\'}" ;;
-
-  *)
-    BS_LASplit_Array="$(
-      {
-        printf '%s\n' "${BS_LASplit_Text}_"
-      } | {
-        # This script does not work with traditional `awk`:
-        #
-        #  - `gsub` is not available in traditional `awk` (although the use here
-        #    can be replaced with a manually coded replacement that _does_ work)
-        #  - `split` in traditional `awk` does not support more than a single
-        #    character for the split value, and does not support ERE.
-        #
-        # In Solaris 11.4 (2023) the default `awk` does not support this,
-        # although a more functional version of `awk` _is_ available on the
-        # system.
-        awk "
-          {
-            BS_LA_FullTxt = BS_LA_FullTxt sprintf(\"%s\n\", \$0)
-          }
-
-          END {
-            # An additional newline will have been added to
-            # the text that is **not** from the initial
-            # text, so this is removed here.
-            BS_LA_TextLen = length(BS_LA_FullTxt) - 2
-            BS_LA_FullTxt = substr(BS_LA_FullTxt, 1, BS_LA_TextLen)
-
-            # The expression is embedded in the script here
-            # rather than passed to awk in a more
-            # traditional way as it turns out to be _very_
-            # difficult to do that in a portable way.
-            #
-            # WARNING: Could be an 'injection attack' target.
-            #
-            iSplitCount = split(BS_LA_FullTxt, BS_LA_aSplitText, /${BS_LASplit_Separator}/)
-            for (i = 1; i <= iSplitCount; i = i + 1) {
-              gsub(\"'\", \"'\\\\''\", BS_LA_aSplitText[i])
-              printf(\"'%s' \\\\\n\", BS_LA_aSplitText[i])
-            }
-
-            printf(\" \n\")
-          }
-        "
-      }
-    )" || return $? ;;
-  esac
-
-  case ${BS_LASplit_refArray} in
-  -) printf '%s\n' "${BS_LASplit_Array}" ;;                    #< OUTPUT
-  *) eval "${BS_LASplit_refArray}=\"\${BS_LASplit_Array}\"" ;; #< SAVE
-  esac
-}
+} #<: `array_split()`
 
 #_______________________________________________________________________________
 #: ---------------------------------------------------------
@@ -5389,46 +8117,71 @@ array_split() { ## cSpell:Ignore BS_LASplit_ gsub
 #:
 #:     array_printf 'Array' 'Array Value: "%s"\n'
 #:
+#: _BREAKING CHANGES_
+#: <!-- --------- -->
+#:
+#: As of `v2.0.0`:
+#:
+#: - the command no longer writes anything for empty arrays (previously a single
+#:   `<newline>` character was written).
+#:
 #: _NOTES_
 #: <!-- -->
 #:
 #: - If `FORMAT` contains no format code, the literal string it contains will
-#:   be output once per element in `ARRAY`.
+#:   be output once per element in `ARRAY`. Some implementations of `printf`
+#:   may complain in this case.
 #:
 #_______________________________________________________________________________
-array_printf() { ## cSpell:Ignore BS_LAPrintf_
+array_printf() { ## cSpell:Ignore BS_LA_Printf_
+  #=========================================================
+  # Process Arguments
+  #=========================================================
   case $# in
-  2)  #  Allow transposed arguments
+    2)
+      # Allow transposed arguments
       case $1 in
-      *%*) BS_LAPrintf_refArray="$2"
-             BS_LAPrintf_Format="$1" ;;
-        *) BS_LAPrintf_refArray="$1"
-             BS_LAPrintf_Format="$2" ;;
+      *%*)  BS_LA_Printf_refArray=$2
+              BS_LA_Printf_Format=$1 ;;
+        *)  BS_LA_Printf_refArray=$1
+              BS_LA_Printf_Format=$2 ;;
       esac
 
       fn_bs_libarray_validate_name \
         'array_printf'             \
-        "${BS_LAPrintf_refArray}"  || return $? ;;
-  *)  fn_bs_libarray_expected \
+        "${BS_LA_Printf_refArray}"  || return $?
+    ;;
+
+    *)
+      fn_bs_libarray_expected \
         'array_printf'        \
         'an array variable'   \
         'a print format'
-      return "${c_BS_LIBARRAY__EX_USAGE}" ;;
-  esac #<: `case $# in`
+      return "${c_BS_LIBARRAY__EX_USAGE}"
+    ;;
+  esac
 
-  eval "BS_LAPrintf_Array=\"\${${BS_LAPrintf_refArray}-}\""  || return $?
-  eval "set 'BS_DUMMY_PARAM' ${BS_LAPrintf_Array?} && shift" || return $?
+  #=========================================================
+  #
+  #=========================================================
+  eval "BS_LA_Printf_Array=\${${BS_LA_Printf_refArray}-}"      || return $?
+  eval "set 'BS_DUMMY_PARAM' ${BS_LA_Printf_Array?} && shift" || return $?
 
+  #=========================================================
+  #
+  #=========================================================
+  case $# in 0) return ;; esac
+
+  #=========================================================
+  # PRINT
+  #=========================================================
   # SC2059: Don't use variables in the printf format string.
   #         Use printf "..%s.." "$foo".
   # EXCEPT: The intention here is to allow callers to set
   #         the format themselves
   # shellcheck disable=SC2059
-  case $# in
-  0) echo '' ;;                             #< OUTPUT (EMPTY)
-  *) printf "${BS_LAPrintf_Format}" "$@" ;; #< OUTPUT
-  esac
-}
+  printf "${BS_LA_Printf_Format}" ${1+"$@"}
+} #<: `array_printf()`
 
 #_______________________________________________________________________________
 #: ---------------------------------------------------------
@@ -5440,7 +8193,7 @@ array_printf() { ## cSpell:Ignore BS_LAPrintf_
 #: _SYNOPSIS_
 #: <!-- - -->
 #:
-#:     array_from_path [--all|-a] [<ARRAY>] <PATH>
+#:     array_from_path [--all|-a] [--] [<ARRAY>] <PATH>
 #:
 #: _ARGUMENTS_
 #: <!-- -- -->
@@ -5454,7 +8207,7 @@ array_printf() { ## cSpell:Ignore BS_LAPrintf_
 #:
 #: : Variable that will contain the new array.
 #: : Any current contents will be lost.
-#: : MUST be a valid _POSIX.1_ name or a `-` (`<hyphen>`).
+#: : MUST be a valid _POSIX.1_ name or `-` (`<hyphen>`).
 #: : If not specified, or specified as `-` (`<hyphen>`)
 #:   array is written to `STDOUT`.
 #:
@@ -5486,151 +8239,78 @@ array_printf() { ## cSpell:Ignore BS_LAPrintf_
 #:   truly portable solution than it seems.
 #:
 #_______________________________________________________________________________
-array_from_path() { ## cSpell:Ignore BS_LAFP_
-  BS_LAFP_DotFiles=;  BS_LAFP_refArray=;  BS_LAFP_Directory=;
-
-  case $# in
-    #...................................
-    #> `case $# in`
-    #> ------------
-    #
-    # DIRECTORY ONLY
-    1)
-       BS_LAFP_refArray='-'
-      BS_LAFP_Directory="$1"
-    ;;
-
-    #...................................
-    #> `case $# in`
-    #> ------------
-    #
-    # DIRECTORY PLUS OTHER PARAM(S)
-    2|3)
-      while : #< [ $# -gt 0 ]
-      do
-        #> LOOP TEST --------------
-        case $# in 0) break ;; esac #< [ $# -gt 0 ]
-        #> ------------------------
-        case $1 in
-          #'''''''''''''''''''''''''''''
-          #> `case $1 in`
-          #> ------------
-          #
-          # 'all' option
-          '--all'|'-a')
-            case ${BS_LAFP_DotFiles:+1} in
-            1)  fn_bs_libarray_expected          \
-                  'array_from_directory'         \
-                  'an --all option (optional)'   \
-                  'an array variable (optional)' \
-                  'a directory'
-                return "${c_BS_LIBARRAY__EX_USAGE}" ;;
-            esac
-            BS_LAFP_DotFiles=1
-          ;;
-
-          #'''''''''''''''''''''''''''''
-          #> `case $1 in`
-          #> ------------
-          #
-          # Other option
-          *)
-            case ${BS_LAFP_refArray:+1} in
-              1)  case ${BS_LAFP_Directory:+1} in
-                  1)  fn_bs_libarray_expected          \
-                        'array_from_directory'         \
-                        'an --all option (optional)'   \
-                        'an array variable (optional)' \
-                        'a directory'
-                      return "${c_BS_LIBARRAY__EX_USAGE}" ;;
-                  esac
-                  BS_LAFP_Directory="$1" ;;
-              *)  BS_LAFP_refArray="$1"
-                  fn_bs_libarray_validate_name_hyphen \
-                    'array_from_directory'            \
-                    "${BS_LAFP_refArray}"             || return $? ;;
-            esac #<: `case ${BS_LAFP_refArray:+1} in`
-          ;;
-        esac #<: `case $1 in`
-        shift
-      done #<: `while : #< [ $# -gt 0 ]`
-    ;;
-
-    #...................................
-    #> `case $# in`
-    #> ------------
-    #
-    # INVALID
-    *)
-      fn_bs_libarray_expected          \
-        'array_from_directory'         \
-        'an --all option (optional)'   \
-        'an array variable (optional)' \
-        'a directory'
-      return "${c_BS_LIBARRAY__EX_USAGE}"
-    ;;
-  esac #<: `case $# in`
-
-  : "${BS_LAFP_DotFiles:=0}"
+array_from_path() { ## cSpell:Ignore BS_LA_FP_
+  #=========================================================
+  # Process Arguments
+  #=========================================================
 
   #---------------------------------------------------------
-  # No dot files for non-directory paths
-  case ${BS_LAFP_DotFiles}${BS_LAFP_Directory} in
-  1*[!/]) [ -d "${BS_LAFP_Directory}" ] || BS_LAFP_DotFiles=0 ;;
-  esac
-
+  # Option(s) must be first
   #---------------------------------------------------------
-  # Z Shell needs some options set or
-  # the subsequent code will fail
-  case ${c_BS_LIBARRAY_CFG_USE__zsh_setopt} in
-  1) setopt 'LOCAL_OPTIONS' 'GLOB_SUBST' 'NONOMATCH' ;; ## cSpell:Ignore NONOMATCH
-  esac
-  #---------------------------------------------------------
-
-  BS_LAFP_Array=;
-  for BS_LAFP_Glob in '*' '.[!.]*' '..?*'
+  BS_LA_FP_DotFiles=0
+  while :
   do
-    # Expand the glob. (This sets the current positional
-    # parameters to each matched path)
-    #
-    #  SC2086: Double quote to prevent globbing
-    #          and word splitting.
-    #  EXCEPT: Want globbing to happen here
-    #  shellcheck disable=SC2086
-    set 'BS_DUMMY_PARAM' "${BS_LAFP_Directory}"${BS_LAFP_Glob}
-    case $# in
-    1)  ;;
-    2)  # `test -e` is not universally supported, the
-        # following does the same job but should work
-        # even when `test -e` can't be used
-        #
-        # NOTE:
-        # - although it seems like it should be easy to
-        #   replace `test -e` with multiple `test` commands
-        #   it is harder than it seems as paths can
-        #   represent more than files and directories, with
-        #   the exact types supported varying by platform
-        if BS_LAFP_Ignored="$(ls -d -q -- "$2" 2>&1)"; then
-          BS_LAFP_Array="${BS_LAFP_Array}$(array_value "$2"; echo ' ')"
-        fi ;;
-    *)  shift
-        BS_LAFP_Array="${BS_LAFP_Array}$(
-            fn_bs_libarray_create    \
-              'array_from_directory' \
-              $#                     \
-              "$@"
-          )"
-        ;;
-    esac #<: `case $# in`
+    case ${1-} in
+    '-a'|'-all'|'--all')
+      BS_LA_FP_DotFiles=1
+      shift ;;
 
-    case ${BS_LAFP_DotFiles} in 0) break ;; esac
-  done #<: `for BS_LAFP_Glob in '*' '.[!.]*' '..?*'`
+    '--') shift; break ;;
 
-  case ${BS_LAFP_refArray} in
-  -) printf '%s\n' "${BS_LAFP_Array}" ;;                 #< OUTPUT
-  *) eval "${BS_LAFP_refArray}=\"\${BS_LAFP_Array}\"" ;; #< SAVE
+       *) break ;;
+    esac #<: `case ${1-} in`
+  done
+
+  #---------------------------------------------------------
+  # Other arguments follow
+  #---------------------------------------------------------
+  case $# in
+  1)  BS_LA_FP_refArray='-'
+          BS_LA_FP_Path=$1 ;;
+  2)  BS_LA_FP_refArray=$1
+          BS_LA_FP_Path=$2
+      fn_bs_libarray_validate_name_hyphen \
+        'array_from_path'                 \
+        "${BS_LA_FP_refArray}"             || return $? ;;
+  *)  fn_bs_libarray_expected          \
+        'array_from_path'              \
+        'options: -a|--all (optional)' \
+        'an array variable (optional)' \
+        'a path'
+      return "${c_BS_LIBARRAY__EX_USAGE}" ;;
   esac
-}
+
+  #=========================================================
+  # No dot files for non-directory paths
+  #=========================================================
+  case ${BS_LA_FP_DotFiles}${BS_LA_FP_Path} in
+  1*[!/]) [ -d "${BS_LA_FP_Path}" ] || BS_LA_FP_DotFiles=0 ;;
+  esac
+
+  #=========================================================
+  # Get the paths
+  #=========================================================
+  BS_LA_FP_Array=$(
+      #-----------------------------------------------------
+      # Ensure globbing is enabled.
+      # (This will be scoped to the subshell.)
+      #-----------------------------------------------------
+      set +f
+
+      fn_bs_libarray_create_from_path \
+        'array_from_path'             \
+        "${BS_LA_FP_DotFiles}"         \
+        "${BS_LA_FP_Path}"
+    ) || return $?
+
+  #=========================================================
+  # Save/Output
+  #=========================================================
+  case ${BS_LA_FP_refArray} in
+  -) printf '%s\n' "${BS_LA_FP_Array}" ;;                    #< OUTPUT
+  *) eval "${BS_LA_FP_refArray}=\${BS_LA_FP_Array}" ;;        #< SAVE
+  esac
+} #<: `array_from_path()`
 
 #_______________________________________________________________________________
 #: ---------------------------------------------------------
@@ -5641,8 +8321,7 @@ array_from_path() { ## cSpell:Ignore BS_LAFP_
 #:
 #: In contrast to [`array_from_find_allow_print`](#array_from_find_allow_print),
 #: this command builds the array by capturing `STDOUT`; any output from `find`
-#: that is sent to `STDOUT` _will_ result in broken array (the `-print` primary
-#: is explicitly checked for and triggers an error if detected).
+#: that is sent to `STDOUT` _will_ result in broken array.
 #:
 #: _SYNOPSIS_
 #: <!-- - -->
@@ -5656,7 +8335,7 @@ array_from_path() { ## cSpell:Ignore BS_LAFP_
 #:
 #: : Variable that will contain the new array.
 #: : Any current contents will be lost.
-#: : MUST be a valid _POSIX.1_ name or a `-` (`<hyphen>`).
+#: : MUST be a valid _POSIX.1_ name or `-` (`<hyphen>`).
 #: : If not specified, or specified as `-` (`<hyphen>`)
 #:   array is written to `STDOUT`.
 #:
@@ -5686,12 +8365,11 @@ array_from_path() { ## cSpell:Ignore BS_LAFP_
 #: <!-- - -->
 #:
 #:     array_from_find 'Array' -- -L "$PWD" '(' -type f -o -type d ')'
-#:     Array="$(array_from_find - -L "$PWD" -type f)"
+#:     Array=$(array_from_find - -L "$PWD" -type f)
 #:
-#: _NOTES_
-#: <!-- -->
+#: _CAVEATS_
+#: <!--  -->
 #:
-#: - Implemented using [`BS_LIBARRAY_SH_TO_ARRAY`](#bs_libarray_sh_to_array)
 #: - Requires `sh` is an available command that can execute a simple shell
 #:   script with the `-c` option, as specified in the _POSIX.1_ standard.
 #: - The array is built by appending an `-exec` primary to any passed primaries,
@@ -5703,6 +8381,11 @@ array_from_path() { ## cSpell:Ignore BS_LAFP_
 #: - Some implementations of `find` allow it to be invoked without any
 #:   arguments, or with arguments but without any paths. This is supported
 #:   by this command if supported by the current platform.
+#:
+#: _NOTES_
+#: <!-- -->
+#:
+#: - Implemented using [`BS_LIBARRAY_SH_TO_ARRAY`](#bs_libarray_sh_to_array)
 #: - [`array_from_find_allow_print`](#array_from_find_allow_print) is provided
 #:   if `find` primaries that generate output are required.
 #:
@@ -5724,61 +8407,62 @@ array_from_path() { ## cSpell:Ignore BS_LAFP_
 #.   intended to create an array of only files _or_ of files _and_ directories.
 #.
 #_______________________________________________________________________________
-array_from_find() { ## cSpell:Ignore BS_LAFF_
-  #.........................................................
-  # Process arguments...
-  case $# in
-  0)  #<: No Arguments: Array to `STDOUT`
-      BS_LAFF_refArray='-'
+array_from_find() { ## cSpell:Ignore BS_LA_FF_
+  #=========================================================
+  # Process Arguments
+  #=========================================================
+  case $#:${1-} in
+    0:)
+      BS_LA_FF_refArray='-'
     ;;
 
-  *)  #<: Multiple Arguments...
+    "$#":-)
+      BS_LA_FF_refArray='-'
+      shift
+      case $1 in --) shift ;; esac
+    ;;
 
-      # Determine what the first argument is...
-      case $1 in
-      -|--) BS_LAFF_refArray='-'
-            shift ;;
-        -*) BS_LAFF_refArray='-' ;;
-         *) BS_LAFF_refArray="$1"
-            fn_bs_libarray_validate_name_hyphen \
-              'array_from_find'                 \
-              "${BS_LAFF_refArray}"             || return $?
-            shift
-            case ${1-} in --) shift ;; esac ;;
-      esac
+    "$#":--)
+      BS_LA_FF_refArray='-'
+      shift
+    ;;
 
-      # Check for prohibited predicates in the
-      # remaining arguments...
-      case $# in
-      0)  ;;
-      *)  case $* in
-          -print*|*[!-]-print*)
-            fn_bs_libarray_invalid_args \
-                  'array_from_find'     \
-                  'the "-print" predicate can not be used here'
-            return "${c_BS_LIBARRAY__EX_USAGE}" ;;
-          esac ;; #<: `case $* in`
-      esac ;; #<: `case $# in`
+    "$#":-[!-]*)
+      BS_LA_FF_refArray='-'
+    ;;
+
+    *)
+      BS_LA_FF_refArray=$1
+      fn_bs_libarray_validate_name_hyphen \
+        'array_from_find'                 \
+        "${BS_LA_FF_refArray}"             || return $?
+      shift
+      case ${1-} in --) shift ;; esac
+    ;;
   esac #<: `case $# in`
-  #.........................................................
 
-  BS_LAFF_Array="$(
+  #=========================================================
+  #
+  #=========================================================
+  BS_LA_FF_Array=$(
       {
         find  ${1+"$@"} \
-              '-exec' 'sh' \
-                      '-c' "${BS_LIBARRAY_SH_TO_ARRAY}" \
-                           'BS_LIBARRAY_SH_TO_ARRAY'    \
-                           '{}' '+'
+              -exec sh -c "${BS_LIBARRAY_SH_TO_ARRAY}" \
+                          'BS_LIBARRAY_SH_TO_ARRAY'    \
+                          '{}' '+'
       } && {
         echo ' '
       }
-    )" || return $?
+    ) || return $?
 
-  case ${BS_LAFF_refArray} in
-  -) printf '%s\n' "${BS_LAFF_Array}" ;;                    #< OUTPUT
-  *) eval "${BS_LAFF_refArray}=\"\${BS_LAFF_Array}\"" ;;    #< SAVE
+  #=========================================================
+  # Save/Output
+  #=========================================================
+  case ${BS_LA_FF_refArray} in
+  -) printf '%s\n' "${BS_LA_FF_Array}" ;;                    #< OUTPUT
+  *) eval "${BS_LA_FF_refArray}=\${BS_LA_FF_Array}" ;;        #< SAVE
   esac
-}
+} #<: `array_from_find()`
 
 #_______________________________________________________________________________
 #: ---------------------------------------------------------
@@ -5842,10 +8526,9 @@ array_from_find() { ## cSpell:Ignore BS_LAFF_
 #:     # and both store in an array AND print to STDOUT
 #:     array_from_find_allow_print 'Array' 5,7 -- -L "$PWD" -type l -print
 #:
-#: _NOTES_
-#: <!-- -->
+#: _CAVEATS_
+#: <!--  -->
 #:
-#: - Implemented using [`BS_LIBARRAY_SH_TO_ARRAY`](#bs_libarray_sh_to_array)
 #: - Requires `sh` is an available command that can execute a simple shell
 #:   script with the `-c` option, as specified in the _POSIX.1_ standard.
 #: - The array is built by appending an `-exec` primary to any passed primaries,
@@ -5854,68 +8537,94 @@ array_from_find() { ## cSpell:Ignore BS_LAFF_
 #:   to the command. This can result in unintended output when using the `-o`
 #:   primary, where properly grouping primaries (using `(`
 #:   (`<left-parenthesis>`), and `)` (`<right-parenthesis>`)) is essential.
-#: - This is likely to be of limited use; capturing the output from the
-#:   `find` primaries would require a subshell meaning that the generated
-#:   array would **only** be available _within_ that subshell.
+#: - Some implementations of `find` allow it to be invoked without any
+#:   arguments, or with arguments but without any paths. This is supported
+#:   by this command if supported by the current platform.
 #: - To support output from `find` primaries and also generate an array it
 #:   is necessary to redirect output. If the file descriptors used are
 #:   already in use this **will** cause errors.
+#:
+#: _NOTES_
+#: <!-- -->
+#:
+#: - Implemented using [`BS_LIBARRAY_SH_TO_ARRAY`](#bs_libarray_sh_to_array)
+#: - [`array_from_find_allow_print`](#array_from_find_allow_print) is provided
+#:   if `find` primaries that generate output are required.
+#: - This is likely to be of limited use; capturing the output from the
+#:   `find` primaries would require a subshell meaning that the generated
+#:   array would **only** be available _within_ that subshell.
 #: - The _POSIX.1_ standard _allows_ for multi-digit file descriptors, however
 #:   only _requires_ support for single-digit descriptors and at least some
 #:   common implementations do not support multi-digit file descriptors, so
 #:   they are not permitted for use here.
 #:
 #_______________________________________________________________________________
-array_from_find_allow_print() { ## cSpell:Ignore BS_LAFFAP_
-  BS_LAFFAP_FD_1="${c_BS_LIBARRAY_CFG__find_fd_1}"
-  BS_LAFFAP_FD_2="${c_BS_LIBARRAY_CFG__find_fd_2}"
+array_from_find_allow_print() { ## cSpell:Ignore BS_LA_FFAP_
+  #=========================================================
+  # Set defaults
+  #=========================================================
+  BS_LA_FFAP_FD_1=${c_BS_LIBARRAY_CFG__find_fd_1}
+  BS_LA_FFAP_FD_2=${c_BS_LIBARRAY_CFG__find_fd_2}
 
-  #.........................................................
+  #=========================================================
   # Process arguments...
+  #=========================================================
   case $# in
-  0)  #<: No Arguments: Error
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # INVALID
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    0)
       fn_bs_libarray_expected             \
         'array_from_find_allow_print'     \
         'an output variable'              \
         'two file descriptors (optional)' \
         'arguments for find (optional)'
       return "${c_BS_LIBARRAY__EX_USAGE}"
-    ;;
+    ;; #<: `0)`
 
-  1)  #<: Single Argument: Must be an output variable
-      BS_LAFFAP_refArray="$1"
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Single Argument: Must be an output variable
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    1)
+      BS_LA_FFAP_refArray=$1
       fn_bs_libarray_validate_name    \
         "array_from_find_allow_print" \
-        "${BS_LAFFAP_refArray}"       || return $?
-      shift ;;
+        "${BS_LA_FFAP_refArray}"       || return $?
+      shift
+    ;; #<: `1)`
 
-  *)  #<: Multiple Arguments: Must be an output variable...
-      BS_LAFFAP_refArray="$1"
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Multiple Arguments: Must be an output variable...
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    *)
+      BS_LA_FFAP_refArray=$1
       fn_bs_libarray_validate_name    \
         "array_from_find_allow_print" \
-        "${BS_LAFFAP_refArray}"       || return $?
+        "${BS_LA_FFAP_refArray}"       || return $?
       shift
 
       # ... _MAY_ be followed by file descriptors
       case $1 in
       [3456789],[3456789])
-        BS_LAFFAP_FD_1="${1%,?}"
-        BS_LAFFAP_FD_2="${1#?,}"
-        case $((BS_LAFFAP_FD_1 - BS_LAFFAP_FD_2)) in
-        0)  fn_bs_libarray_invalid_args     \
-              'array_from_find_allow_print' \
-              "file descriptors '$1' must be different values"
-            return "${c_BS_LIBARRAY__EX_USAGE}" ;;
+        BS_LA_FFAP_FD_1=${1%,?}
+        BS_LA_FFAP_FD_2=${1#?,}
+        case ${BS_LA_FFAP_FD_1} in
+        "${BS_LA_FFAP_FD_2}")
+          fn_bs_libarray_invalid_args     \
+            'array_from_find_allow_print' \
+            "file descriptors '$1' must be different values"
+          return "${c_BS_LIBARRAY__EX_USAGE}"
+        ;;
         esac
         shift ;;
       esac #<: `case $1 in`
 
       # ... _MAY_ be followed the XBD special arg `--`
-      case ${1-} in --) shift; esac ;;
+      case ${1-} in --) shift; esac
+    ;; #<: `*)`
   esac #<: `case $# in`
-  #.........................................................
 
-  #.........................................................
+  #=========================================================
   # Run command...
   #
   # In order to do dynamic redirection use of `eval` is
@@ -5929,29 +8638,27 @@ array_from_find_allow_print() { ## cSpell:Ignore BS_LAFFAP_
   # long expression into more easily understandable blocks,
   # however many seemingly optional braces are actually
   # required for redirection to work correctly.
-  eval "
+  #=========================================================
+  eval '
       {
-        ${BS_LAFFAP_refArray}=\"\$(
+        '"${BS_LA_FFAP_refArray}"'=$(
             {
               {
-                find ${1+\"\$@\"} \
-                    '-exec' 'sh' '-c' \
-                    \"
-                      {
-                        \${BS_LIBARRAY_SH_TO_ARRAY}
-                      } >&${BS_LAFFAP_FD_1}
-                    \" \
-                    'BS_LIBARRAY_SH_TO_ARRAY' \
-                    '{}' '+' >&${BS_LAFFAP_FD_2}
+                find ${1+"$@"} -exec sh -c \
+                    " {
+                        ${BS_LIBARRAY_SH_TO_ARRAY}
+                      } >&'"${BS_LA_FFAP_FD_1}"'
+                    " \
+                    BS_LIBARRAY_SH_TO_ARRAY \
+                    "{}" "+" >&'"${BS_LA_FFAP_FD_2}"'
               } && {
-                echo ' ' >&${BS_LAFFAP_FD_1}
+                echo " " >&'"${BS_LA_FFAP_FD_1}"'
               }
-            } ${BS_LAFFAP_FD_1}>&1
-          )\"
-      } ${BS_LAFFAP_FD_2}>&1
-    "
-  #.........................................................
-}
+            } '"${BS_LA_FFAP_FD_1}"'>&1
+          )
+      } '"${BS_LA_FFAP_FD_2}"'>&1
+    '
+} #<: `array_from_find_allow_print()`
 
 #_______________________________________________________________________________
 #: ---------------------------------------------------------
@@ -5981,40 +8688,43 @@ array_from_find_allow_print() { ## cSpell:Ignore BS_LAFFAP_
 #: _NOTES_
 #: <!-- -->
 #:
-#: - An empty or unset `ARRAY` is _not_ a valid map.
-#: - Exit status will be `0` (`<zero>`) if `ARRAY` appears to be a valid map,
+#: - An empty or unset `ARRAY` is _not_ a valid array.
+#: - Exit status will be `0` (`<zero>`) if `ARRAY` appears to be a valid array,
 #:   while the exit status will be `1` (`<one>`) in all other (non-error) cases.
 #:
 #_______________________________________________________________________________
-array_is_array() { ## cSpell:Ignore BS_LAAIA_
+array_is_array() { ## cSpell:Ignore BS_LA_AIA_
+  #=========================================================
+  # Process Arguments
+  #=========================================================
   case $# in
-  1)  BS_LAAIA_refArray="$1" ;;
+  1)  BS_LA_AIA_refArray=$1 ;;
   *)  fn_bs_libarray_expected \
         'array_is_array'      \
         'an array variable'
       return "${c_BS_LIBARRAY__EX_USAGE}" ;;
-  esac #<: `case $# in`
+  esac
 
-  #---------------------------------------------------------
+  #=========================================================
   # Validate
-  #---------------------------------------------------------
+  #=========================================================
   fn_bs_libarray_validate_name \
     'array_is_array'           \
-    "${BS_LAAIA_refArray}"     || return $?
+    "${BS_LA_AIA_refArray}"     || return $?
 
-  #---------------------------------------------------------
+  #=========================================================
   # Unpack
-  #---------------------------------------------------------
-  eval "BS_LAAIA_Array=\"\${${BS_LAAIA_refArray}-}\"" || return $?
+  #=========================================================
+  eval "BS_LA_AIA_Array=\${${BS_LA_AIA_refArray}-}" || return $?
 
-  #---------------------------------------------------------
+  #=========================================================
   #
-  #---------------------------------------------------------
-  case ${BS_LAAIA_Array-} in
+  #=========================================================
+  case ${BS_LA_AIA_Array?} in
   "'"*"' \\${c_BS_LIBARRAY__newline} ") return 0 ;;
                                      *) return 1 ;;
   esac
-} #< `array_is_array()`
+} #<: `array_is_array()`
 
 #===============================================================================
 #===============================================================================
@@ -6038,39 +8748,97 @@ fn_bs_libarray_readonly 'BS_LIBARRAY_SOURCED'
 #.
 #. ## VERSIONS
 #.
-#. v1.2.0        - [NEW] Added [`array_is_array`](#array_is_array).
-#.               - [NEW] [`array_split`](#array_split) now has multiple ways of
-#.                 splitting text.
-#.               - [FIX] (PORTABILITY) Added trailing '\n' to `printf` - without
-#.                 it some implementations will effectively discard the last
-#.                 line of data.
-#.               - [FIX] (PORTABILITY) Rewrote `awk` scripts to better match
-#.                 platform capabilities. (All `awk` usage has changed
-#.                 considerably.)
-#.               - [FIX] (PORTABILITY) Added workarounds for `sed` where '\n'
-#.                 in a replacement expression does not result in a `<newline>`.
-#.                 (New configuration variable:
-#.                 [`BS_LIBARRAY_CONFIG_NO_SED_SLASH_N_NEWLINE`](#bs_libarray_config_no_sed_slash_n_newline))
-#.               - [FIX] (PORTABILITY) Changed `sed` scripts to avoid long
-#.                 label names and remove grouping with `{` when not required.
-#.               - [FIX] (PORTABILITY) Minor changes to some `case` statements
-#.                 which should now be more portable, though never showed any
-#.                 issues (e.g. add `;;` to some statements where it was missing
-#.                 even though this was permitted.)
-#.               - [FIX] (PORTABILITY) Use null string instead of no arguments
-#.                 for `echo` when intent is only to output a `<newline>`.
-#.               - [FIX] (PORTABILITY) Minor changes to parameter expansion to
-#.                 avoid issues with ksh88.
+#. v2.0.0       - \[NEW] Added simple debugging output (disabled by default),
+#.                controlled by `BS_LIBARRAY_DEBUG`, `BS_LIBARRAY_CONFIG_DEBUG`,
+#.                and `BS_LIBARRAY_DEBUG_FD`.
+#.              - \[CHANGE] **BREAKING** Rewrote pattern matching - new code
+#.                fixes several issues, but changes how some matches are made.
+#.                Affects [`array_remove`](#array_remove),
+#.                [`array_search`](#array_search),
+#.                [`array_contains`](#array_contains), and
+#.                [`array_split`](#array_split).
+#.              - \[CHANGE] **BREAKING** Command options now _MUST_ precede any
+#.                non-option arguments. This better matches the standard and
+#.                other suite libraries. Affects
+#.                [`array_from_path`](#array_from_path).
+#.              - \[CHANGE] **BREAKING** [`array_printf`](#array_printf) no
+#.                longer writes anything for empty arrays (previously a
+#.                single `<newline>` would be written).
+#.              - \[CHANGE] Large rewrite of much of the library: fixing
+#.                issues, improving security, removing unnecessary code,
+#.                homogenizing command interfaces, and more. (In some cases
+#.                this has _changed_ or even _reduced_ functionality.)
+#.              - \[CHANGE] _(PORTABILITY)_ Removed some portability branches
+#.                and replaced with alternative code that works in all versions.
+#.                (Most notably related to `sed`.) The previously
+#.                available `BS_LIBARRAY_CONFIG_NO_SED_SLASH_N_NEWLINE` is now
+#.                ignored.
+#.              - \[CHANGE] Commands that support pattern matching now support
+#.                all forms. (Previously some commands supported only a
+#.                subset.)
+#.              - \[CHANGE] Modified `awk` scripts to remove unnecessary
+#.                function usage, increase security and robustness. (Especially
+#.                relevant to the [`array_split`](#array_split) function which
+#.                is much changed in this regard.)
+#.              - \[CHANGE] Removed checks for `-print` options to `find` for
+#.                [`array_from_find`](#array_from_find) as it was brittle and
+#.                unlikely to be much help.
+#.              - \[CHANGE] _(PERFORMANCE)_ Added code path to use `awk` `ARGV`
+#.                if possible - this can drastically improve performance in
+#.                cases when it can be used. Added a new configuration variable
+#.                [BS_LIBARRAY_CONFIG_NO_AWK_ARGV](#bs_libarray_config_no_awk_argv)
+#.                to disable it if required.
+#.              - \[CHANGE] _(PERFORMANCE)_ Inlined some code where the common
+#.                case would likely much slower otherwise.
+#.              - \[CHANGE] Other clean-ups and refactoring.
+#.              - \[CHANGE] Documentation updates/fixes.
+#.              - \[FIX] _(PORTABILITY)_ Changed parameter expansion of the form
+#.                `${parameter:?[word]}` to use a fixed string, or a workaround
+#.                for `zsh` which fails to expand parameters used in `word`.
+#.              - \[FIX] _(PORTABILITY)_ changed some parameter expansions to
+#.                ensure that meta-characters where safe (e.g. `#` to `[#]`).
+#.              - \[FIX] _(PORTABILITY)_ Replaced all usage of `expr` with
+#.                `sed`. Although `expr` is often significantly faster, it also
+#.                has many more portability issues - many of which are
+#.                impossible to catch when using user supplied expressions. The
+#.                previously available `BS_LIBARRAY_CONFIG_NO_EXPR_BRE_MATCH` is
+#.                now ignored.
+#.              - \[FIX] Changed [`array_from_path`](#array_from_path) to avoid
+#.                erroneous output in edge cases. Also now enables globbing as
+#.                if it is disabled via shell options nothing would be
+#.                generated (enabling is scoped appropriately). Additional fix
+#.                to avoid an error when `ls` does not support `-q`.
 #.
-#. v1.0.1        - [FIX] Fixed error with `shift` in
-#.                 [`fn_bs_libarray_error`](#fn_bs_libarray_error) that would
-#.                 cause parameters to appear incorrectly in the error message
-#.                 (only affected calls with multiple parameters).
+#. v1.2.0       - \[NEW] Added [`array_is_array`](#array_is_array).
+#.              - \[NEW] [`array_split`](#array_split) now has multiple ways of
+#.                splitting text.
+#.              - \[FIX] _(PORTABILITY)_ Added trailing '\n' to `printf` -
+#.                without it some implementations will effectively discard the
+#.                last line of data.
+#.              - \[FIX] _(PORTABILITY)_ Rewrote `awk` scripts to better match
+#.                platform capabilities. (All `awk` usage has changed
+#.                considerably.)
+#.              - \[FIX] _(PORTABILITY)_ Added workarounds for `sed` where '\n'
+#.                in a replacement expression does not result in a `<newline>`.
+#.                (New configuration variable:
+#.                [`BS_LIBARRAY_CONFIG_NO_SED_SLASH_N_NEWLINE`](#bs_libarray_config_no_sed_slash_n_newline))
+#.              - \[FIX] _(PORTABILITY)_ Changed `sed` scripts to avoid long
+#.                label names and remove grouping with `{` when not required.
+#.              - \[FIX] _(PORTABILITY)_ Minor changes to some `case` statements
+#.                which should now be more portable, though never showed any
+#.                issues (e.g. add `;;` to some statements where it was missing
+#.                even though this was permitted.)
+#.              - \[FIX] _(PORTABILITY)_ Use null string instead of no arguments
+#.                for `echo` when intent is only to output a `<newline>`.
+#.              - \[FIX] _(PORTABILITY)_ Minor changes to parameter expansion to
+#.                avoid issues with ksh88.
 #.
-#. v1.0.0        - First Release
+#. v1.0.1       - \[FIX] Fixed error with `shift` in
+#.                [`fn_bs_libarray_error`](#fn_bs_libarray_error) that would
+#.                cause parameters to appear incorrectly in the error message
+#.                (only affected calls with multiple parameters).
 #.
-#. ### VERSION 1.2.0: PORTABILITY
-#.
+#. v1.0.0       - First Release
 #.
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
@@ -6081,7 +8849,7 @@ fn_bs_libarray_readonly 'BS_LIBARRAY_SOURCED'
 #: - [Semantic Versioning v2.0.0][semver].
 #: - [Inclusive Naming Initiative][inclusivenaming].
 #:
-#: _For more details see the common suite [documentation](./README.MD#standards)._
+#: _For more details see the `shtoolkit` general [documentation](./README.MD#standards)._
 #:
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
@@ -6142,44 +8910,42 @@ fn_bs_libarray_readonly 'BS_LIBARRAY_SOURCED'
 #:   another array is preferable (i.e. save the _name_ of
 #:   a variable that contains the second array).
 #:
-#: <!-- ------------------------------------------------ -->
-#:
-#. ## IMPLEMENTATION NOTES
-#. <!-- -------------- -->
-#.
-#. - Unpacking array variables passed to commands by
-#.   name (aka reference) need TWO `eval` commands to
-#.   correctly set positional parameters. While it seems
-#.   like these could be combined into a single `eval`
-#.   this is not possible; dereferencing the variable
-#.   then unpacking the array have to happen separately.
-#.
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
 #: ## CAVEATS
 #:
-#: The maximum size of any array is limited by the environment in which it is
-#: used, specifically no array will be able to exceed the command line length
-#: limit, though other limitations may also exist.
+#: - The library attempts to account for differences between implementations
+#:   (where known), however, it is not possible to do this for every case.
+#: - The maximum size of any array is limited by the environment in which it is
+#:   used. Of particular note is that exceeding the command line length limit
+#:   will cause arrays to be unusable in many (platform dependent)
+#:   circumstances, though other limitations will also exist. Note that
+#:   exporting a variable containing an array will cause that variable to be
+#:   counted against the command line length limit **TWICE** if the array is
+#:   also used with a command.
 #:
-#: Note that exporting a variable containing an array will cause that variable
-#: to be counted against the command line length limit **TWICE** (for any array
-#: operations).
-#:
-#: _For more details see the common suite [documentation](./README.MD#caveats)._
+#: _See also the common [documentation](./README.MD#caveats)._
 #:
 #% <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #%
 #% ## SEE ALSO
 #%
-#% betterscripts(7)
+#% shtoolkit(7)
 #%
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #: <!-- REFERENCES -->
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
+#: [markdown]:                  <https://daringfireball.net/projects/markdown/syntax>                                                "Markdown: Syntax [daringfireball.net]"
+#: [commonmark]:                <https://commonmark.org/>                                                                            "CommonMark [spec.commonmark.org]"
+#: [commonmark_spec]:           <https://spec.commonmark.org/current/>                                                               "CommonMark Spec (current) [spec.commonmark.org]"
+#:
 #: [posix]:                     <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition>                                       "POSIX.1-2008 \[pubs.opengroup.org\]"
-#: [posix_2017]:                <https://pubs.opengroup.org/onlinepubs/9699919799>                                                   "POSIX.1-2017 \[pubs.opengroup.org\]"
+#: [posix_2013]:                <https://pubs.opengroup.org/onlinepubs/9699919799.2013edition>                                       "POSIX.1-2013 \[pubs.opengroup.org\]"
+#: [posix_2016]:                <https://pubs.opengroup.org/onlinepubs/9699919799.2016edition>                                       "POSIX.1-2016 \[pubs.opengroup.org\]"
+#: [posix_2018]:                <https://pubs.opengroup.org/onlinepubs/9699919799.2018edition>                                       "POSIX.1-2018 \[pubs.opengroup.org\]"
+#: [posix_2024]:                <https://pubs.opengroup.org/onlinepubs/9799919799.2024edition>                                       "POSIX.1-2024 \[pubs.opengroup.org\]"
+#:
 #: [posix_bre]:                 <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap09.html#tag_09_03>     "Basic Regular Expression \[pubs.opengroup.org\]"
 #: [posix_ere]:                 <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap09.html#tag_09_04>     "Extended Regular Expression \[pubs.opengroup.org\]"
 #: [posix_re_bracket_exp]:      <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap09.html#tag_09_03_05>  "RE Bracket Expression \[pubs.opengroup.org\]"
@@ -6188,8 +8954,11 @@ fn_bs_libarray_readonly 'BS_LIBARRAY_SOURCED'
 #: [posix_utility_conventions]: <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap12.html>               "POSIX: Utility Conventions \[pubs.opengroup.org\]"
 #: [posix_variable]:            <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap03.html#tag_03_230>    "Definitions: Name \[pubs.opengroup.org\]"
 #: [posix_execl]:               <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/functions/execl.html>                  "execl \[pubs.opengroup.org\]"
+#: [posix_chars]:               <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap06.html#tag_06_01>     "Portable Character Set \[pubs.opengroup.org\]"
+#: [posix_glob]:                <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/utilities/V3_chap02.html#tag_18_13>    "Pattern Matching Notation \[pubs.opengroup.org\]"
 #:
 #: [sysexits]:                  <https://www.freebsd.org/cgi/man.cgi?sysexits(3)>                                                    "FreeBSD SYSEXITS(3) \[freebsd.org\]"
+#:
 #: [semver]:                    <https://semver.org/>                                                                                "Semantic Versioning \[semver.org\]"
 #:
 #: [util_linux]:                <https://git.kernel.org/pub/scm/utils/util-linux/util-linux.git/about/>                              "util-linux (about) \[git.kernel.org\]"
@@ -6198,7 +8967,12 @@ fn_bs_libarray_readonly 'BS_LIBARRAY_SOURCED'
 #:
 #: [man_page]:                  <https://wikipedia.org/wiki/Man_page>                                                                "man page \[wikipedia.org\]"
 #:
-#: [autoconf_portable]:         <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Portable-Shell.html>           "autoconf: Portable Shell Programming \[gnu.org\]"
+#: [autoconf_portable]:         <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Portable-Shell.html>                  "autoconf: Portable Shell Programming \[gnu.org\]"
+#: [autoconf_awk]:              <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Limitations-of-Usual-Tools.html#awk>  "autoconf: Limitations of Usual Tools \[gnu.org\]"
+#: [autoconf_sed]:              <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Limitations-of-Usual-Tools.html#sed>  "autoconf: Limitations of Usual Tools \[gnu.org\]"
+#: [autoconf_grep]:             <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Limitations-of-Usual-Tools.html#grep> "autoconf: Limitations of Usual Tools \[gnu.org\]"
+#:
+#: [inclusivenaming]:           <https://inclusivenaming.org/>                                                                       "Inclusive Naming Initiative \[inclusivenaming.org\]"
 #:
 ################################################################################
 

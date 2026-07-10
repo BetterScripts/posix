@@ -1,0 +1,753 @@
+#!/usr/bin/env false
+# SPDX-License-Identifier: MPL-2.0
+#################################### LICENSE ###################################
+#******************************************************************************#
+#*                                                                            *#
+#* BetterScripts 'libpath/failure': Tests for 'libpath' failure conditions.   *#
+#*                                                                            *#
+#* Copyright (c) 2026 BetterScripts ( better.scripts@proton.me,               *#
+#*                                    https://github.com/BetterScripts )      *#
+#*                                                                            *#
+#* This file is part of the BetterScripts `shtoolkit` (aka _the suite_).      *#
+#*                                                                            *#
+#* This Source Code Form is subject to the terms of the Mozilla Public        *#
+#* License, v. 2.0. If a copy of the MPL was not distributed with this        *#
+#* file, You can obtain one at https://mozilla.org/MPL/2.0/.                  *#
+#*                                                                            *#
+#* -------------------------------------------------------------------------- *#
+#*                                                                            *#
+#* ADDENDUM:                                                                  *#
+#*                                                                            *#
+#* In addition to the Mozilla Public License a copy of LICENSE.MD should have *#
+#* been provided alongside this file; LICENSE.MD clarifies how the Mozilla    *#
+#* Public License v2.0 applies to this file and MAY confer additional rights. *#
+#*                                                                            *#
+#* Should there be any apparent ambiguity (implied or otherwise) the terms    *#
+#* and conditions from the Mozilla Public License v2.0 shall apply.           *#
+#*                                                                            *#
+#* If a copy of LICENSE.MD was not provided it can be obtained from           *#
+#* https://github.com/BetterScripts/shtoolkit/LICENSE.MD.                     *#
+#*                                                                            *#
+#* NOTE:                                                                      *#
+#*                                                                            *#
+#* The Mozilla Public License v2.0 is compatible with the GNU General Public  *#
+#* License v2.0.                                                              *#
+#*                                                                            *#
+#******************************************************************************#
+################################################################################
+
+############################### LIBPATH/FAILURE ###############################
+#
+# Documentation is written inline formatted as [`Markdown`][markdown], this is
+# in addition to `shtoolkit` general documentation which includes details
+# common to multiple libraries that may not be noted here.
+#
+# The included `Makefile` can be used to generate standalone documentation in
+# various formats with various verbosity settings. The `Makefile` can also be
+# used to install scripts and documentation in appropriate locations.
+#
+# As far as possible, terminology and conventions follow those of the
+# [_POSIX.1-2008_ Standard][posix_2008].
+#
+#===============================================================================
+## cSpell:Ignore libpath testrunner testwrapper LPTF
+################################ DOCUMENTATION #################################
+#
+#% % libpath-failure(7) BetterScripts | Tests for 'libpath' failure conditions.
+#% % BetterScripts (better.scripts@proton.me)
+#
+#: <!-- #################################################################### -->
+#: <!-- ########## THIS FILE WAS GENERATED FROM 'libpath/failure' ######### -->
+#: <!-- #################################################################### -->
+#: <!-- ########################### DO NOT EDIT! ########################### -->
+#: <!-- #################################################################### -->
+#:
+#: # LIBPATH/FAILURE
+#:
+#
+#  libpath Test Failure (LPTF)
+#  ============================
+#
+#  Tests for `libpath` checking failure conditions.
+#
+################################################################################
+
+############################## SHELLCHECK: GLOBAL ##############################
+# shellcheck shell=sh                                                          #
+#                                                                              #
+# Enable some optional checks:                                                 #
+#                                                                              #
+# shellcheck enable=avoid-nullary-conditions                                   #
+# shellcheck enable=check-extra-masked-returns                                 #
+# shellcheck enable=deprecate-which                                            #
+# shellcheck enable=require-variable-braces                                    #
+#                                                                              #
+################################################################################
+
+#===============================================================================
+#===============================================================================
+#  TESTS
+#===============================================================================
+#===============================================================================
+
+#_______________________________________________________________________________
+#  fn_bs_lptf_path_basename_usage
+#  --------------------
+#
+#  TESTS:   `path_basename` (usage errors)
+#_______________________________________________________________________________
+fn_bs_lptf_path_basename_usage() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (missing `PATH`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      path_basename           \
+        'TestPath'            || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*path_basename.*expected.*a path.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      path_basename           \
+        'Bad::Name'           \
+        '/dev/null'           || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*path_basename.*invalid variable name.*' || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lptf_path_dirname_usage
+#  --------------------
+#
+#  TESTS:   `path_dirname` (usage errors)
+#_______________________________________________________________________________
+fn_bs_lptf_path_dirname_usage() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (missing `PATH`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      path_dirname            \
+        'TestPath'            || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*path_dirname.*expected.*a path.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      path_dirname            \
+        '1BadName'            \
+        '/dev/null'           || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*path_dirname.*invalid variable name.*' || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lptf_path_pwd_usage
+#  --------------------
+#
+#  TESTS:   `path_pwd` (usage errors)
+#_______________________________________________________________________________
+fn_bs_lptf_path_pwd_usage() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (missing `VARIABLE`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      path_pwd                || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*path_pwd.*expected.*an output variable.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      path_pwd                \
+        'Bad::Name'           || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*path_pwd.*invalid variable name.*' || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lptf_path_serial_usage
+#  --------------------
+#
+#  TESTS:   `path_serial` (usage errors)
+#_______________________________________________________________________________
+fn_bs_lptf_path_serial_usage() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (missing `PATH`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      path_serial             || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*path_serial.*expected.*a path.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (too many arguments)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      path_serial             \
+        'A' 'B' 'C' 'D'       || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*path_serial.*expected.*a path.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      path_serial             \
+        'Bad::Name'           \
+        '/dev/null'           || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*path_serial.*invalid variable name.*' || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lptf_path_size_usage
+#  --------------------
+#
+#  TESTS:   `path_size` (usage errors)
+#_______________________________________________________________________________
+fn_bs_lptf_path_size_usage() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (missing `PATH`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      path_size               || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*path_size.*expected.*a path.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (too many arguments)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      path_size               \
+        'A' 'B' 'C' 'D'       || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*path_size.*expected.*a path.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      path_size               \
+        'Bad::Name'           \
+        '/dev/null'           || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*path_size.*invalid variable name.*' || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lptf_path_owner_usage
+#  --------------------
+#
+#  TESTS:   `path_owner` (usage errors)
+#_______________________________________________________________________________
+fn_bs_lptf_path_owner_usage() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (missing `PATH`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      path_owner              || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*path_owner.*expected.*a path.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (too many arguments)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      path_owner              \
+        'A' 'B' 'C'           || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*path_owner.*expected.*a path.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      path_owner              \
+        'Bad::Name'           \
+        '/dev/null'           || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*path_owner.*invalid variable name.*' || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lptf_path_mode_usage
+#  --------------------
+#
+#  TESTS:   `path_mode` (usage errors)
+#_______________________________________________________________________________
+fn_bs_lptf_path_mode_usage() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (missing `PATH`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      path_mode               || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*path_mode.*expected.*a path.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (too many arguments)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      path_mode               \
+        'A' 'B' 'C'           || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*path_mode.*expected.*a path.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      path_mode               \
+        'Bad::Name'           \
+        '/dev/null'           || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*path_mode.*invalid variable name.*' || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lptf_path_mktemp_usage
+#  --------------------
+#
+#  TESTS:   `path_mktemp` (usage errors)
+#_______________________________________________________________________________
+fn_bs_lptf_path_mktemp_usage() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Unrecognized Option (within a combined short-option group)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      path_mktemp     -dz     || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match ".*path_mktemp.*unrecognized option '-z'.*" || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name (`--target`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      path_mktemp      -u     \
+        --target 'Bad::Name'  || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*path_mktemp.*invalid variable name.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Template Missing Required `XXX` Sequence
+  {
+    TestOutput=; unset 'TestOutput'
+    TestPath=;   unset 'TestPath'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      path_mktemp      -u     \
+        --target 'TestPath'   \
+        'noXs'                || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match ".*path_mktemp.*must contain at least 3 consecutive 'X's.*" || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Unrecognized (Extra) Arguments
+  {
+    TestOutput=; unset 'TestOutput'
+    TestPath=;   unset 'TestPath'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      path_mktemp      -u     \
+        --target 'TestPath'   \
+        'file.XXX' 'extra'    || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*path_mktemp.*unrecognized arguments.*' || return $?
+  }
+}
+
+#===============================================================================
+#===============================================================================
+#  TEST MAIN
+#===============================================================================
+#===============================================================================
+
+#_______________________________________________________________________________
+#  fn_bs_lptf_run_units
+#  --------------------
+#
+#  Run all test units for the library
+#_______________________________________________________________________________
+fn_bs_lptf_run_units() {
+  #  Ensure always at least one argument so no issues with "$@"
+  case $# in 0) set 'BS_DUMMY_PARAM' '--' && shift ;; esac
+
+  #-------------------------------------
+  #  `path_basename`
+  test_run_unit                                \
+    -u 'libpath: path_basename (usage errors)' \
+    'fn_bs_lptf_path_basename_usage'           \
+      "$@"
+
+  #-------------------------------------
+  #  `path_dirname`
+  test_run_unit                               \
+    -u 'libpath: path_dirname (usage errors)' \
+    'fn_bs_lptf_path_dirname_usage'           \
+      "$@"
+
+  #-------------------------------------
+  #  `path_pwd`
+  test_run_unit                           \
+    -u 'libpath: path_pwd (usage errors)' \
+    'fn_bs_lptf_path_pwd_usage'           \
+      "$@"
+
+  #-------------------------------------
+  #  `path_serial`
+  test_run_unit                              \
+    -u 'libpath: path_serial (usage errors)' \
+    'fn_bs_lptf_path_serial_usage'           \
+      "$@"
+
+  #-------------------------------------
+  #  `path_size`
+  test_run_unit                            \
+    -u 'libpath: path_size (usage errors)' \
+    'fn_bs_lptf_path_size_usage'           \
+      "$@"
+
+  #-------------------------------------
+  #  `path_owner`
+  test_run_unit                             \
+    -u 'libpath: path_owner (usage errors)' \
+    'fn_bs_lptf_path_owner_usage'           \
+      "$@"
+
+  #-------------------------------------
+  #  `path_mode`
+  test_run_unit                            \
+    -u 'libpath: path_mode (usage errors)' \
+    'fn_bs_lptf_path_mode_usage'           \
+      "$@"
+
+  #-------------------------------------
+  #  `path_mktemp`
+  test_run_unit                              \
+    -u 'libpath: path_mktemp (usage errors)' \
+    'fn_bs_lptf_path_mktemp_usage'           \
+      "$@"
+}
+
+################################################################################
+################################################################################
+#  TESTWRAPPER Values & Commands
+################################################################################
+################################################################################
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  FRIENDLY NAME
+BS_TEST_NAME='libpath/failure'
+export BS_TEST_NAME
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  NUMBER OF AVAILABLE CONFIGURATIONS
+BS_TEST_CONFIG_COUNT=5
+export BS_TEST_CONFIG_COUNT
+
+#_______________________________________________________________________________
+#  test_set_config
+#  ---------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_set_config() { ## cSpell:Ignore BS_TRC_
+  BS_TRC_Config=${1:?'[libpath::failure::test_run_config]: Error: expected a configuration index'}
+
+  #---------------------------------------------------------
+  case ${BS_LIBPATH_CONFIG_NO_MKTEMP:+1} in
+  1) unset BS_LIBPATH_CONFIG_NO_MKTEMP ;;
+  esac
+
+  case ${BS_LIBPATH_CONFIG_PREFER_HEXDUMP:+1} in
+  1) unset BS_LIBPATH_CONFIG_PREFER_HEXDUMP ;;
+  esac
+  case ${BETTER_SCRIPTS_CONFIG_PREFER_HEXDUMP:+1} in
+  1) unset BETTER_SCRIPTS_CONFIG_PREFER_HEXDUMP ;;
+  esac
+
+  case ${BS_LIBPATH_CONFIG_RANDOM_SOURCE:+1} in
+  1) unset BS_LIBPATH_CONFIG_RANDOM_SOURCE ;;
+  esac
+  case ${BETTER_SCRIPTS_CONFIG_RANDOM_SOURCE:+1} in
+  1) unset BETTER_SCRIPTS_CONFIG_RANDOM_SOURCE ;;
+  esac
+  #---------------------------------------------------------
+
+  #---------------------------------------------------------
+  #  Set Configuration Accordingly
+  case ${BS_TRC_Config} in
+    #...................................
+    #  CONFIG: DEFAULT
+    1) test_print_config_info 'Config: DEFAULT' ;;
+
+    #...................................
+    #  CONFIG: NO MKTEMP
+    2)  BS_LIBPATH_CONFIG_NO_MKTEMP=1
+        export BS_LIBPATH_CONFIG_NO_MKTEMP
+
+        test_print_config_info 'Config: NO_MKTEMP' ;;
+
+    #...................................
+    #  CONFIG: PREFER HEXDUMP
+    3)  BS_LIBPATH_CONFIG_NO_MKTEMP=1
+        export BS_LIBPATH_CONFIG_NO_MKTEMP
+        BETTER_SCRIPTS_CONFIG_PREFER_HEXDUMP=1
+        export BETTER_SCRIPTS_CONFIG_PREFER_HEXDUMP
+
+        test_print_config_info                 \
+          'Config: NO_MKTEMP + PREFER_HEXDUMP' \
+          'Type:   INVALID USAGE'              ;;
+
+    #...................................
+    #  CONFIG: RANDOM SOURCE
+    4)  BS_LIBPATH_CONFIG_NO_MKTEMP=1
+        export BS_LIBPATH_CONFIG_NO_MKTEMP
+        BS_LIBPATH_CONFIG_RANDOM_SOURCE='/dev/random'
+        export BS_LIBPATH_CONFIG_RANDOM_SOURCE
+
+        test_print_config_info                \
+          'Config: NO_MKTEMP + RANDOM_SOURCE' \
+          'Type:   INVALID USAGE'             ;;
+
+    #...................................
+    #  CONFIG: `awk`
+    5)  BS_LIBPATH_CONFIG_NO_MKTEMP=1
+        export BS_LIBPATH_CONFIG_NO_MKTEMP
+        BS_LIBPATH_CONFIG_RANDOM_SOURCE='awk'
+        export BS_LIBPATH_CONFIG_RANDOM_SOURCE
+
+        test_print_config_info                    \
+          'Config: NO_MKTEMP + RANDOM_SOURCE=awk' \
+          'Type:   INVALID USAGE'                 ;;
+
+    #...................................
+    #  CONFIG: UNKNOWN
+    *)  return 1 ;;
+  esac
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  NUMBER OF AVAILABLE CONFIGURATIONS
+BS_TEST_PLATFORM_CONFIG_COUNT=2
+export BS_TEST_PLATFORM_CONFIG_COUNT
+
+#_______________________________________________________________________________
+#  test_set_platform_config
+#  ---------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_set_platform_config() { ## cSpell:Ignore BS_TRC_
+  BS_TRC_PlatformConfig=${1:?'[libpath::failure::test_run_config]: Error: expected a configuration index'}
+
+  #---------------------------------------------------------
+  #  Set Configuration Accordingly
+  case ${BS_TRC_PlatformConfig} in
+    #...................................
+    #
+    0) ;;
+
+    #...................................
+    #  CONFIG: EXTENDED_FILE_MODE_FORMAT (posix)
+    1)
+      : "${BS_LIBPATH_CONFIG_EXTENDED_FILE_MODE_FORMAT:=posix}"
+      export BS_LIBPATH_CONFIG_EXTENDED_FILE_MODE_FORMAT
+
+      test_print_config_info 'Platform Config: EXTENDED_FILE_MODE_FORMAT (posix)' ;;
+
+    #...................................
+    #  CONFIG: EXTENDED_FILE_MODE_FORMAT (solaris)
+    2)
+      : "${BS_LIBPATH_CONFIG_EXTENDED_FILE_MODE_FORMAT:=solaris}"
+      export BS_LIBPATH_CONFIG_EXTENDED_FILE_MODE_FORMAT
+
+      test_print_config_info 'Platform Config: EXTENDED_FILE_MODE_FORMAT (solaris)' ;;
+
+    #...................................
+    #  CONFIG: UNKNOWN
+    *)  return 1 ;;
+  esac
+}
+
+#_______________________________________________________________________________
+#  test_check_config
+#  ---------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_check_config() { ## cSpell:Ignore BS_TCC_
+  #---------------------------------------------------------
+  #  Get Library File
+  BS_TCC_Library=${1:?'[libpath::failure::test_check_config]: Error: expected a library to source'}
+  shift
+
+  return
+}
+
+#_______________________________________________________________________________
+#  test_run_all
+#  ------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_run_all() { ## cSpell:Ignore BS_TRC_
+  #---------------------------------------------------------
+  #  Get Library File
+  BS_TRC_Library=${1:?'[libpath::failure::test_run_config]: Error: expected a library to source'}
+  shift
+
+  #---------------------------------------------------------
+  test_print_config_info 'Type: INVALID USAGE'
+  #---------------------------------------------------------
+
+  #---------------------------------------------------------
+  # Source the tool
+  # shellcheck source=SCRIPTDIR/../../libpath.sh
+  . "${BS_TRC_Library:?}" || return $?
+  #---------------------------------------------------------
+
+  #---------------------------------------------------------
+  #  Run the tests
+  fn_bs_lptf_run_units ${1+"$@"}
+  #---------------------------------------------------------
+}
+
+############################ DOCUMENTATION CONTINUED ###########################
+#. <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+#.
+#. ## VERSIONS
+#.
+#. v1.0.0       - First Release
+#.
+################################################################################
+
+################################################################################
+################################################################################
+# END
+################################################################################
+################################################################################

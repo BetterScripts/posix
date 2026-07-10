@@ -1,16 +1,16 @@
 #!/usr/bin/env false
-# shellcheck shell=sh
 # SPDX-License-Identifier: MPL-2.0
+## cSpell:Ignore libdeque shtoolkit
 #################################### LICENSE ###################################
 #******************************************************************************#
 #*                                                                            *#
 #* BetterScripts 'libdeque': Simple queue, deque, and stack emulation for     *#
 #*                           POSIX.1 compliant shells.                        *#
 #*                                                                            *#
-#* Copyright (c) 2022 BetterScripts ( better.scripts@proton.me,               *#
-#*                                    https://github.com/BetterScripts )      *#
+#* Copyright (c) 2022-2026 BetterScripts ( better.scripts@proton.me,          *#
+#*                         https://github.com/BetterScripts )                 *#
 #*                                                                            *#
-#* This file is part of the BetterScripts POSIX Suite.                        *#
+#* This file is part of the BetterScripts `shtoolkit` (aka _the suite_).      *#
 #*                                                                            *#
 #* This Source Code Form is subject to the terms of the Mozilla Public        *#
 #* License, v. 2.0. If a copy of the MPL was not distributed with this        *#
@@ -21,14 +21,14 @@
 #* ADDENDUM:                                                                  *#
 #*                                                                            *#
 #* In addition to the Mozilla Public License a copy of LICENSE.MD should have *#
-#* been be provided alongside this file; LICENSE.MD clarifies how the Mozilla *#
+#* been provided alongside this file; LICENSE.MD clarifies how the Mozilla    *#
 #* Public License v2.0 applies to this file and MAY confer additional rights. *#
 #*                                                                            *#
 #* Should there be any apparent ambiguity (implied or otherwise) the terms    *#
 #* and conditions from the Mozilla Public License v2.0 shall apply.           *#
 #*                                                                            *#
 #* If a copy of LICENSE.MD was not provided it can be obtained from           *#
-#* https://github.com/BetterScripts/posix/LICENSE.MD.                         *#
+#* https://github.com/BetterScripts/shtoolkit/LICENSE.MD.                     *#
 #*                                                                            *#
 #* NOTE:                                                                      *#
 #*                                                                            *#
@@ -41,8 +41,8 @@
 ################################### LIBDEQUE ###################################
 #
 # Documentation is written inline formatted as [`Markdown`][markdown], this is
-# in addition to the suite wide documentation which includes details common to
-# multiple suite libraries that may not be detailed here.
+# in addition to `shtoolkit` general documentation which includes details
+# common to multiple libraries that may not be noted here.
 #
 # The included `Makefile` can be used to generate standalone documentation in
 # various formats with various verbosity settings. The `Makefile` can also be
@@ -50,12 +50,14 @@
 #
 # As far as possible, terminology and conventions follow those of the
 # [_POSIX.1-2008_ Standard][posix_2008].
-#===============================================================================
-## cSpell:Ignore libdeque
+#
+################################################################################
+
 ################################ DOCUMENTATION #################################
 #
-#% % libdeque(7) BetterScripts | Simple deque, queue, and stack emulation for POSIX.1 shells.
+#% % libdeque(7) BetterScripts libdeque v1.1.1 | Simple deque, queue, and stack emulation for POSIX.1 shells.
 #% % BetterScripts (better.scripts@proton.me)
+#% % July 2026
 #
 #: <!-- #################################################################### -->
 #: <!-- ############ THIS FILE WAS GENERATED FROM 'libdeque.sh' ############ -->
@@ -63,14 +65,14 @@
 #: <!-- ########################### DO NOT EDIT! ########################### -->
 #: <!-- #################################################################### -->
 #:
-#: # libdeque
+#: # `libdeque.sh`
 #:
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
 #: ## SYNOPSIS
 #:
-#: _Full synopsis, description, arguments, examples and other information is
-#:  documented with each individual command._
+#: _Full synopsis, description, arguments, examples and other information is_
+#: _documented with each individual command._
 #:
 #: ---------------------------------------------------------
 #:
@@ -137,6 +139,18 @@
 #:
 #: ---------------------------------------------------------
 #:
+#: _NOTABLE CHANGES_
+#: <!-- -------- -->
+#:
+#: As of `v1.1.1` the config variable
+#: [`BS_LIBDEQUE_CONFIG_USE_SAFER_DEQUE`](#bs_libdeque_config_use_safer_deque)
+#: has been depreciated in favor of
+#: [`BS_LIBDEQUE_CONFIG_ALLOW_UNSAFE_DATA_FORMAT`](#bs_libdeque_config_allow_unsafe_data_format).
+#: This change is non-breaking, but users should update their configuration
+#: accordingly.
+#:
+#: Depreciated code will be removed in `v2.0.0`.
+#:
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
 #: ## DESCRIPTION
@@ -180,11 +194,12 @@
 #:   the command was completed successfully.
 #: - For any command which is intended to perform a test, an exit status of
 #:   `1` (`<one>`) indicates "false", while `0` (`<zero>`) indicates "true".
-#: - An exit status that is NOT `0` (`<zero>`) from an external command will
+#: - An exit status that is _NOT_ `0` (`<zero>`) from an external command will
 #:   be propagated to the caller where relevant (and possible).
-#: - For any usage error (e.g. an unsupported variable name), the `EX_USAGE`
-#:   error code from [FreeBSD `SYSEXITS(3)`][sysexits] is used.
-#: - Configuration SHOULD NOT change the value of any exit status.
+#: - Exit status' not covered by any of the above use values as described in
+#:   [FreeBSD `SYSEXITS(3)`][sysexits] - including the `EX_USAGE` which is used
+#:   for all usage errors.
+#: - Exit status is configuration agnostic.
 #:
 ################################################################################
 
@@ -222,9 +237,20 @@ case ${BS_LIBDEQUE_SOURCED:+1} in 1) return ;; esac
 
 #===============================================================================
 #===============================================================================
+# DEFAULTS
+#===============================================================================
+#===============================================================================
+: "${BS_LIBDEQUE_DEBUG:=${BS_DEBUG:-${DEBUG:-0}}}"
+: "${BS_LIBDEQUE_CONFIG_DEBUG:=${BS_LIBDEQUE_DEBUG:-0}}"
+: "${BS_LIBDEQUE_DEBUG_FD:=${BS_DEBUG_FD:-2}}"
+
+#===============================================================================
+#===============================================================================
 #. <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #.
-#. ## INTERNAL CONSTANT HELPER
+#. ## INTERNAL HELPERS
+#.
+#. Low level commands required to implement other parts of the library.
 #.
 #===============================================================================
 #===============================================================================
@@ -256,7 +282,153 @@ case ${BS_LIBDEQUE_SOURCED:+1} in 1) return ;; esac
 #.
 #_______________________________________________________________________________
 fn_bs_libdeque_readonly() { ## cSpell:Ignore BS_LD_Readonly_
-  case ${c_BS_LIBDEQUE_CFG_USE__zsh_setopt} in
+  case ${c_BS_LIBDEQUE_CFG__use_zsh_setopt} in
+  1) setopt 'LOCAL_OPTIONS' 'POSIX_BUILTINS' ;;
+  esac
+  readonly "$@" || true
+}
+
+#_______________________________________________________________________________
+#. ---------------------------------------------------------
+#.
+#. ### `fn_bs_libdeque_dbg_printf_to_fd`
+#.
+#. Debug output command.
+#.
+#. _SYNOPSIS_
+#. <!-- - -->
+#.
+#.      fn_bs_libdeque_dbg_printf_to_fd <ARGS>...
+#.
+#. _ARGUMENTS_
+#. <!-- -- -->
+#.
+#. `ARGS` \[in]
+#.
+#. : Arguments to `printf`.
+#.
+#. _NOTES_
+#. <!-- -->
+#.
+#. - Output is written to the file descriptor stored in
+#.   [`BS_LIBDEQUE_DEBUG_FD`](#bs_libdeque_debug_fd).
+#.
+#_______________________________________________________________________________
+fn_bs_libdeque_dbg_printf_to_fd() { ## cSpell:Ignore BS_LD_DPTFD_
+  # SC2059: Don't use variables in the printf format string.
+  #         Use printf "..%s.." "$foo".
+  # EXCEPT: This is a printf wrapper.
+  # SC2086: Double quote to prevent globbing and word
+  #+        splitting.
+  # EXCEPT: Quoting changes the meaning (under POSIX rules
+  #+        the descriptor will be considered a file)
+  # shellcheck disable=SC2059,SC2086
+  case ${BS_LIBDEQUE_DEBUG_FD:-2} in
+  [123456789]) printf "$@" >&  ${BS_LIBDEQUE_DEBUG_FD}      ;;
+         '&'*) printf "$@" >&  ${BS_LIBDEQUE_DEBUG_FD#'&'}  ;;
+            *) printf "$@" >> "${BS_LIBDEQUE_DEBUG_FD#'>'}" ;;
+  esac || true
+}
+
+#_______________________________________________________________________________
+#. ---------------------------------------------------------
+#.
+#. ### `fn_bs_libdeque_dbg_msg`
+#.
+#. Debug output command.
+#.
+#. _SYNOPSIS_
+#. <!-- - -->
+#.
+#.      fn_bs_libdeque_dbg_msg <CALLER> <MESSAGE>...
+#.
+#. _ARGUMENTS_
+#. <!-- -- -->
+#.
+#. `CALLER` \[in]
+#.
+#. : Name of the calling command.
+#. : Added to the output message.
+#.
+#. `MESSAGE` \[in]
+#.
+#. : Debug message.
+#. : Multiple message values may be specified and
+#.   will be joined into a single string delimited
+#.   by `<space>` characters.
+#.
+#. _NOTES_
+#. <!-- -->
+#.
+#. - A no-op unless debugging is enabled.
+#. - Output is written to the file descriptor stored in
+#.   [`BS_LIBDEQUE_DEBUG_FD`](#bs_libdeque_debug_fd).
+#.
+#. _IMPLEMENTATION NOTES_
+#. <!-- ------------- -->
+#.
+#. - Avoids using `$*` since `IFS` may not be set appropriately.
+#. - Written for simplicity and not performance.
+#.
+#_______________________________________________________________________________
+fn_bs_libdeque_dbg_msg() { ## cSpell:Ignore BS_LD_DM_
+  case ${BS_LIBDEQUE_DEBUG:-0} in 0) return ;; esac
+
+  BS_LD_DM_Caller=$1
+  shift
+
+  fn_bs_libdeque_dbg_printf_to_fd                \
+    "[libdeque::${BS_LD_DM_Caller}]: DEBUG:%s\n" \
+    "$(printf ' %s' "$@")"
+}
+
+#_______________________________________________________________________________
+#. ---------------------------------------------------------
+#.
+#. ### `fn_bs_libdeque_config_constant`
+#.
+#. Helper to set configuration variables and report the set value when in
+#. debug mode.
+#.
+#. In non-debug mode, identical to
+#. [`fn_bs_libdeque_readonly`](#fn_bs_libdeque_readonly).
+#.
+#. _SYNOPSIS_
+#. <!-- - -->
+#.
+#.     fn_bs_libdeque_config_constant <VAR>...
+#.
+#. _ARGUMENTS_
+#. <!-- -- -->
+#.
+#. `VAR` \[in]
+#.
+#. : Can be any value accepted by `readonly`.
+#. : Can be specified multiple times.
+#.
+#. _NOTES_
+#. <!-- -->
+#.
+#. - Output is in form `[libdeque::config]: DEBUG: <NAME>: <VALUE>` where
+#.   `NAME` is the constant name and `VALUE` its value.
+#. - Output is written to the file descriptor stored in
+#.   [`BS_LIBDEQUE_DEBUG_FD`](#bs_libdeque_debug_fd).
+#.
+#_______________________________________________________________________________
+fn_bs_libdeque_config_constant() { ## cSpell:Ignore BS_LD_CFGCST_
+  case ${BS_LIBDEQUE_CONFIG_DEBUG:-0} in
+  0)  ;;
+  *)  for BS_LD_CFGCST_Name
+      do
+        eval "BS_LD_CFGCST_Value=\${${BS_LD_CFGCST_Name}-}" || BS_LD_CFGCST_Value=;
+        fn_bs_libdeque_dbg_printf_to_fd              \
+          "[libdeque::config]: DEBUG: %s: %s\n"      \
+          "${BS_LD_CFGCST_Name#c_BS_LIBDEQUE_CFG__}" \
+          "${BS_LD_CFGCST_Value}"                    || true
+      done ;;
+  esac
+
+  case ${c_BS_LIBDEQUE_CFG__use_zsh_setopt} in
   1) setopt 'LOCAL_OPTIONS' 'POSIX_BUILTINS' ;;
   esac
   readonly "$@" || true
@@ -277,18 +449,18 @@ fn_bs_libdeque_readonly() { ## cSpell:Ignore BS_LD_Readonly_
 #: In additional to these, there are a number of variables that are set by the
 #: library to convey information outside of command invocation.
 #:
-#: If unset, some variables will take an initial value from a _BetterScripts_
-#: _POSIX Suite_ wide variable, these allow the same configuration to be used by
-#: all libraries in the suite.
+#: If unset, some variables will take an initial value from a common `shtoolkit`
+#: variable applicable to all libraries, these allow the same configuration to
+#: be used across libraries more easily.
 #:
 #: After the library has been sourced, external commands must not set library
-#: environment variables that are classified as CONSTANT. Variables may use
+#: environment variables that are classified as _CONSTANT_. Variables may use
 #: the `readonly` command to enforce this.
 #:
 #: **_If not otherwise specified, an `<unset>` variable is equivalent to the_**
 #: **_default value._**
 #:
-#: _For more details see the common suite [documentation](./README.MD#environment)._
+#: _For more details see the `shtoolkit` general [documentation](./README.MD#environment)._
 #:
 #===============================================================================
 #===============================================================================
@@ -308,8 +480,8 @@ fn_bs_libdeque_readonly() { ## cSpell:Ignore BS_LD_Readonly_
 #: #### `BS_LIBDEQUE_CONFIG_NO_Z_SHELL_SETOPT`
 #:
 #: - Suite:    [`BETTER_SCRIPTS_CONFIG_NO_Z_SHELL_SETOPT`](./README.MD#better_scripts_config_no_z_shell_setopt)
-#: - Type:     FLAG
-#: - Class:    CONSTANT
+#: - Type:     _FLAG_
+#: - Class:    _CONSTANT_
 #: - Default:  \<automatic>
 #: - \[Disable]/Enable using `setopt` in _Z Shell_ to ensure
 #:   _POSIX.1_ like behavior.
@@ -317,17 +489,18 @@ fn_bs_libdeque_readonly() { ## cSpell:Ignore BS_LD_Readonly_
 #: - Any use of `setopt` is scoped as tightly as possible
 #:   and SHOULD not affect other commands.
 #. - See [`fn_bs_libdeque_readonly`](#fn_bs_libdeque_readonly).
+#. - **MUST BE SET BEFORE FIRST CALL TO `fn_...readonly`**
 #:
 case ${BS_LIBDEQUE_CONFIG_NO_Z_SHELL_SETOPT:-${BETTER_SCRIPTS_CONFIG_NO_Z_SHELL_SETOPT:-A}} in
-A)  case ${ZSH_VERSION:+1} in
-    1) c_BS_LIBDEQUE_CFG_USE__zsh_setopt=1 ;;
-    *) c_BS_LIBDEQUE_CFG_USE__zsh_setopt=0 ;;
-    esac ;;
-0) c_BS_LIBDEQUE_CFG_USE__zsh_setopt=0 ;;
-*) c_BS_LIBDEQUE_CFG_USE__zsh_setopt=1 ;;
+[AD]) case ${ZSH_VERSION:+1} in
+      1) c_BS_LIBDEQUE_CFG__use_zsh_setopt=1 ;;
+      *) c_BS_LIBDEQUE_CFG__use_zsh_setopt=0 ;;
+      esac ;;
+   0) c_BS_LIBDEQUE_CFG__use_zsh_setopt=0 ;;
+   *) c_BS_LIBDEQUE_CFG__use_zsh_setopt=1 ;;
 esac
 
-fn_bs_libdeque_readonly 'c_BS_LIBDEQUE_CFG_USE__zsh_setopt'
+fn_bs_libdeque_config_constant 'c_BS_LIBDEQUE_CFG__use_zsh_setopt'
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #: ---------------------------------------------------------
@@ -335,8 +508,8 @@ fn_bs_libdeque_readonly 'c_BS_LIBDEQUE_CFG_USE__zsh_setopt'
 #: #### `BS_LIBDEQUE_CONFIG_NO_GREP_F`
 #:
 #: - Suite:    [`BETTER_SCRIPTS_CONFIG_NO_GREP_F`](./README.MD#better_scripts_config_no_grep_f)
-#: - Type:     FLAG
-#: - Class:    CONSTANT
+#: - Type:     _FLAG_
+#: - Class:    _CONSTANT_
 #: - Default:  \<automatic>
 #: - \[Disable]/Enable using the non-standard `fgrep`
 #:   instead of `grep -F`.
@@ -347,120 +520,15 @@ fn_bs_libdeque_readonly 'c_BS_LIBDEQUE_CFG_USE__zsh_setopt'
 #:   provides the required functionality.
 #:
 case ${BS_LIBDEQUE_CONFIG_NO_GREP_F:-${BETTER_SCRIPTS_CONFIG_NO_GREP_F:-A}} in
-A)  case $(printf '(TEST*)\n' | grep -F -e '(TEST*)' 2>&1 || echo 'FAILED') in
-    '(TEST*)') c_BS_LIBDEQUE_CFG_USE__grep_F=1 ;;
-            *) c_BS_LIBDEQUE_CFG_USE__grep_F=0 ;;
-    esac ;;
-0)  c_BS_LIBDEQUE_CFG_USE__grep_F=0 ;;
-*)  c_BS_LIBDEQUE_CFG_USE__grep_F=1 ;;
+[AD]) case $(printf '(TEST*)\n' | grep -F -e '(TEST*)' 2>&1 || echo 'FAILED') in
+      '(TEST*)') c_BS_LIBDEQUE_CFG__use_grep_F=1 ;;
+              *) c_BS_LIBDEQUE_CFG__use_grep_F=0 ;;
+      esac ;;
+   0) c_BS_LIBDEQUE_CFG__use_grep_F=1 ;;
+   *) c_BS_LIBDEQUE_CFG__use_grep_F=0 ;;
 esac
 
-fn_bs_libdeque_readonly 'c_BS_LIBDEQUE_CFG_USE__grep_F'
-
-#===========================================================
-#===========================================================
-#: <!-- ------------------------------------------------ -->
-#:
-#: ### USER PREFERENCE
-#:
-#. _IMPLEMENTATION NOTES_
-#. <!-- ------------- -->
-#.
-#. - User set configuration options that are in the constant
-#.   CLASS are converted to internal options which are made
-#.   read-only. This happens even when the user option could
-#.   be used directly. This allows the user to reuse the
-#.   option if desired, and also avoids any manipulation of
-#.   variables set externally.
-#.
-#===========================================================
-#===========================================================
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBDEQUE_CONFIG_QUIET_ERRORS`
-#:
-#: - Suite:    [`BETTER_SCRIPTS_CONFIG_QUIET_ERRORS`](./README.MD#better_scripts_config_quiet_errors)
-#: - Type:     FLAG
-#: - Class:    VARIABLE
-#: - Default:  _OFF_
-#: - \[Enable]/Disable library error message output.
-#: - _OFF_: error messages will be written to `STDERR` as:
-#:   `[libdeque::<COMMAND>]: ERROR: <MESSAGE>`.
-#: - _ON_: library error messages will be suppressed.
-#: - The most recent error message is always available in
-#:   [`BS_LIBDEQUE_LAST_ERROR`](#bs_libdeque_last_error)
-#:   even when error output is suppressed.
-#: - Both the library version of this option and the
-#:   suite version can be modified between command
-#:   invocations and will affect the next command.
-#: - Does NOT affect errors from non-library commands, which
-#:   _may_ still produce output.
-#:
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBDEQUE_CONFIG_FATAL_ERRORS`
-#:
-#: - Suite:    [`BETTER_SCRIPTS_CONFIG_FATAL_ERRORS`](./README.MD#better_scripts_config_fatal_errors)
-#: - Type:     FLAG
-#: - Class:    VARIABLE
-#: - Default:  _OFF_
-#: - Enable/\[Disable] causing library errors to terminate
-#:   the current (sub-)shell.
-#: - _OFF_: errors stop any further processing, and cause a
-#:   non-zero exit status, but do not cause an exception.
-#: - _ON_: any library error will cause an "unset variable"
-#:   shell exception using the
-#:   [`${parameter:?[word]}`][posix_param_expansion]
-#:   parameter expansion, where `word` is set to an error
-#:   message that _should_ be displayed by the shell (this
-#:   message is NOT suppressed by
-#:   [`BS_LIBDEQUE_CONFIG_QUIET_ERRORS`](#bs_libdeque_config_quiet_errors)).
-#: - Both the library version of this option and the
-#:   suite version can be modified between command
-#:   invocations and will affect the next command.
-#:
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBDEQUE_CONFIG_USE_SAFER_DEQUE`
-#:
-#: - Type:     FLAG
-#: - Class:    CONSTANT
-#: - Default:  _OFF_
-#: - Enable/\[Disable] the use of an internal format for
-#:   `deque`, `queue`, and `stack` that is slightly safer.
-#: - _OFF_: don't use the safer format, but if any value
-#:   added contains text that matches the internal
-#:   delimiters errors _will_ occur.
-#: - _ON_: use the safer format, at the expense of some
-#:   performance.
-#: - The internal delimiters used to create the data
-#:   structures that enable `deque`, `queue`, and `stack`
-#:   types have been chosen to be highly unlikely to occur
-#:   in any normal data, however it remains possible that
-#:   they could be present. Setting this flag to _ON_ causes
-#:   every value added to be modified such that it can no
-#:   longer match the internal values, removing a possible
-#:   (though unlikely) source of errors. Unfortunately this
-#:   can result in lower performance, the extent of which
-#:   is largely dependent on the contents of the values
-#:   added.
-#: - This affects all three data types; there is no
-#:   available mechanism for applying this to a single type.
-#: - Has a performance impact.
-#:   Prefer **_OFF_** for performance.
-#:
-case ${BS_LIBDEQUE_CONFIG_USE_SAFER_DEQUE:-0} in
-0) c_BS_LIBDEQUE_CFG_USE__SaferDeque=0 ;;
-*) c_BS_LIBDEQUE_CFG_USE__SaferDeque=1 ;;
-esac
-
-fn_bs_libdeque_readonly 'c_BS_LIBDEQUE_CFG_USE__SaferDeque'
+fn_bs_libdeque_config_constant 'c_BS_LIBDEQUE_CFG__use_grep_F'
 
 #===========================================================
 #===========================================================
@@ -521,7 +589,7 @@ fn_bs_libdeque_readonly 'c_BS_LIBDEQUE_CFG_USE__SaferDeque'
 #:
   BS_LIBDEQUE_VERSION_MAJOR=1
   BS_LIBDEQUE_VERSION_MINOR=1
-  BS_LIBDEQUE_VERSION_PATCH=0
+  BS_LIBDEQUE_VERSION_PATCH=1
 BS_LIBDEQUE_VERSION_RELEASE=;
 
 fn_bs_libdeque_readonly 'BS_LIBDEQUE_VERSION_MAJOR'   \
@@ -569,13 +637,13 @@ fn_bs_libdeque_readonly 'BS_LIBDEQUE_VERSION_FULL'
 #:   from the BetterScripts versions. (This information
 #:   should precede the version number.)
 #:
-BS_LIBDEQUE_VERSION="$(
+BS_LIBDEQUE_VERSION=$(
     printf "BetterScripts 'libdeque' v%d.%d.%d%s\n" \
            "${BS_LIBDEQUE_VERSION_MAJOR}"           \
            "${BS_LIBDEQUE_VERSION_MINOR}"           \
            "${BS_LIBDEQUE_VERSION_PATCH}"           \
            "${BS_LIBDEQUE_VERSION_RELEASE:+-${BS_LIBDEQUE_VERSION_RELEASE}}"
-  )"
+  )
 
 fn_bs_libdeque_readonly 'BS_LIBDEQUE_VERSION'
 
@@ -606,6 +674,136 @@ BS_LIBDEQUE_LAST_ERROR=; #< CLEAR ON SOURCING
 
 #===========================================================
 #===========================================================
+#: <!-- ------------------------------------------------ -->
+#:
+#: ### USER PREFERENCE
+#:
+#. _IMPLEMENTATION NOTES_
+#. <!-- ------------- -->
+#.
+#. - User set configuration options that are in the constant
+#.   CLASS are converted to internal options which are made
+#.   read-only. This happens even when the user option could
+#.   be used directly. This allows the user to reuse the
+#.   option if desired, and also avoids any manipulation of
+#.   variables set externally.
+#.
+#===========================================================
+#===========================================================
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBDEQUE_CONFIG_QUIET_ERRORS`
+#:
+#: - Suite:    [`BETTER_SCRIPTS_CONFIG_QUIET_ERRORS`](./README.MD#better_scripts_config_quiet_errors)
+#: - Type:     _FLAG_
+#: - Class:    _VARIABLE_
+#: - Default:  _OFF_
+#: - \[Enable]/Disable library error message output.
+#: - _OFF_: error messages will be written to `STDERR` as:
+#:   `[libdeque::<COMMAND>]: ERROR: <MESSAGE>`.
+#: - _ON_: library error messages will be suppressed.
+#: - The most recent error message is always available in
+#:   [`BS_LIBDEQUE_LAST_ERROR`](#bs_libdeque_last_error)
+#:   even when error output is suppressed.
+#: - Both the library version of this option and the
+#:   suite version can be modified between command
+#:   invocations and will affect the next command.
+#: - Does NOT affect errors from non-library commands, which
+#:   _may_ still produce output.
+#:
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBDEQUE_CONFIG_FATAL_ERRORS`
+#:
+#: - Suite:    [`BETTER_SCRIPTS_CONFIG_FATAL_ERRORS`](./README.MD#better_scripts_config_fatal_errors)
+#: - Type:     _FLAG_
+#: - Class:    _VARIABLE_
+#: - Default:  _OFF_
+#: - Enable/\[Disable] causing library errors to terminate
+#:   the current (sub-)shell.
+#: - _OFF_: errors stop any further processing, and cause a
+#:   non-zero exit status, but do not cause an exception.
+#: - _ON_: any library error will cause an "unset variable"
+#:   shell exception using the
+#:   [`${parameter:?[word]}`][posix_param_expansion]
+#:   parameter expansion, where `word` is set to an error
+#:   message that _should_ be displayed by the shell (this
+#:   message is NOT suppressed by
+#:   [`BS_LIBDEQUE_CONFIG_QUIET_ERRORS`](#bs_libdeque_config_quiet_errors)).
+#: - Both the library version of this option and the
+#:   suite version can be modified between command
+#:   invocations and will affect the next command.
+#:
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBDEQUE_CONFIG_USE_SAFER_DEQUE`
+#:
+#: - Type:     _FLAG_
+#: - Class:    _CONSTANT_
+#: - _**DEPRECIATED, DO NOT USE:**_ Will be removed in
+#:   version 2.0.0.
+#: - _Usage of this variable will trigger a warning in the
+#:   version prior to removal._
+#: - Replaced by
+#:   [`BS_LIBDEQUE_CONFIG_ALLOW_UNSAFE_DATA_FORMAT`](#bs_libdeque_config_allow_unsafe_data_format),
+#:   which is identical but with inverted meaning - the new
+#:   variable takes precedence over this variable. Where
+#:   the new variable is unset this variable will remain
+#:   effective until it is removed in a future version.
+#; - The new configuration variable is safer and should have
+#;   been used in previous versions.
+#:
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBDEQUE_CONFIG_ALLOW_UNSAFE_DATA_FORMAT`
+#:
+#: - Type:     _FLAG_
+#: - Class:    _CONSTANT_
+#: - Default:  _OFF_
+#: - Enable/\[Disable] the use of an internal format for
+#:   `deque`, `queue`, and `stack` that is slightly less
+#:   safe but has better performance.
+#: - _ON_: don't use the safer format, but if any value
+#:   added contains text that matches the internal
+#:   delimiters errors _will_ occur.
+#: - _OFF_: use the safer format, at the expense of some
+#:   performance.
+#: - The internal delimiters used to create the data
+#:   structures that enable `deque`, `queue`, and `stack`
+#:   types have been chosen to be highly unlikely to occur
+#:   in any normal data, however it remains possible that
+#:   they could be present. Setting this flag to _ON_ causes
+#:   every value added to be modified such that it can no
+#:   longer match the internal values, removing a possible
+#:   (though unlikely) source of errors. Unfortunately this
+#:   can result in lower performance, the extent of which
+#:   is largely dependent on the contents of the values
+#:   added.
+#: - This affects all three data types; there is no
+#:   available mechanism for applying this to a single type.
+#: - Has a performance impact.
+#:   Prefer **_OFF_** for performance.
+#: - If set, this value has preference over the depreciated
+#:   [`BS_LIBDEQUE_CONFIG_USE_SAFER_DEQUE`](#bs_libdeque_config_use_safer_deque).
+#:
+case ${BS_LIBDEQUE_CONFIG_ALLOW_UNSAFE_DATA_FORMAT:-0} in
+0)  case ${BS_LIBDEQUE_CONFIG_USE_SAFER_DEQUE:-1} in
+    0) c_BS_LIBDEQUE_CFG__use_SaferDeque=0 ;;
+    *) c_BS_LIBDEQUE_CFG__use_SaferDeque=1 ;;
+    esac ;;
+*) c_BS_LIBDEQUE_CFG__use_SaferDeque=0 ;;
+esac
+
+fn_bs_libdeque_config_constant 'c_BS_LIBDEQUE_CFG__use_SaferDeque'
+
+#===========================================================
+#===========================================================
 #. <!-- ------------------------------------------------ -->
 #.
 #. ### INTERNAL CONSTANTS
@@ -626,6 +824,22 @@ c_BS_LIBDEQUE__newline='
 '
 
 fn_bs_libdeque_readonly 'c_BS_LIBDEQUE__newline'
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#. <!-- ................................................ -->
+#.
+#. #### `c_BS_LIBDEQUE__EX_USAGE`
+#.
+#. - Exit code for use on _USAGE ERRORS_.
+#. - Taken from [FreeBSD `SYSEXITS(3)`][sysexits] which
+#.   defines the closest thing to standard exit codes that
+#.   is available.
+#. - NOT _POSIX.1_ specified.
+#.
+c_BS_LIBDEQUE__EX_USAGE=64
+
+fn_bs_libdeque_readonly 'c_BS_LIBDEQUE__EX_USAGE'
+
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #. <!-- ................................................ -->
@@ -705,22 +919,6 @@ fn_bs_libdeque_readonly 'c_BS_LIBDEQUE__Prefix'      \
                         'c_BS_LIBDEQUE__Suffix'      \
                         'c_BS_LIBDEQUE__ValuePrefix' \
                         'c_BS_LIBDEQUE__ValueSuffix'
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#. <!-- ................................................ -->
-#.
-#. #### `c_BS_LIBDEQUE__EX_USAGE`
-#.
-#. - Exit code for use on _USAGE ERRORS_.
-#. - Taken from [FreeBSD `SYSEXITS(3)`][sysexits] which
-#.   defines the closest thing to standard exit codes that
-#.   is available.
-#. - NOT _POSIX.1_ specified.
-#.
-c_BS_LIBDEQUE__EX_USAGE=64
-
-fn_bs_libdeque_readonly 'c_BS_LIBDEQUE__EX_USAGE'
-
 #===============================================================================
 #===============================================================================
 #; <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
@@ -779,18 +977,20 @@ fn_bs_libdeque_readonly 'c_BS_LIBDEQUE__EX_USAGE'
 #;
 #_______________________________________________________________________________
 fn_bs_libdeque_error() { ## cSpell:Ignore BS_LDE_
-  BS_LDE_Caller="${1:?'[libdeque::fn_bs_libdeque_error]: Internal Error: a command name is required'}"
+  BS_LDE_Caller=${1:?'[libdeque::fn_bs_libdeque_error]: Internal Error: a command name is required'}
 
   BS_LIBDEQUE_LAST_ERROR=;
   case $# in
   1)  : "${2:?'[libdeque::fn_bs_libdeque_error]: Internal Error: an error message is required'}" ;;
-  2)  BS_LIBDEQUE_LAST_ERROR="$2" ;;
+  2)  BS_LIBDEQUE_LAST_ERROR=$2 ;;
   *)  shift
-      case ${IFS-} in
-      ' '*) BS_LIBDEQUE_LAST_ERROR="$*" ;;
-         *) BS_LIBDEQUE_LAST_ERROR="$1"; shift
-            BS_LIBDEQUE_LAST_ERROR="${BS_LIBDEQUE_LAST_ERROR}$(printf ' %s' "$@")" ;;
-      esac ;; #<: `case ${IFS-} in`
+      # NOTE: unset `IFS` == default `IFS`
+      #       null  `IFS` == null `IFS`
+      case ${IFS-' '} in
+      ' '*) BS_LIBDEQUE_LAST_ERROR=$* ;;
+         *) BS_LIBDEQUE_LAST_ERROR=$(printf '%s ' "$@")
+            BS_LIBDEQUE_LAST_ERROR=${BS_LIBDEQUE_LAST_ERROR% } ;;
+      esac ;; #<: `case ${IFS-' '} in`
   esac #<: `case $# in`
 
   # OUTPUT ERROR
@@ -804,9 +1004,31 @@ fn_bs_libdeque_error() { ## cSpell:Ignore BS_LDE_
   case ${BS_LIBDEQUE_CONFIG_FATAL_ERRORS:-${BETTER_SCRIPTS_CONFIG_FATAL_ERRORS:-0}} in
   0)  ;;
   *)  BS_LIBDEQUE__FatalError=;
-      : "${BS_LIBDEQUE__FatalError:?"[libdeque::${BS_LDE_Caller}]: ERROR: ${BS_LIBDEQUE_LAST_ERROR}"}" ;;
+      BS_LIBDEQUE__ErrorMessage="[libdeque::${BS_LDE_Caller}]: ERROR: ${BS_LIBDEQUE_LAST_ERROR}"
+      # `zsh`, being it's own special self, does not perform parameter expansion
+      # of `word` in `${parameter:?[word]}`, so a workaround is required to
+      # make the error message shown. It's not clear how to do this other than
+      # to use `eval`, but that opens up a can of worms regarding the message
+      # contents - specifically what happens if the message contains special
+      # characters. In this regard, `zhs` is useful as it provides a mechanism
+      # for quoting parameters, which makes it safe.
+      #
+      # NOTE: Although shells should ignore the `zsh` branch of the `case` here
+      #       some fail to parse it. For now that means the use of two `eval`
+      #       statements - the first simply blocks other shells from seeing
+      #       the `zsh` specific code.
+      #
+      # SC2296: Parameter expansions can't start with {. Double check syntax.
+      # EXCEPT: The code here is fine in `zsh`, and should be ignored in other
+      #         shells.
+      # shellcheck disable=SC2296
+      case ${ZSH_VERSION:+1} in
+      1)  eval 'BS_LIBDEQUE__ErrorMessage=${(qq)BS_LIBDEQUE__ErrorMessage}'
+          eval ": \"\${BS_LIBDEQUE__FatalError:?${BS_LIBDEQUE__ErrorMessage}}\"" ;;
+      *) : "${BS_LIBDEQUE__FatalError:?${BS_LIBDEQUE__ErrorMessage}}" ;;
+      esac ;;
   esac
-}
+} #<: `fn_bs_libdeque_error()`
 
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
@@ -846,10 +1068,10 @@ fn_bs_libdeque_error() { ## cSpell:Ignore BS_LDE_
 #;
 #_______________________________________________________________________________
 fn_bs_libdeque_invalid_args() { ## cSpell:Ignore BS_LDIA_
-  BS_LDIA_Caller="${1:?'[libdeque::fn_bs_libdeque_invalid_args]: Internal Error: a command name is required'}"
+  BS_LDIA_Caller=${1:?'[libdeque::fn_bs_libdeque_invalid_args]: Internal Error: a command name is required'}
   shift
   fn_bs_libdeque_error "${BS_LDIA_Caller}" 'Invalid Arguments:' "$@"
-}
+} #<: `fn_bs_libdeque_invalid_args()`
 
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
@@ -892,28 +1114,32 @@ fn_bs_libdeque_invalid_args() { ## cSpell:Ignore BS_LDIA_
 #;
 #_______________________________________________________________________________
 fn_bs_libdeque_expected() { ## cSpell:Ignore BS_LDExpected_
-   BS_LDExpected_Caller="${1:?'[libdeque::fn_bs_libdeque_expected]: Internal Error: a command name is required'}"
-  BS_LDExpected_Message="Invalid Arguments: expected ${2:?'[libdeque::fn_bs_libdeque_expected]: Internal Error: an expected argument is required'}"
+  BS_LDExpected_Caller=${1:?'[libdeque::fn_bs_libdeque_expected]: Internal Error: a caller is required'}
+  shift
+  BS_LDExpected_Message=${1:?'[libdeque::fn_bs_libdeque_expected]: Internal Error: an expected argument is required'}
+  shift
 
-  case $# in
-  2)  ;;
-  *)  shift; shift
-      while : #< [ $# -gt 1 ]
-      do
-        #> LOOP TEST --------------
-        case $# in 1) break ;; esac #< [ $# -gt 1 ]
-        #> ------------------------
+  #=========================================================
+  #
+  #=========================================================
+  while : #<: `[ $# -gt 1 ]`
+  do
+    case $# in
+    0)  break ;;
+    1)  BS_LDExpected_Message="${BS_LDExpected_Message}, and $1"
+        break ;;
+    *)  BS_LDExpected_Message="${BS_LDExpected_Message}, $1"
+        shift ;;
+    esac
+  done #<: `while [ $# -gt 1 ]`
 
-        BS_LDExpected_Message="${BS_LDExpected_Message}, $1"
-        shift
-      done #<: `while : #< [ $# -gt 1 ]`
-      BS_LDExpected_Message="${BS_LDExpected_Message}, and $1";;
-  esac #<: `case $# in`
-
-  fn_bs_libdeque_invalid_args  \
+  #=========================================================
+  #
+  #=========================================================
+  fn_bs_libdeque_error         \
     "${BS_LDExpected_Caller}"  \
-    "${BS_LDExpected_Message}"
-}
+    "Invalid Arguments: expected ${BS_LDExpected_Message}"
+} #<: `fn_bs_libdeque_expected()`
 
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
@@ -972,8 +1198,8 @@ fn_bs_libdeque_expected() { ## cSpell:Ignore BS_LDExpected_
 #;
 #_______________________________________________________________________________
 fn_bs_libdeque_validate_name() { ## cSpell:Ignore BS_LDVN_
-  BS_LDVN_Caller="${1:?'[libdeque::fn_bs_libdeque_validate_name]: Internal Error: a command name is required'}"
-    BS_LDVN_Name="${2?'[libdeque::fn_bs_libdeque_validate_name]: Internal Error: a variable name is required'}"
+  BS_LDVN_Caller=${1:?'[libdeque::fn_bs_libdeque_validate_name]: Internal Error: a command name is required'}
+    BS_LDVN_Name=${2?'[libdeque::fn_bs_libdeque_validate_name]: Internal Error: a variable name is required'}
 
   case ${BS_LDVN_Name:-#} in
   [0123456789]*|*[!abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_]*)
@@ -982,7 +1208,7 @@ fn_bs_libdeque_validate_name() { ## cSpell:Ignore BS_LDVN_
       "invalid variable name '${BS_LDVN_Name}'"
     return "${c_BS_LIBDEQUE__EX_USAGE}" ;;
   esac
-}
+} #<: `fn_bs_libdeque_validate_name()`
 
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
@@ -999,8 +1225,8 @@ fn_bs_libdeque_validate_name() { ## cSpell:Ignore BS_LDVN_
 #;
 #_______________________________________________________________________________
 fn_bs_libdeque_validate_name_hyphen() { ## cSpell:Ignore BS_LDVNH_
-  BS_LDVNH_Caller="${1:?'[libdeque::fn_bs_libdeque_validate_name_hyphen]: Internal Error: a command name is required'}"
-    BS_LDVNH_Name="${2?'[libdeque::fn_bs_libdeque_validate_name_hyphen]: Internal Error: a variable name is required'}"
+  BS_LDVNH_Caller=${1:?'[libdeque::fn_bs_libdeque_validate_name_hyphen]: Internal Error: a command name is required'}
+    BS_LDVNH_Name=${2?'[libdeque::fn_bs_libdeque_validate_name_hyphen]: Internal Error: a variable name is required'}
 
   #---------------------------------------------------------
   # This command is called for many of the main commands.
@@ -1014,7 +1240,7 @@ fn_bs_libdeque_validate_name_hyphen() { ## cSpell:Ignore BS_LDVNH_
       "invalid variable name '${BS_LDVNH_Name}'"
     return "${c_BS_LIBDEQUE__EX_USAGE}" ;;
   esac
-}
+} #<: `fn_bs_libdeque_validate_name_hyphen()`
 
 #===============================================================================
 #===============================================================================
@@ -1050,8 +1276,10 @@ fn_bs_libdeque_validate_name_hyphen() { ## cSpell:Ignore BS_LDVNH_
 #;
 #_______________________________________________________________________________
 fn_bs_libdeque_quote() { ## cSpell:Ignore BS_LDQ_
+  BS_LDQ_String=${1?'[libdeque::fn_bs_libdeque_quote]: Internal Error: a string is required'}
+
   {
-    printf '%s\n' "${1?'[libdeque::fn_bs_libdeque_quote]: Internal Error: a value to quote is required'}"
+    printf '%s_\n' "${BS_LDQ_String}"
   } | {
     # `sed` script:
     # - escape all `<apostrophe>` characters
@@ -1065,7 +1293,7 @@ fn_bs_libdeque_quote() { ## cSpell:Ignore BS_LDQ_
     #   has to occur before either of the others!
     sed -e "s/'/'\\\\''/g
             1s/^/'/
-            \$s/\$/'/"
+            \$s/_\$/'/"
   }
 }
 
@@ -1118,9 +1346,9 @@ fn_bs_libdeque_quote() { ## cSpell:Ignore BS_LDQ_
 #;
 #_______________________________________________________________________________
 bs_fn_libdeque_push_impl() { ## cSpell:Ignore BS_LDPushImpl_
-  BS_LDPushImpl_PushFront="${1:?'[libdeque::bs_fn_libdeque_push_impl]: Internal Error: a flag is required'}"
+  BS_LDPushImpl_PushFront=${1:?'[libdeque::bs_fn_libdeque_push_impl]: Internal Error: a flag is required'}
   shift;
-  BS_LDPushImpl_Caller="${1:?'[libdeque::bs_fn_libdeque_push_impl]: Internal Error: a command name is required'}"
+  BS_LDPushImpl_Caller=${1:?'[libdeque::bs_fn_libdeque_push_impl]: Internal Error: a command name is required'}
   shift;
 
   #---------------------------------------------------------
@@ -1132,9 +1360,10 @@ bs_fn_libdeque_push_impl() { ## cSpell:Ignore BS_LDPushImpl_
         "a ${BS_LDPushImpl_Caller%%_*} variable" \
         'zero or more values to add'
       return "${c_BS_LIBDEQUE__EX_USAGE}" ;;
-  *)  BS_LDPushImpl_refDeque="$1"
-      shift ;;
   esac
+
+  BS_LDPushImpl_refDeque=$1
+  shift
 
   #---------------------------------------------------------
   #
@@ -1147,7 +1376,7 @@ bs_fn_libdeque_push_impl() { ## cSpell:Ignore BS_LDPushImpl_
   # Unpack
   #---------------------------------------------------------
   BS_LDPushImpl_Deque=;
-  eval "BS_LDPushImpl_Deque=\"\${${BS_LDPushImpl_refDeque}-}\""
+  eval "BS_LDPushImpl_Deque=\${${BS_LDPushImpl_refDeque}-}" || return $?
 
   #---------------------------------------------------------
   # Push
@@ -1162,12 +1391,12 @@ bs_fn_libdeque_push_impl() { ## cSpell:Ignore BS_LDPushImpl_
   #       combination of settings. Probably not going to
   #       do much to the performance, but worth testing.
   #---------------------------------------------------------
-  case ${BS_LDPushImpl_PushFront}:${c_BS_LIBDEQUE_CFG_USE__SaferDeque} in
+  case ${BS_LDPushImpl_PushFront}:${c_BS_LIBDEQUE_CFG__use_SaferDeque} in
     # PUSH: FRONT; SAFER
     1:1)  for BS_LDPushImpl_Value
           do
             case ${BS_LDPushImpl_Value} in
-            *"'"*) BS_LDPushImpl_Value="$(fn_bs_libdeque_quote "${BS_LDPushImpl_Value}")" ;;
+            *"'"*) BS_LDPushImpl_Value=$(fn_bs_libdeque_quote "${BS_LDPushImpl_Value}") ;;
                 *) BS_LDPushImpl_Value="'${BS_LDPushImpl_Value}'"                         ;;
             esac
             BS_LDPushImpl_Deque="${c_BS_LIBDEQUE__ValuePrefix}${BS_LDPushImpl_Value}${c_BS_LIBDEQUE__ValueSuffix}${BS_LDPushImpl_Deque}"
@@ -1177,7 +1406,7 @@ bs_fn_libdeque_push_impl() { ## cSpell:Ignore BS_LDPushImpl_
     0:1)  for BS_LDPushImpl_Value
           do
             case ${BS_LDPushImpl_Value} in
-            *"'"*) BS_LDPushImpl_Value="$(fn_bs_libdeque_quote "${BS_LDPushImpl_Value}")" ;;
+            *"'"*) BS_LDPushImpl_Value=$(fn_bs_libdeque_quote "${BS_LDPushImpl_Value}") ;;
                 *) BS_LDPushImpl_Value="'${BS_LDPushImpl_Value}'"                         ;;
             esac
             BS_LDPushImpl_Deque="${BS_LDPushImpl_Deque}${c_BS_LIBDEQUE__ValuePrefix}${BS_LDPushImpl_Value}${c_BS_LIBDEQUE__ValueSuffix}"
@@ -1201,19 +1430,19 @@ bs_fn_libdeque_push_impl() { ## cSpell:Ignore BS_LDPushImpl_
   #---------------------------------------------------------
   case ${BS_LDPushImpl_refDeque} in
   -) printf '%s\n' "${BS_LDPushImpl_Deque}" ;;
-  *) eval "${BS_LDPushImpl_refDeque}=\"\${BS_LDPushImpl_Deque}\"" ;;
+  *) eval "${BS_LDPushImpl_refDeque}=\${BS_LDPushImpl_Deque}" ;;
   esac
 }
 
 #_______________________________________________________________________________
-#;---------------------------------------------------------
+#; ---------------------------------------------------------
 #;
 #; ### `bs_fn_libdeque_push_front`
 #;
 #; Shorthand for [`bs_fn_libdeque_push_impl 1 ${1+"$@"}`](#bs_fn_libdeque_push_impl)
 #;
 #_______________________________________________________________________________
-bs_fn_libdeque_push_front() { bs_fn_libdeque_push_impl 1 ${1+"$@"};}
+bs_fn_libdeque_push_front() { bs_fn_libdeque_push_impl 1 ${1+"$@"}; }
 
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
@@ -1223,7 +1452,7 @@ bs_fn_libdeque_push_front() { bs_fn_libdeque_push_impl 1 ${1+"$@"};}
 #; Shorthand for [`bs_fn_libdeque_push_impl 0 ${1+"$@"}`](#bs_fn_libdeque_push_impl)
 #;
 #_______________________________________________________________________________
-bs_fn_libdeque_push_back () { bs_fn_libdeque_push_impl 0 ${1+"$@"};}
+bs_fn_libdeque_push_back () { bs_fn_libdeque_push_impl 0 ${1+"$@"}; }
 
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
@@ -1270,19 +1499,19 @@ bs_fn_libdeque_push_back () { bs_fn_libdeque_push_impl 0 ${1+"$@"};}
 #;
 #_______________________________________________________________________________
 bs_fn_libdeque_pop_impl() { ## cSpell:Ignore BS_LDPopImpl_
-  BS_LDPopImpl_PopFront="${1:?'[libdeque::bs_fn_libdeque_pop_impl]: Internal Error: a flag is required'}"
+  BS_LDPopImpl_PopFront=${1:?'[libdeque::bs_fn_libdeque_pop_impl]: Internal Error: a flag is required'}
   shift
-  BS_LDPopImpl_Caller="${1:?'[libdeque::bs_fn_libdeque_pop_impl]: Internal Error: a command name is required'}"
+  BS_LDPopImpl_Caller=${1:?'[libdeque::bs_fn_libdeque_pop_impl]: Internal Error: a command name is required'}
   shift
 
   #---------------------------------------------------------
   #
   #---------------------------------------------------------
   case $# in
-  1)  BS_LDPopImpl_refDeque="$1"
+  1)  BS_LDPopImpl_refDeque=$1
       BS_LDPopImpl_refValue=;    ;;
-  2)  BS_LDPopImpl_refDeque="$1"
-      BS_LDPopImpl_refValue="$2"
+  2)  BS_LDPopImpl_refDeque=$1
+      BS_LDPopImpl_refValue=$2
       fn_bs_libdeque_validate_name_hyphen \
         "${BS_LDPopImpl_Caller}"          \
         "${BS_LDPopImpl_refValue}"        || return $?;;
@@ -1304,74 +1533,45 @@ bs_fn_libdeque_pop_impl() { ## cSpell:Ignore BS_LDPopImpl_
   # Unpack
   #---------------------------------------------------------
   BS_LDPopImpl_Deque=;
-  eval "BS_LDPopImpl_Deque=\"\${${BS_LDPopImpl_refDeque}-}\""
+  eval "BS_LDPopImpl_Deque=\${${BS_LDPopImpl_refDeque}-}" || return $?
 
   #---------------------------------------------------------
   # Pop
-  #
-  # NOTES:
-  #
-  # - To try to maximize performance the loop is repeated
-  #   for each of the possible combinations of settings,
-  #   this is not ideal, but should be faster.
-  #
-  # TODO: This might be better split into one function per
-  #       combination of settings. Probably not going to
-  #       do much to the performance, but worth testing.
   #---------------------------------------------------------
-
-  # SC2295: Expansions inside ${..} need to be quoted
-  #         separately, otherwise they will match as
-  #         a pattern.
-  # EXCEPT: `posh` fails when these are quoted in this
-  #         situation - for a prefix a `#` in the quoted
-  #         parameter makes it fail, while in a suffix a
-  #         `<newline>` is an issue. There is no known way
-  #         to avoid this while keeping these characters
-  #         (which have been chosen to be both as safe as
-  #          possible, while unlikely to appear in user
-  #          values).
-  # NOTE:   The use of `*` globs is not always required,
-  #         **except** that `ksh88` needs them or it fails
-  #         to match anything.
-  # TODO:   Have different code paths for this: use `expr`
-  #         for `posh` & `ksh88` since otherwise this is a
-  #         little unsafe.
-  # shellcheck disable=SC2295
   {
     BS_LDPopImpl_Value=;
     case ${BS_LDPopImpl_Deque:+1}:${BS_LDPopImpl_PopFront} in
-    1:1)  BS_LDPopImpl_Value="${BS_LDPopImpl_Deque%%${c_BS_LIBDEQUE__ValueSuffix}*}"
-          BS_LDPopImpl_Value="${BS_LDPopImpl_Value#*${c_BS_LIBDEQUE__ValuePrefix}}"
+    1:1)  BS_LDPopImpl_Value=${BS_LDPopImpl_Deque%%"${c_BS_LIBDEQUE__ValueSuffix}"*}
+          BS_LDPopImpl_Value=${BS_LDPopImpl_Value#"${c_BS_LIBDEQUE__ValuePrefix}"}
 
-          BS_LDPopImpl_Deque="${BS_LDPopImpl_Deque#*${c_BS_LIBDEQUE__ValueSuffix}}" ;;
+          BS_LDPopImpl_Deque=${BS_LDPopImpl_Deque#*"${c_BS_LIBDEQUE__ValueSuffix}"} ;;
 
-    1:0)  BS_LDPopImpl_Value="${BS_LDPopImpl_Deque##*${c_BS_LIBDEQUE__ValuePrefix}}"
-          BS_LDPopImpl_Value="${BS_LDPopImpl_Value%${c_BS_LIBDEQUE__ValueSuffix}*}"
+    1:0)  BS_LDPopImpl_Value=${BS_LDPopImpl_Deque##*"${c_BS_LIBDEQUE__ValuePrefix}"}
+          BS_LDPopImpl_Value=${BS_LDPopImpl_Value%"${c_BS_LIBDEQUE__ValueSuffix}"}
 
-          BS_LDPopImpl_Deque="${BS_LDPopImpl_Deque%${c_BS_LIBDEQUE__ValuePrefix}*}" ;;
+          BS_LDPopImpl_Deque=${BS_LDPopImpl_Deque%"${c_BS_LIBDEQUE__ValuePrefix}"*} ;;
 
-    0:*)  return 1 ;;
+    *)    return 1 ;;
     esac
   }
 
   #---------------------------------------------------------
   # Remove "safe" quotes
   #---------------------------------------------------------
-  case ${BS_LDPopImpl_Value:+1}:${c_BS_LIBDEQUE_CFG_USE__SaferDeque} in
-  1:1) eval "BS_LDPopImpl_Value=${BS_LDPopImpl_Value}" ;;
+  case ${BS_LDPopImpl_Value:+1}:${c_BS_LIBDEQUE_CFG__use_SaferDeque} in
+  1:1) eval "BS_LDPopImpl_Value=${BS_LDPopImpl_Value}" || return $? ;;
   esac
 
   #---------------------------------------------------------
   # Save
   #---------------------------------------------------------
   case ${BS_LDPopImpl_refValue} in
-   -) eval "${BS_LDPopImpl_refDeque}=\"\${BS_LDPopImpl_Deque}\""
+   -) eval "${BS_LDPopImpl_refDeque}=\${BS_LDPopImpl_Deque}" || return $?
       printf '%s\n' "${BS_LDPopImpl_Value}" ;;
-  ?*) eval "${BS_LDPopImpl_refDeque}=\"\${BS_LDPopImpl_Deque}\"
-            ${BS_LDPopImpl_refValue}=\"\${BS_LDPopImpl_Value}\"" ;;
+  ?*) eval "${BS_LDPopImpl_refDeque}=\${BS_LDPopImpl_Deque}
+            ${BS_LDPopImpl_refValue}=\${BS_LDPopImpl_Value}" ;;
   esac
-} #< `deque_pop()`
+} #<: `deque_pop()`
 
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
@@ -1381,7 +1581,7 @@ bs_fn_libdeque_pop_impl() { ## cSpell:Ignore BS_LDPopImpl_
 #; Shorthand for [`bs_fn_libdeque_pop_impl 1 ${1+"$@"}`](#bs_fn_libdeque_pop_impl)
 #;
 #_______________________________________________________________________________
-bs_fn_libdeque_pop_front() { bs_fn_libdeque_pop_impl 1 ${1+"$@"};}
+bs_fn_libdeque_pop_front() { bs_fn_libdeque_pop_impl 1 ${1+"$@"}; }
 
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
@@ -1391,7 +1591,7 @@ bs_fn_libdeque_pop_front() { bs_fn_libdeque_pop_impl 1 ${1+"$@"};}
 #; Shorthand for [`bs_fn_libdeque_pop_impl 0 ${1+"$@"}`](#bs_fn_libdeque_pop_impl)
 #;
 #_______________________________________________________________________________
-bs_fn_libdeque_pop_back() { bs_fn_libdeque_pop_impl 0 ${1+"$@"};}
+bs_fn_libdeque_pop_back() { bs_fn_libdeque_pop_impl 0 ${1+"$@"}; }
 
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
@@ -1438,19 +1638,19 @@ bs_fn_libdeque_pop_back() { bs_fn_libdeque_pop_impl 0 ${1+"$@"};}
 #;
 #_______________________________________________________________________________
 bs_fn_libdeque_peek_impl() { ## cSpell:Ignore BS_LDPeekImpl_
-  BS_LDPeekImpl_PeekFront="${1:?'[libdeque::bs_fn_libdeque_peek_impl]: Internal Error: a flag is required'}"
+  BS_LDPeekImpl_PeekFront=${1:?'[libdeque::bs_fn_libdeque_peek_impl]: Internal Error: a flag is required'}
   shift;
-  BS_LDPeekImpl_Caller="${1?'[libdeque::bs_fn_libdeque_peek_impl]: Internal Error: a command name is required'}"
+  BS_LDPeekImpl_Caller=${1?'[libdeque::bs_fn_libdeque_peek_impl]: Internal Error: a command name is required'}
   shift;
 
   #---------------------------------------------------------
   #
   #---------------------------------------------------------
   case $# in
-  1)  BS_LDPeekImpl_refDeque="$1"
+  1)  BS_LDPeekImpl_refDeque=$1
       BS_LDPeekImpl_refValue='-' ;;
-  2)  BS_LDPeekImpl_refDeque="$1"
-      BS_LDPeekImpl_refValue="$2"
+  2)  BS_LDPeekImpl_refDeque=$1
+      BS_LDPeekImpl_refValue=$2
       fn_bs_libdeque_validate_name_hyphen \
         "${BS_LDPeekImpl_Caller}"         \
         "${BS_LDPeekImpl_refValue}"       || return $?;;
@@ -1472,47 +1672,29 @@ bs_fn_libdeque_peek_impl() { ## cSpell:Ignore BS_LDPeekImpl_
   # Unpack
   #---------------------------------------------------------
   BS_LDPeekImpl_Deque=;
-  eval "BS_LDPeekImpl_Deque=\"\${${BS_LDPeekImpl_refDeque}-}\""
+  eval "BS_LDPeekImpl_Deque=\${${BS_LDPeekImpl_refDeque}-}" || return $?
 
   #---------------------------------------------------------
   # Peek
   #---------------------------------------------------------
-  # SC2295: Expansions inside ${..} need to be quoted
-  #         separately, otherwise they will match as
-  #         a pattern.
-  # EXCEPT: `posh` fails when these are quoted in this
-  #         situation - for a prefix a `#` in the quoted
-  #         parameter makes it fail, while in a suffix a
-  #         `<newline>` is an issue. There is no known way
-  #         to avoid this while keeping these characters
-  #         (which have been chosen to be both as safe as
-  #          possible, while unlikely to appear in user
-  #          values).
-  # NOTE:   The use of `*` globs is not always required,
-  #         **except** that `ksh88` needs them or it fails
-  #         to match anything.
-  # TODO:   Have different code paths for this: use `expr`
-  #         for `posh` & `ksh88` since otherwise this is a
-  #         little unsafe.
-  # shellcheck disable=SC2295
   {
     BS_LDPeekImpl_Value=;
     case ${BS_LDPeekImpl_Deque:+1}:${BS_LDPeekImpl_PeekFront} in
-    1:1)  BS_LDPeekImpl_Value="${BS_LDPeekImpl_Deque%%${c_BS_LIBDEQUE__ValueSuffix}*}"
-          BS_LDPeekImpl_Value="${BS_LDPeekImpl_Value#*${c_BS_LIBDEQUE__ValuePrefix}}" ;;
+    1:1)  BS_LDPeekImpl_Value=${BS_LDPeekImpl_Deque%%"${c_BS_LIBDEQUE__ValueSuffix}"*}
+          BS_LDPeekImpl_Value=${BS_LDPeekImpl_Value#"${c_BS_LIBDEQUE__ValuePrefix}"} ;;
 
-    1:0)  BS_LDPeekImpl_Value="${BS_LDPeekImpl_Deque##*${c_BS_LIBDEQUE__ValuePrefix}}"
-          BS_LDPeekImpl_Value="${BS_LDPeekImpl_Value%${c_BS_LIBDEQUE__ValueSuffix}*}" ;;
+    1:0)  BS_LDPeekImpl_Value=${BS_LDPeekImpl_Deque##*"${c_BS_LIBDEQUE__ValuePrefix}"}
+          BS_LDPeekImpl_Value=${BS_LDPeekImpl_Value%"${c_BS_LIBDEQUE__ValueSuffix}"} ;;
 
-    0:*)  return 1 ;;
+    *)    return 1 ;;
     esac
   }
 
   #---------------------------------------------------------
   # Remove "safe" quotes
   #---------------------------------------------------------
-  case ${BS_LDPeekImpl_Value:+1}:${c_BS_LIBDEQUE_CFG_USE__SaferDeque} in
-  1:1) eval "BS_LDPeekImpl_Value=${BS_LDPeekImpl_Value}" ;;
+  case ${BS_LDPeekImpl_Value:+1}:${c_BS_LIBDEQUE_CFG__use_SaferDeque} in
+  1:1) eval "BS_LDPeekImpl_Value=${BS_LDPeekImpl_Value}" || return $? ;;
   esac
 
   #---------------------------------------------------------
@@ -1520,9 +1702,9 @@ bs_fn_libdeque_peek_impl() { ## cSpell:Ignore BS_LDPeekImpl_
   #---------------------------------------------------------
   case ${BS_LDPeekImpl_refValue} in
   -) printf '%s\n' "${BS_LDPeekImpl_Value}" ;;
-  *) eval "${BS_LDPeekImpl_refValue}=\"\${BS_LDPeekImpl_Value}\"" ;;
+  *) eval "${BS_LDPeekImpl_refValue}=\${BS_LDPeekImpl_Value}" ;;
   esac
-} #< `bs_fn_libdeque_peek_impl()`
+} #<: `bs_fn_libdeque_peek_impl()`
 
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
@@ -1532,7 +1714,7 @@ bs_fn_libdeque_peek_impl() { ## cSpell:Ignore BS_LDPeekImpl_
 #; Shorthand for [`bs_fn_libdeque_peek_impl 1 ${1+"$@"}`](#bs_fn_libdeque_peek_impl)
 #;
 #_______________________________________________________________________________
-bs_fn_libdeque_peek_front() { bs_fn_libdeque_peek_impl 1 ${1+"$@"};}
+bs_fn_libdeque_peek_front() { bs_fn_libdeque_peek_impl 1 ${1+"$@"}; }
 
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
@@ -1542,7 +1724,7 @@ bs_fn_libdeque_peek_front() { bs_fn_libdeque_peek_impl 1 ${1+"$@"};}
 #; Shorthand for [`bs_fn_libdeque_peek_impl 0 ${1+"$@"}`](#bs_fn_libdeque_peek_impl)
 #;
 #_______________________________________________________________________________
-bs_fn_libdeque_peek_back() { bs_fn_libdeque_peek_impl 0 ${1+"$@"};}
+bs_fn_libdeque_peek_back() { bs_fn_libdeque_peek_impl 0 ${1+"$@"}; }
 
 #_______________________________________________________________________________
 ## cSpell:Ignore fgrep
@@ -1579,7 +1761,7 @@ bs_fn_libdeque_peek_back() { bs_fn_libdeque_peek_impl 0 ${1+"$@"};}
 #   significantly limited in functionality.
 #
 #...............................................................................
-case ${c_BS_LIBDEQUE_CFG_USE__grep_F:-0} in
+case ${c_BS_LIBDEQUE_CFG__use_grep_F:-0} in
   1)
     bs_fn_libdeque_fgrep() { grep -F ${1+"$@"}; } ;;
   0)
@@ -1634,17 +1816,17 @@ esac
 #;
 #_______________________________________________________________________________
 bs_fn_libdeque_deque_size() { ## cSpell:Ignore BS_LDDSize_
-  BS_LDDSize_Caller="${1?'[libdeque::bs_fn_libdeque_deque_size]: Internal Error: a command name is required'}"
+  BS_LDDSize_Caller=${1?'[libdeque::bs_fn_libdeque_deque_size]: Internal Error: a command name is required'}
   shift;
 
   #---------------------------------------------------------
   #
   #---------------------------------------------------------
   case $# in
-  1)  BS_LDDSize_refDeque="$1"
+  1)  BS_LDDSize_refDeque=$1
        BS_LDDSize_refSize='-' ;;
-  2)  BS_LDDSize_refDeque="$1"
-       BS_LDDSize_refSize="$2"
+  2)  BS_LDDSize_refDeque=$1
+       BS_LDDSize_refSize=$2
       fn_bs_libdeque_validate_name_hyphen \
         "${BS_LDDSize_Caller}"            \
         "${BS_LDDSize_refSize}"           || return $?;;
@@ -1666,7 +1848,7 @@ bs_fn_libdeque_deque_size() { ## cSpell:Ignore BS_LDDSize_
   # Unpack
   #---------------------------------------------------------
   BS_LDDSize_Deque=;
-  eval "BS_LDDSize_Deque=\"\${${BS_LDDSize_refDeque}-}\"" || return $?
+  eval "BS_LDDSize_Deque=\${${BS_LDDSize_refDeque}-}" || return $?
 
   #---------------------------------------------------------
   # Test
@@ -1682,13 +1864,13 @@ bs_fn_libdeque_deque_size() { ## cSpell:Ignore BS_LDDSize_
   #   is much larger than expected (even when `-F` is used).
   #---------------------------------------------------------
   case ${BS_LDDSize_Deque:+1} in
-  1)  BS_LDDSize_Size="$(
+  1)  BS_LDDSize_Size=$(
           {
             printf '%s\n' "${BS_LDDSize_Deque}"
           } | {
             bs_fn_libdeque_fgrep -c -e "${c_BS_LIBDEQUE__Prefix}"
           }
-        )" || return $? ;;
+        ) || return $? ;;
   *)  BS_LDDSize_Size=0 ;;
   esac
 
@@ -1697,9 +1879,9 @@ bs_fn_libdeque_deque_size() { ## cSpell:Ignore BS_LDDSize_
   #---------------------------------------------------------
   case ${BS_LDDSize_refSize} in
   -) printf '%s\n' "${BS_LDDSize_Size}" ;;
-  *) eval "${BS_LDDSize_refSize}=\"\${BS_LDDSize_Size}\"" ;;
+  *) eval "${BS_LDDSize_refSize}=\${BS_LDDSize_Size}" ;;
   esac
-} #< `bs_fn_libdeque_deque_size()`
+} #<: `bs_fn_libdeque_deque_size()`
 
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
@@ -1740,19 +1922,18 @@ bs_fn_libdeque_deque_size() { ## cSpell:Ignore BS_LDDSize_
 #;
 #_______________________________________________________________________________
 bs_fn_libdeque_is_deque_like() { ## cSpell:Ignore BS_LDIDL_
-  BS_LDIDL_Caller="${1?'[libdeque::bs_fn_libdeque_is_deque_like]: Internal Error: a command name is required'}"
-  shift;
+  BS_LDIDL_Caller=${1?'[libdeque::bs_fn_libdeque_is_deque_like]: Internal Error: a command name is required'}
 
   #---------------------------------------------------------
   #
   #---------------------------------------------------------
   case $# in
-  1)  BS_LDIDL_refDeque="$1" ;;
+  2)  BS_LDIDL_refDeque=$2 ;;
   *)  fn_bs_libdeque_expected \
         "${BS_LDIDL_Caller}"  \
         "a ${BS_LDIDL_Caller%%_*} variable"
       return "${c_BS_LIBDEQUE__EX_USAGE}" ;;
-  esac #<: `case $# in`
+  esac
 
   #---------------------------------------------------------
   # Validate
@@ -1765,7 +1946,7 @@ bs_fn_libdeque_is_deque_like() { ## cSpell:Ignore BS_LDIDL_
   # Unpack
   #---------------------------------------------------------
   BS_LDIDL_Deque=;
-  eval "BS_LDIDL_Deque=\"\${${BS_LDIDL_refDeque}-}\"" || return $?
+  eval "BS_LDIDL_Deque=\${${BS_LDIDL_refDeque}-}" || return $?
 
   #---------------------------------------------------------
   # Test
@@ -1774,7 +1955,7 @@ bs_fn_libdeque_is_deque_like() { ## cSpell:Ignore BS_LDIDL_
   "${c_BS_LIBDEQUE__ValuePrefix}"*"${c_BS_LIBDEQUE__ValueSuffix}") return 0 ;;
                                                                 *) return 1 ;;
   esac
-} #< `bs_fn_libdeque_is_deque_like()`
+} #<: `bs_fn_libdeque_is_deque_like()`
 
 #===============================================================================
 #===============================================================================
@@ -2029,8 +2210,8 @@ deque_shift  () { bs_fn_libdeque_pop_front  'deque_shift'   ${1+"$@"}; }
 #: <!-- - -->
 #:
 #:     deque_peek_back 'MyDeque' 'MyVar'
-#:     MyVar="$(deque_peek_back 'MyDeque' )"
-#:     MyVar="$(deque_peek_back 'MyDeque' -)"
+#:     MyVar=$(deque_peek_back 'MyDeque' )
+#:     MyVar=$(deque_peek_back 'MyDeque' -)
 #:
 #: _NOTES_
 #: <!-- -->
@@ -2075,8 +2256,8 @@ deque_peek_back() { bs_fn_libdeque_peek_back 'deque_peek_back' ${1+"$@"}; }
 #: <!-- - -->
 #:
 #:     deque_peek_front 'MyDeque' 'MyVar'
-#:     MyVar="$(deque_peek_front 'MyDeque' )"
-#:     MyVar="$(deque_peek_front 'MyDeque' -)"
+#:     MyVar=$(deque_peek_front 'MyDeque' )
+#:     MyVar=$(deque_peek_front 'MyDeque' -)
 #:
 #: _NOTES_
 #: <!-- -->
@@ -2139,8 +2320,8 @@ deque_front() { bs_fn_libdeque_peek_front 'deque_front' ${1+"$@"}; }
 #: <!-- - -->
 #:
 #:     deque_size 'MyDeque' 'MySize'
-#:     MySize="$(deque_size 'MyDeque' )"
-#:     MySize="$(deque_size 'MyDeque' -)"
+#:     MySize=$(deque_size 'MyDeque' )
+#:     MySize=$(deque_size 'MyDeque' -)
 #:
 #: _NOTES_
 #: <!-- -->
@@ -2263,7 +2444,7 @@ queue_push() { bs_fn_libdeque_push_front 'queue_push' ${1+"$@"}; }
 #:
 #: `QUEUE` \[in:ref]
 #:
-#: : Variable containing a deque.
+#: : Variable containing a queue.
 #: : MUST be a valid _POSIX.1_ name.
 #:
 #: `OUTPUT` \[out:ref]
@@ -2326,8 +2507,8 @@ queue_pop() { bs_fn_libdeque_pop_back 'queue_pop' ${1+"$@"}; }
 #: <!-- - -->
 #:
 #:     queue_peek 'MyQueue' 'MyVar'
-#:     MyVar="$(queue_peek 'MyQueue' )"
-#:     MyVar="$(queue_peek 'MyQueue' -)"
+#:     MyVar=$(queue_peek 'MyQueue' )
+#:     MyVar=$(queue_peek 'MyQueue' -)
 #:
 #: _NOTES_
 #: <!-- -->
@@ -2373,8 +2554,8 @@ queue_peek() { bs_fn_libdeque_peek_back 'queue_peek' ${1+"$@"}; }
 #: <!-- - -->
 #:
 #:     queue_size 'MyQueue' 'MySize'
-#:     MySize="$(queue_size 'MyQueue' )"
-#:     MySize="$(queue_size 'MyQueue' -)"
+#:     MySize=$(queue_size 'MyQueue' )
+#:     MySize=$(queue_size 'MyQueue' -)
 #:
 #: _NOTES_
 #: <!-- -->
@@ -2499,7 +2680,7 @@ stack_push() { bs_fn_libdeque_push_front 'stack_push' ${1+"$@"}; }
 #: _ARGUMENTS_
 #: <!-- -- -->
 #:
-#: `STACK` \[out:ref]
+#: `STACK` \[in:ref]
 #:
 #: : Variable containing a stack.
 #: : MUST be a valid _POSIX.1_ name.
@@ -2564,8 +2745,8 @@ stack_pop() { bs_fn_libdeque_pop_front 'stack_pop' ${1+"$@"}; }
 #: <!-- - -->
 #:
 #:     stack_peek 'MyStack' 'MyVar'
-#:     MyVar="$(stack_peek 'MyStack' )"
-#:     MyVar="$(stack_peek 'MyStack' -)"
+#:     MyVar=$(stack_peek 'MyStack' )
+#:     MyVar=$(stack_peek 'MyStack' -)
 #:
 #: _NOTES_
 #: <!-- -->
@@ -2611,8 +2792,8 @@ stack_peek() { bs_fn_libdeque_peek_front 'stack_peek' ${1+"$@"}; }
 #: <!-- - -->
 #:
 #:     stack_size 'MyStack' 'MySize'
-#:     MySize="$(stack_size 'MyStack' )"
-#:     MySize="$(stack_size 'MyStack' -)"
+#:     MySize=$(stack_size 'MyStack' )
+#:     MySize=$(stack_size 'MyStack' -)
 #:
 #: _NOTES_
 #: <!-- -->
@@ -2663,7 +2844,7 @@ stack_size() { bs_fn_libdeque_deque_size 'stack_size' ${1+"$@"}; }
 #:   (non-error) cases.
 #:
 #_______________________________________________________________________________
-stack_is_stack_like() { bs_fn_libdeque_is_stack_like 'stack_is_stack_like' ${1+"$@"}; }
+stack_is_stack_like() { bs_fn_libdeque_is_deque_like 'stack_is_stack_like' ${1+"$@"}; }
 
 #===============================================================================
 #===============================================================================
@@ -2687,32 +2868,49 @@ fn_bs_libdeque_readonly 'BS_LIBDEQUE_SOURCED'
 #.
 #. ## VERSIONS
 #.
-#. v1.1.0        - [FIX] (PORTABILITY) Added workarounds for `grep` where '-F'
-#.                 is not available. (Assumes `fgrep` _is_ available in this
-#.                 case - this may change.) (New configuration variable:
-#.                 [`BS_LIBDEQUE_CONFIG_NO_GREP_F`](#bs_libdeque_config_no_grep_f))
-#.               - [FIX] (PORTABILITY) Removed `-` when used to indicate input
-#.                 is from `STDIN`.
-#.               - [FIX] (PORTABILITY) Minor changes to parameter expansion to
-#.                 avoid issues with ksh88 and posh.
+#. v1.1.1       - \[NEW] Added simple debugging output (disabled by default),
+#.                controlled by `BS_LIBDEQUE_DEBUG`, `BS_LIBDEQUE_CONFIG_DEBUG`,
+#.                and `BS_LIBDEQUE_DEBUG_FD`.
+#.              - \[CHANGE] Minor clean-ups and refactoring.
+#.              - \[FIX] _(PORTABILITY)_ Changed parameter expansion of the form
+#.                `${parameter:?[word]}` to use a fixed string, or a workaround
+#.                for `zsh` which fails to expand parameters used in `word`.
+#.              - \[FIX] _(PORTABILITY)_ changed quoting for some parameter
+#.                expansion from `"${parameter:#[word]}"` to
+#.                `${parameter:#"[word]"}` as it's slightly safer (it avoids
+#.                issues with special characters in `"[word]"`).
+#.              - \[FIX] _(SAFETY)_ depreciated
+#.                [`BS_LIBDEQUE_CONFIG_USE_SAFER_DEQUE`](#bs_libdeque_config_use_safer_deque)
+#.                in favor of
+#.                [`BS_LIBDEQUE_CONFIG_ALLOW_UNSAFE_DATA_FORMAT`](#bs_libdeque_config_allow_unsafe_data_format)
+#.                which is safer and should have been used in the first place.
+#.              - \[FIX] _(DOCUMENTATION)_ removed documentation accidentally
+#.                left over from a previous implementation of some code that was
+#.                no longer correct nor relevant to current code. (This
+#.                included re-enabling shellcheck checks that had erroneously
+#.                been left disabled.)
 #.
-#. v1.0.0        - First Release
+#. v1.1.0       - \[FIX] _(PORTABILITY)_ Added workarounds for `grep` where '-F'
+#.                is not available. (Assumes `fgrep` _is_ available in this
+#.                case - this may change.) (New configuration variable:
+#.                [`BS_LIBDEQUE_CONFIG_NO_GREP_F`](#bs_libdeque_config_no_grep_f))
+#.              - \[FIX] _(PORTABILITY)_ Removed `-` when used to indicate input
+#.                is from `STDIN`.
+#.              - \[FIX] _(PORTABILITY)_ Minor changes to parameter expansion to
+#.                avoid issues with ksh88 and posh.
+#.
+#. v1.0.0       - First Release
 #.
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
 #: ## STANDARDS
 #:
-#: - [_POSIX.1-2008_][posix]
-#:   - also known as:
-#:     - _The Open Group Base Specifications Issue 7_
-#:     - _IEEE Std 1003.1-2008_
-#:     - _The Single UNIX Specification Version 4 (SUSv4)_
-#:   - the more recent
-#:     [_POSIX.1-2017_][posix_2017]
-#:     is functionally identical to _POSIX.1-2008_, but incorporates some errata
-#: - [FreeBSD SYSEXITS(3)][sysexits]
-#:   - while not truly standard, these are used by many projects
-#: - [Semantic Versioning v2.0.0][semver]
+#: - [_POSIX.1-2008_][posix].
+#: - [FreeBSD SYSEXITS(3)][sysexits].
+#: - [Semantic Versioning v2.0.0][semver].
+#: - [Inclusive Naming Initiative][inclusivenaming].
+#:
+#: _For more details see the `shtoolkit` general [documentation](./README.MD#standards)._
 #:
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
@@ -2779,21 +2977,21 @@ fn_bs_libdeque_readonly 'BS_LIBDEQUE_SOURCED'
 #:
 #: ## CAVEATS
 #:
-#: _The internal structure of a `deque`, `queue`, or `stack` is subject to
-#:  change without notice and should not be relied upon. In particular,
-#:  currently all three types are interchangeable (e.g. a `stack` can be used
-#:  with commands for a `queue`, etc.), however, this should not be assumed:
-#:  types should always be used only with the commands for the specific type._
+#: - The internal structure of a deque, queue, or stack is subject to change
+#:   without notice and should not be relied upon. In particular, currently
+#:   all three types are interchangeable (e.g. a `stack` can be used with
+#:   commands for a `queue`, etc.), however, this should not be assumed: types
+#:   should always be used only with the commands for the specific type.
+#: - The maximum size of any deque, queue, or stack is limited by the
+#:   environment in which it is used, specifically the command line length limit
+#:   may cause issues with these structures if used as arguments to some
+#:   commands. Other limitations may also exist. It is highly recommended that
+#:   variables containing a deque, queue, or stack are **not** marked for
+#:   export.
+#: - The library attempts to account for differences between implementations
+#:   (where known), however, it is not possible to do this for every case.
 #:
-#: The maximum size of any deque, queue or stack is limited by the environment
-#: in which it is used, specifically they will not be able to exceed the
-#: command line length limit, though other limitations may also exist.
-#:
-#: Note that exporting a variable containing any deque, queue or stack will
-#: cause that variable to be counted against the command line length limit
-#: **TWICE** (for any library operations).
-#:
-#: _For more details see the common suite [documentation](./README.MD#caveats)._
+#: _For more details see the `shtoolkit` general [documentation](./README.MD#caveats)._
 #:
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
@@ -2816,14 +3014,22 @@ fn_bs_libdeque_readonly 'BS_LIBDEQUE_SOURCED'
 #%
 #% ## SEE ALSO
 #%
-#% betterscripts(7)
+#% shtoolkit(7)
 #%
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #: <!-- REFERENCES -->
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
+#: [markdown]:                  <https://daringfireball.net/projects/markdown/syntax>                                                "Markdown: Syntax [daringfireball.net]"
+#: [commonmark]:                <https://commonmark.org/>                                                                            "CommonMark [spec.commonmark.org]"
+#: [commonmark_spec]:           <https://spec.commonmark.org/current/>                                                               "CommonMark Spec (current) [spec.commonmark.org]"
+#:
 #: [posix]:                     <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition>                                       "POSIX.1-2008 \[pubs.opengroup.org\]"
-#: [posix_2017]:                <https://pubs.opengroup.org/onlinepubs/9699919799>                                                   "POSIX.1-2017 \[pubs.opengroup.org\]"
+#: [posix_2013]:                <https://pubs.opengroup.org/onlinepubs/9699919799.2013edition>                                       "POSIX.1-2013 \[pubs.opengroup.org\]"
+#: [posix_2016]:                <https://pubs.opengroup.org/onlinepubs/9699919799.2016edition>                                       "POSIX.1-2016 \[pubs.opengroup.org\]"
+#: [posix_2018]:                <https://pubs.opengroup.org/onlinepubs/9699919799.2018edition>                                       "POSIX.1-2018 \[pubs.opengroup.org\]"
+#: [posix_2024]:                <https://pubs.opengroup.org/onlinepubs/9799919799.2024edition>                                       "POSIX.1-2024 \[pubs.opengroup.org\]"
+#:
 #: [posix_bre]:                 <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap09.html#tag_09_03>     "Basic Regular Expression \[pubs.opengroup.org\]"
 #: [posix_ere]:                 <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap09.html#tag_09_04>     "Extended Regular Expression \[pubs.opengroup.org\]"
 #: [posix_re_bracket_exp]:      <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap09.html#tag_09_03_05>  "RE Bracket Expression \[pubs.opengroup.org\]"
@@ -2831,8 +3037,12 @@ fn_bs_libdeque_readonly 'BS_LIBDEQUE_SOURCED'
 #: [posix_getopts]:             <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/utilities/getopts.html>                "getopts \[pubs.opengroup.org\]"
 #: [posix_utility_conventions]: <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap12.html>               "POSIX: Utility Conventions \[pubs.opengroup.org\]"
 #: [posix_variable]:            <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap03.html#tag_03_230>    "Definitions: Name \[pubs.opengroup.org\]"
+#: [posix_execl]:               <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/functions/execl.html>                  "execl \[pubs.opengroup.org\]"
+#: [posix_chars]:               <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap06.html#tag_06_01>     "Portable Character Set \[pubs.opengroup.org\]"
+#: [posix_glob]:                <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/utilities/V3_chap02.html#tag_18_13>    "Pattern Matching Notation \[pubs.opengroup.org\]"
 #:
 #: [sysexits]:                  <https://www.freebsd.org/cgi/man.cgi?sysexits(3)>                                                    "FreeBSD SYSEXITS(3) \[freebsd.org\]"
+#:
 #: [semver]:                    <https://semver.org/>                                                                                "Semantic Versioning \[semver.org\]"
 #:
 #: [util_linux]:                <https://git.kernel.org/pub/scm/utils/util-linux/util-linux.git/about/>                              "util-linux (about) \[git.kernel.org\]"
@@ -2841,7 +3051,12 @@ fn_bs_libdeque_readonly 'BS_LIBDEQUE_SOURCED'
 #:
 #: [man_page]:                  <https://wikipedia.org/wiki/Man_page>                                                                "man page \[wikipedia.org\]"
 #:
-#: [autoconf_portable]:         <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Portable-Shell.html>           "autoconf: Portable Shell Programming \[gnu.org\]"
+#: [autoconf_portable]:         <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Portable-Shell.html>                  "autoconf: Portable Shell Programming \[gnu.org\]"
+#: [autoconf_awk]:              <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Limitations-of-Usual-Tools.html#awk>  "autoconf: Limitations of Usual Tools \[gnu.org\]"
+#: [autoconf_sed]:              <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Limitations-of-Usual-Tools.html#sed>  "autoconf: Limitations of Usual Tools \[gnu.org\]"
+#: [autoconf_grep]:             <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Limitations-of-Usual-Tools.html#grep> "autoconf: Limitations of Usual Tools \[gnu.org\]"
+#:
+#: [inclusivenaming]:           <https://inclusivenaming.org/>                                                                       "Inclusive Naming Initiative \[inclusivenaming.org\]"
 #:
 ################################################################################
 

@@ -14,9 +14,9 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "libgetargs" "7" "" "BetterScripts" "Argument processing for POSIX.1 shell scripts."
+.TH "libgetargs" "7" "July 2026" "BetterScripts libgetargs v1.3.1" "Argument processing for POSIX.1 shell scripts."
 .hy
-.SS LIBGETARGS
+.SS \f[V]libgetargs.sh\f[R]
 .SS SYNOPSIS
 .IP
 .nf
@@ -829,13 +829,14 @@ This is to signal to the caller that auto-help was triggered and, in
 general, should \f[I]not\f[R] be propagated any further (i.e.\ normally
 \f[V]--help\f[R] is a successful operation).
 .IP \[bu] 2
-An unexpected exit status from an external command will be propagated to
-the caller.
-(This is unlikely to occur, and would normally indicate a command that
-is not \f[I]POSIX.1\f[R] compliant.)
+An exit status that is \f[I]NOT\f[R] \f[V]0\f[R] (\f[V]<zero>\f[R]) from
+an external command will be propagated to the caller where relevant (and
+possible).
 .IP \[bu] 2
-Otherwise the exit status is one of values taken from FreeBSD
-\f[V]SYSEXITS(3)\f[R] (https://www.freebsd.org/cgi/man.cgi?sysexits(3)):
+Exit status\[cq] not covered by any of the above use values as described
+in FreeBSD
+\f[V]SYSEXITS(3)\f[R] (https://www.freebsd.org/cgi/man.cgi?sysexits(3))
+- including:
 .RS 2
 .IP \[bu] 2
 \f[V]EX_USAGE\f[R] for invalid SPECIFICATION usage (e.g.\ a missing
@@ -849,6 +850,8 @@ meant to be should be set once - i.e.\ of type \f[V][:]\f[R] - is set
 twice), this is the only error exit status normally generated for user
 ARGUMENT errors.
 .RE
+.IP \[bu] 2
+Exit status is configuration agnostic.
 .SS ENVIRONMENT
 .PP
 A number of environment variables affect the library, these are split
@@ -861,18 +864,19 @@ specific configurations.
 In additional to these, there are a number of variables that are set by
 the library to convey information outside of command invocation.
 .PP
-If unset, some variables will take an initial value from a
-\f[I]BetterScripts\f[R] \f[I]POSIX Suite\f[R] wide variable, these allow
-the same configuration to be used by all libraries in the suite.
+If unset, some variables will take an initial value from a common
+\f[V]shtoolkit\f[R] variable applicable to all libraries, these allow
+the same configuration to be used across libraries more easily.
 .PP
 After the library has been sourced, external commands must not set
-library environment variables that are classified as CONSTANT.
+library environment variables that are classified as \f[I]CONSTANT\f[R].
 Variables may use the \f[V]readonly\f[R] command to enforce this.
 .PP
 \f[B]\f[BI]If not otherwise specified, an \f[VBI]<unset>\f[BI] variable
 is equivalent to the\f[B]\f[R] \f[B]\f[BI]default value.\f[B]\f[R]
 .PP
-\f[I]For more details see the common suite documentation.\f[R]
+\f[I]For more details see the \f[VI]shtoolkit\f[I] general
+documentation.\f[R]
 .SS PLATFORM CONFIGURATION
 .PP
    *   *   *   *   *
@@ -880,549 +884,19 @@ is equivalent to the\f[B]\f[R] \f[B]\f[BI]default value.\f[B]\f[R]
 .IP \[bu] 2
 Suite: \f[V]BETTER_SCRIPTS_CONFIG_NO_Z_SHELL_SETOPT\f[R]
 .IP \[bu] 2
-Type: FLAG
+Type: \f[I]FLAG\f[R]
 .IP \[bu] 2
-Class: CONSTANT
+Class: \f[I]CONSTANT\f[R]
 .IP \[bu] 2
 Default: <automatic>
 .IP \[bu] 2
 [Disable]/Enable using \f[V]setopt\f[R] in \f[I]Z Shell\f[R] to ensure
 \f[I]POSIX.1\f[R] like behavior.
 .IP \[bu] 2
-\f[I]OFF\f[R]: Use \f[V]setopt\f[R] to set the appropriate options.
-.IP \[bu] 2
-\f[I]ON\f[R]: Don\[cq]t use \f[V]setopt\f[R], even in \f[I]Z Shell\f[R].
-.IP \[bu] 2
 Automatically enabled if \f[I]Z Shell\f[R] is detected.
 .IP \[bu] 2
-Any use of \f[V]setopt\f[R] is scoped as tightly as possible and should
+Any use of \f[V]setopt\f[R] is scoped as tightly as possible and SHOULD
 not affect other commands.
-.IP \[bu] 2
-\f[I]Z Shell\f[R] has some defaults that cause non-standard behavior,
-however also provides \f[V]setopt\f[R] which can be tightly scoped to
-set options when required without impacting other platforms.
-.PP
-   *   *   *   *   *
-.SS \f[V]BS_LIBGETARGS_CONFIG_NO_EXPR_EXIT_STATUS\f[R]
-.IP \[bu] 2
-Suite: \f[V]BETTER_SCRIPTS_CONFIG_NO_EXPR_EXIT_STATUS\f[R]
-.IP \[bu] 2
-Type: FLAG
-.IP \[bu] 2
-Class: CONSTANT
-.IP \[bu] 2
-Default: <automatic>
-.IP \[bu] 2
-[Disable]/Enable ignoring \f[V]expr\f[R] exit status to indicate a match
-was made.
-.IP \[bu] 2
-\f[I]OFF\f[R]: Use \f[V]expr\f[R] exit status to determine if a match
-was made.
-.IP \[bu] 2
-\f[I]ON\f[R]: Use a workaround to determine if a match was made.
-(This requires a sub-shell and is therefore far slower.)
-.IP \[bu] 2
-Some versions of \f[V]expr\f[R] do not always properly set the exit
-status, making it impossible to determine if a match was actually made.
-.PP
-   *   *   *   *   *
-.SS \f[V]BS_LIBGETARGS_CONFIG_NO_EXPR_NESTED_CAPTURES\f[R]
-.IP \[bu] 2
-Suite: \f[V]BETTER_SCRIPTS_CONFIG_NO_EXPR_NESTED_CAPTURES\f[R]
-.IP \[bu] 2
-Type: FLAG
-.IP \[bu] 2
-Class: CONSTANT
-.IP \[bu] 2
-Default: <automatic>
-.IP \[bu] 2
-Disable/[Enable] using \f[V]expr\f[R] for any \[lq]Basic Regular
-Expression\[rq]
-(\f[I]BRE\f[R]) (https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap09.html#tag_09_03)
-that includes nested captures.
-.IP \[bu] 2
-\f[I]OFF\f[R]: Use \f[V]expr\f[R] for a \f[I]BRE\f[R] that includes
-nested captures.
-.IP \[bu] 2
-\f[I]ON\f[R]: Any \f[I]BRE\f[R] that uses nested captures will not be
-used with \f[V]expr\f[R], but will use a case specific work-around.
-.IP \[bu] 2
-Some versions of \f[V]expr\f[R] do not work well with or do not support
-nested captures.
-.SS USER PREFERENCE (OVERRIDABLE)
-.PP
-Configuration that CAN be overridden by OPTIONs.
-.PP
-   *   *   *   *   *
-.SS \f[V]BS_LIBGETARGS_CONFIG_ALLOW_ABBREVIATIONS\f[R]
-.IP \[bu] 2
-Type: FLAG
-.IP \[bu] 2
-Class: VARIABLE
-.IP \[bu] 2
-Default: \f[I]ON\f[R]
-.IP \[bu] 2
-Override: \f[V]--[no-]abbreviations\f[R]
-.IP \[bu] 2
-[Enable]/Disable LONG-OPTION abbreviations.
-.IP \[bu] 2
-\f[I]ON\f[R]: any LONG-OPTION matches if the name is a prefix of an
-OPTION-CONFIG name (e.g.\ \f[V]--debug\f[R] and \f[V]--deb\f[R] will
-both match \f[V]debug\f[R]).
-.IP \[bu] 2
-\f[I]OFF\f[R]: abbreviations are disabled and long options must match
-exactly.
-.IP \[bu] 2
-MAY cause unexpected results if combined with
-\f[V]BS_LIBGETARGS_CONFIG_ALLOW_AMBIGUOUS\f[R].
-.PP
-   *   *   *   *   *
-.SS \f[V]BS_LIBGETARGS_CONFIG_ALLOW_AMBIGUOUS\f[R]
-.IP \[bu] 2
-Type: FLAG
-.IP \[bu] 2
-Class: VARIABLE
-.IP \[bu] 2
-Default: \f[I]OFF\f[R]
-.IP \[bu] 2
-Override: \f[V]--[no-]ambiguous\f[R]
-.IP \[bu] 2
-[Enable]/Disable detection of ambiguous user OPTIONs.
-.IP \[bu] 2
-\f[I]OFF\f[R]: any ambiguous OPTION is an error.
-.IP \[bu] 2
-\f[I]ON\f[R]: all OPTIONs use the first match found - this WILL mask
-some OPTION-CONFIG errors.
-.IP \[bu] 2
-OPTIONs are ambiguous when multiple OPTIONs have the same name or, if
-abbreviations are enabled, when an abbreviation matches multiple
-OPTIONs.
-.IP \[bu] 2
-If abbreviations are also enabled (see
-\f[V]BS_LIBGETARGS_CONFIG_ALLOW_ABBREVIATIONS\f[R]) there is a high
-chance of incorrectly matching OPTIONs.
-.IP \[bu] 2
-\f[I]Has a measurable impact on performance.\f[R] Prefer
-\f[B]\f[BI]ON\f[B]\f[R] for performance.
-.PP
-   *   *   *   *   *
-.SS \f[V]BS_LIBGETARGS_CONFIG_CHECK_CONFIG\f[R]
-.IP \[bu] 2
-Type: FLAG
-.IP \[bu] 2
-Class: VARIABLE
-.IP \[bu] 2
-Default: \f[I]OFF\f[R]
-.IP \[bu] 2
-Override: \f[V]--[no-]check-config\f[R]
-.IP \[bu] 2
-Enable/[Disable] performing basic checks on OPTION-CONFIG and
-OPERAND-CONFIG before processing.
-.IP \[bu] 2
-\f[I]OFF\f[R]: don\[cq]t do any additional checks.
-.IP \[bu] 2
-\f[I]ON\f[R]: preform extra checks to ensure that OPTION-CONFIG and
-OPERAND-CONFIG match the required specification.
-.IP \[bu] 2
-The currently available checks are relatively basic but will catch
-errors that MAY otherwise be missed, however some of these may be
-benign.
-.IP \[bu] 2
-\f[I]MAY have a performance impact.\f[R] Prefer \f[B]\f[BI]OFF\f[B]\f[R]
-for performance.
-.PP
-   *   *   *   *   *
-.SS \f[V]BS_LIBGETARGS_CONFIG_FATAL_ERRORS\f[R]
-.IP \[bu] 2
-Suite: \f[V]BETTER_SCRIPTS_CONFIG_FATAL_ERRORS\f[R]
-.IP \[bu] 2
-Type: FLAG
-.IP \[bu] 2
-Class: VARIABLE
-.IP \[bu] 2
-Default: \f[I]OFF\f[R]
-.IP \[bu] 2
-Enable/[Disable] causing library errors to terminate the current
-(sub-)shell.
-.IP \[bu] 2
-\f[I]OFF\f[R]: errors stop any further processing, and cause a non-zero
-exit status, but do not cause an exception.
-.IP \[bu] 2
-\f[I]ON\f[R]: any library error will cause an \[lq]unset variable\[rq]
-shell exception using the
-\f[V]${parameter:?[word]}\f[R] (https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/utilities/V3_chap02.html#tag_18_06_02)
-parameter expansion, where \f[V]word\f[R] is set to an error message
-that \f[I]should\f[R] be displayed by the shell (this message is NOT
-suppressed by \f[V]BS_LIBGETARGS_CONFIG_QUIET_ERRORS\f[R]).
-.IP \[bu] 2
-Both the library version of this option and the suite version can be
-modified between command invocations and will affect the next command.
-.PP
-   *   *   *   *   *
-.SS \f[V]BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS\f[R]
-.IP \[bu] 2
-Type: FLAG
-.IP \[bu] 2
-Class: VARIABLE
-.IP \[bu] 2
-Default: \f[I]OFF\f[R]
-.IP \[bu] 2
-Override: \f[V]--[no-]interleaved\f[R], \f[V]--[no-]mixed\f[R]
-.IP \[bu] 2
-Enable/[Disable] allowing matching OPTIONs \f[I]after\f[R] an OPERAND is
-matched.
-.IP \[bu] 2
-\f[I]OFF\f[R]: all OPTIONs (and associated OPTION-ARGUMENTs) MUST appear
-before the first OPERAND; i.e., the first ARGUMENT that does NOT start
-with \f[V]-\f[R] (\f[V]<hyphen>\f[R]) and is NOT an OPTION-ARGUMENT
-causes ALL remaining OPTIONs to be assumed to be OPERANDs \f[I]even if
-they start with \f[VI]-\f[I] (\f[VI]<hyphen>\f[I])\f[R].
-.IP \[bu] 2
-\f[I]ON\f[R]: an ARGUMENT that does NOT start with \f[V]-\f[R]
-(\f[V]<hyphen>\f[R]) and is NOT an OPTION-ARGUMENT is assumed to be an
-OPERAND, but following ARGUMENTs continue to be checked for OPTIONs.
-.IP \[bu] 2
-In either mode the special ARGUMENT \f[V]--\f[R] stops OPTION processing
-and any remaining ARGUMENTs are treated as OPERANDs
-.IP \[bu] 2
-Implied by \f[V]BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED\f[R]
-.IP \[bu] 2
-Mutually exclusive with \f[V]BS_LIBGETARGS_CONFIG_STRICT_OPERANDS\f[R]
-.PP
-   *   *   *   *   *
-.SS \f[V]BS_LIBGETARGS_CONFIG_ALLOW_POSIX_LONG\f[R]
-.IP \[bu] 2
-Type: FLAG
-.IP \[bu] 2
-Class: VARIABLE
-.IP \[bu] 2
-Default: \f[I]OFF\f[R]
-.IP \[bu] 2
-Override: \f[V]--[no-]posix-long\f[R]
-.IP \[bu] 2
-Enable/[Disable] matching LONG-OPTIONs with a single preceding
-\f[V]-\f[R] (\f[V]<hyphen>\f[R]) character instead of the normally
-required two.
-.IP \[bu] 2
-\f[I]OFF\f[R]: LONG-OPTIONs require the prefix \f[V]--\f[R]
-.IP \[bu] 2
-\f[I]ON\f[R]: any multi-character OPTION following a single \f[V]-\f[R]
-(\f[V]<hyphen>\f[R]) is checked to see if it matches a LONG-OPTION
-before checking if it is a COMPOUND-OPTION, meaning matching
-COMPOUND-OPTIONs is slower.
-.IP \[bu] 2
-\f[I]Has a measurable impact on performance.\f[R] Prefer
-\f[B]\f[BI]OFF\f[B]\f[R] for performance.
-.PP
-   *   *   *   *   *
-.SS \f[V]BS_LIBGETARGS_CONFIG_QUIET_ERRORS\f[R]
-.IP \[bu] 2
-Suite: \f[V]BETTER_SCRIPTS_CONFIG_QUIET_ERRORS\f[R]
-.IP \[bu] 2
-Type: FLAG
-.IP \[bu] 2
-Class: VARIABLE
-.IP \[bu] 2
-Default: \f[I]OFF\f[R]
-.IP \[bu] 2
-[Enable]/Disable library error message output.
-.IP \[bu] 2
-\f[I]OFF\f[R]: error messages will be written to \f[V]STDERR\f[R] as:
-\f[V][<ID>]: ERROR: <MESSAGE>\f[R] (where \f[V]<ID>\f[R] is set using
-the \f[V]--id\f[R] OPTION).
-.IP \[bu] 2
-\f[I]ON\f[R]: library error messages will be suppressed.
-.IP \[bu] 2
-The most recent error message is always available in
-\f[V]BS_LIBGETARGS_LAST_ERROR\f[R] even when error output is suppressed.
-.IP \[bu] 2
-Both the library version of this option and the suite version can be
-modified between command invocations and will affect the next command.
-.IP \[bu] 2
-Does NOT affect errors from non-library commands, which \f[I]may\f[R]
-still produce output.
-.PP
-   *   *   *   *   *
-.SS \f[V]BS_LIBGETARGS_CONFIG_STRICT_OPERANDS\f[R]
-.IP \[bu] 2
-Type: FLAG
-.IP \[bu] 2
-Class: VARIABLE
-.IP \[bu] 2
-Default: \f[I]OFF\f[R]
-.IP \[bu] 2
-Override: \f[V]--[no-]strict\f[R], \f[V]--[no-]separated\f[R]
-.IP \[bu] 2
-Enable/[Disable] requiring the use of \f[V]--\f[R] to separate OPTIONs
-from OPERANDs.
-.IP \[bu] 2
-\f[I]OFF\f[R]: the first ARGUMENT that is not and OPTION or an
-OPTION-ARGUMENT is an OPERAND and causes all further ARGUMENTs to be
-OPERANDs.
-.IP \[bu] 2
-\f[I]ON\f[R]: an ARGUMENT that is exactly \f[V]--\f[R] must be present
-after \f[I]all\f[R] OPTIONs and before \f[I]any\f[R] OPERANDs.
-.IP \[bu] 2
-If this is enabled (\f[I]ON\f[R]), then optional OPTION-ARGUMENTS can be
-specified using the ARGUMENT \f[I]following\f[R] the OPTION (in addition
-to the normal formats).
-.IP \[bu] 2
-Can help detect some usage errors.
-.IP \[bu] 2
-Mutually exclusive with
-\f[V]BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS\f[R].
-.PP
-   *   *   *   *   *
-.SS \f[V]BS_LIBGETARGS_CONFIG_ALLOW_UNSAFE_OPTIONS\f[R]
-.IP \[bu] 2
-Type: FLAG
-.IP \[bu] 2
-Class: VARIABLE
-.IP \[bu] 2
-Default: \f[I]OFF\f[R]
-.IP \[bu] 2
-Override: \f[V]--[no-]unsafe\f[R]
-.IP \[bu] 2
-[Enable]/Disable escaping OPTION characters to avoid any erroneous
-results when matching with regular expressions.
-Characters in the supported set for OPTION-NAMEs \f[V][[:alnum:]_-]\f[R]
-do not need this processing, while characters outside this range MAY
-(e.g.\ \f[V].\f[R] (\f[V]<period>\f[R]) is problematic).
-.IP \[bu] 2
-\f[I]OFF\f[R]: OPTION-NAMEs have all characters made safe for use in a
-regular expression.
-.IP \[bu] 2
-\f[I]ON\f[R]: OPTION-NAMEs are used as is and may match incorrectly if
-they contain specific characters.
-.IP \[bu] 2
-This affects the OPTIONs being processed and NOT those in the
-OPTION-CONFIG.
-.IP \[bu] 2
-MAY have a performance impact.
-Prefer \f[B]\f[BI]ON\f[B]\f[R] for performance.
-.PP
-   *   *   *   *   *
-.SS \f[V]BS_LIBGETARGS_CONFIG_AUTO_UNSET\f[R]
-.IP \[bu] 2
-Type: FLAG
-.IP \[bu] 2
-Class: VARIABLE
-.IP \[bu] 2
-Default: \f[I]OFF\f[R]
-.IP \[bu] 2
-Override: \f[V]--[no-]unset\f[R]
-.IP \[bu] 2
-Enable/[Disable] automatic unsetting of all VARIABLES named in
-OPTION-CONFIG and OPERAND-CONFIG.
-.IP \[bu] 2
-\f[I]ON\f[R]: every variable specified in OPTION-CONFIG and
-OPERAND-CONFIG is automatically unset before ARGUMENTs are processed.
-.IP \[bu] 2
-\f[I]OFF\f[R]: variables need to be set to a known value or it will not
-be possible to correctly determine what OPTIONs have been matched.
-.IP \[bu] 2
-Normally desirable to have enabled, but using it MAY have performance
-issues, and it can not be used alongside default values for variables
-(i.e.\ values set before \f[V]getargs\f[R] is invoked).
-.IP \[bu] 2
-MAY have a performance impact.
-Prefer \f[B]\f[BI]OFF\f[B]\f[R] for performance.
-.PP
-   *   *   *   *   *
-.SS \f[V]BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED\f[R]
-.IP \[bu] 2
-Type: FLAG
-.IP \[bu] 2
-Class: VARIABLE
-.IP \[bu] 2
-Default: \f[I]OFF\f[R]
-.IP \[bu] 2
-Override: \f[V]--[no-]unmatched\f[R], \f[V]--unmatched=<VARIABLE>\f[R]
-.IP \[bu] 2
-Enable/[Disable] matching an unrecognized OPTION as an OPERAND.
-.IP \[bu] 2
-\f[I]OFF\f[R]: any unrecognized OPTION is an error.
-.IP \[bu] 2
-\f[I]ON\f[R]: any unrecognized OPTION is treated as an OPERAND.
-.IP \[bu] 2
-Useful for commands where most arguments are not used, but instead
-forwarded to another command, where having this enabled significantly
-reduces code and isolates the command from changes in the arguments
-accepted by the target command.
-.IP \[bu] 2
-In either mode the special ARGUMENT \f[V]--\f[R] stops OPTION processing
-and any remaining ARGUMENTs are treated as OPERANDs.
-.IP \[bu] 2
-Although still permitted, there is no practical way to support the
-normal OPERAND processing when this is enabled; the only OPERAND-CONFIG
-that is useful will be one containing a single \f[V][+]\f[R] type.
-If other OPERANDs are required, these must be manually extracted from
-the resulting array.
-.IP \[bu] 2
-If using a VALIDATOR, any unmatched values will be sent to the VALIDATOR
-as OPERANDs.
-.IP \[bu] 2
-\f[V]--unmatched=<VARIABLE>\f[R] provides functionality that is beyond
-that available using this variable.
-.IP \[bu] 2
-Implies \f[V]BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS\f[R].
-.IP \[bu] 2
-Mutually exclusive with \f[V]BS_LIBGETARGS_CONFIG_STRICT_OPERANDS\f[R].
-.SS USER PREFERENCE
-.PP
-Configuration that can NOT be overridden by OPTIONs.
-.PP
-   *   *   *   *   *
-.SS \f[V]BS_LIBGETARGS_CONFIG_TRUE_VALUE\f[R]
-.IP \[bu] 2
-Type: TEXT
-.IP \[bu] 2
-Class: VARIABLE
-.IP \[bu] 2
-Default: \f[V]true\f[R]
-.IP \[bu] 2
-Value used as \f[V]true\f[R] for options with the type negatable
-SWITCH-OPTION (i.e.\ \f[V][\[ti]]\f[R]).
-.IP \[bu] 2
-The value given to a negatable SWITCH-OPTION variable when the ARGUMENT
-was specified without an OPTION-TAG.
-.IP \[bu] 2
-Also one of the values accepted as an OPTION-TAG for negatable
-SWITCH-OPTIONs.
-.IP \[bu] 2
-Can be null.
-.IP \[bu] 2
-SHOULD differ from \f[V]BS_LIBGETARGS_CONFIG_FALSE_VALUE\f[R] however
-this is NOT enforced.
-.IP \[bu] 2
-A negatable SWITCH-OPTION \f[I]only\f[R] accepts the value here or the
-value from \f[V]BS_LIBGETARGS_CONFIG_FALSE_VALUE\f[R] as an OPTION-TAG.
-.PP
-   *   *   *   *   *
-.SS \f[V]BS_LIBGETARGS_CONFIG_FALSE_VALUE\f[R]
-.IP \[bu] 2
-Type: TEXT
-.IP \[bu] 2
-Class: VARIABLE
-.IP \[bu] 2
-Default: \f[V]false\f[R]
-.IP \[bu] 2
-Value used as \f[V]false\f[R] for options with the type negatable
-SWITCH-OPTION (i.e.\ \f[V][\[ti]]\f[R]).
-.IP \[bu] 2
-This value can be specified as an OPTION-TAG for the OPTION in which
-case the OPTION variable will receive this value.
-.IP \[bu] 2
-Can be null.
-.IP \[bu] 2
-SHOULD differ from \f[V]BS_LIBGETARGS_CONFIG_TRUE_VALUE\f[R] however
-this is NOT enforced.
-.IP \[bu] 2
-A negatable SWITCH-OPTION \f[I]only\f[R] accepts the value here or the
-value from \f[V]BS_LIBGETARGS_CONFIG_TRUE_VALUE\f[R] as an OPTION-TAG.
-.PP
-   *   *   *   *   *
-.SS \f[V]BS_LIBGETARGS_CONFIG_OPTIONAL_VALUE\f[R]
-.IP \[bu] 2
-Type: TEXT
-.IP \[bu] 2
-Class: VARIABLE
-.IP \[bu] 2
-Default: <unset>
-.IP \[bu] 2
-The value an OPTION variable receives if it takes an optional
-OPTION-ARGUMENT and no OPTION-ARGUMENT was specified.
-.IP \[bu] 2
-It is not possible to set a value here that could not have also been set
-as the OPTION-ARGUMENT for the OPTION, e.g., the default of <unset> is
-the same value as would occur if the OPTION-ARGUMENT was an empty
-string.
-.IP \[bu] 2
-It is highly recommended that this be set to a more useful value if
-optional OPTION-ARGUMENTs are used.
-.SS AUTO-HELP CONFIGURATION
-.PP
-Configuration related only to AUTO-HELP mode.
-.PP
-   *   *   *   *   *
-.SS \f[V]BS_LIBGETARGS_CONFIG_HELP_WRAP_COLUMNS\f[R]
-.IP \[bu] 2
-Type: TEXT
-.IP \[bu] 2
-Class: VARIABLE
-.IP \[bu] 2
-Default: Value from the \f[V]COLUMNS\f[R] environment variable or
-\f[V]80\f[R] if that variable is not set.
-.IP \[bu] 2
-Specifies the maximum width of the generated help text, any lines longer
-than this will be wrapped.
-.IP \[bu] 2
-May be set to any numeric value greater than \f[V]8\f[R], although small
-values will lead to illegible output.
-.IP \[bu] 2
-If set to the empty string (aka null), wrapping is disabled.
-.IP \[bu] 2
-If set to an invalid value, the default value is used.
-.IP \[bu] 2
-Help text uses an indent of \f[V]8\f[R] characters which counts towards
-the length of lines for the purposes of wrapping.
-.PP
-   *   *   *   *   *
-.SS \f[V]BS_LIBGETARGS_CONFIG_HELP_MULTI_OPTION\f[R]
-.IP \[bu] 2
-Type: TEXT
-.IP \[bu] 2
-Class: VARIABLE
-.IP \[bu] 2
-Default: \f[V]May be specified multiple times.\f[R]
-.IP \[bu] 2
-A string added to help for OPTIONs of the \f[V][+]\f[R] type.
-.IP \[bu] 2
-Used to indicate the OPTION can be specified more than once.
-.IP \[bu] 2
-If set to the empty string (aka null), no text is added.
-.IP \[bu] 2
-WILL cause errors if it contains any \f[V]\[rs]n\f[R]
-(\f[V]<newline>\f[R]) characters.
-.PP
-   *   *   *   *   *
-.SS \f[V]BS_LIBGETARGS_CONFIG_HELP_MULTI_OPERAND\f[R]
-.IP \[bu] 2
-Type: TEXT
-.IP \[bu] 2
-Class: VARIABLE
-.IP \[bu] 2
-Default: \f[V]May be specified multiple times.\f[R]
-.IP \[bu] 2
-A string added to help for OPERANDs of the \f[V][+]\f[R] type.
-.IP \[bu] 2
-Used to indicate the OPERAND can be specified more than once.
-.IP \[bu] 2
-If set to the empty string (aka null), no text is added.
-.IP \[bu] 2
-WILL cause errors if it contains any \f[V]\[rs]n\f[R]
-(\f[V]<newline>\f[R]) characters.
-.PP
-   *   *   *   *   *
-.SS \f[V]BS_LIBGETARGS_CONFIG_HELP_ALTERNATIVE_OPERAND\f[R]
-.IP \[bu] 2
-Type: TEXT
-.IP \[bu] 2
-Class: VARIABLE
-.IP \[bu] 2
-Default: \f[V]Alternative to <OPTION>.\f[R]
-.IP \[bu] 2
-A string added to help for an OPERAND if there is an OPTION that
-provides the same purpose.
-(i.e.\ only OPERANDs of the type \f[V][\[ha]]\f[R] or \f[V][+]\f[R]).
-.IP \[bu] 2
-The literal string \f[V]<OPTION>\f[R] is replaced with one of the
-OPTION-NAMEs for the OPTION that can alternatively be used.
-.IP \[bu] 2
-If set to the empty string (aka null), no text is added.
-.IP \[bu] 2
-WILL cause errors if it contains any \f[V]\[rs]n\f[R]
-(\f[V]<newline>\f[R]) characters.
 .SS INFORMATIONAL
 .PP
 Variables that convey library information.
@@ -1482,7 +956,7 @@ padded).
 .IP \[bu] 2
 Full version combining \f[V]BS_LIBGETARGS_VERSION_MAJOR\f[R],
 \f[V]BS_LIBGETARGS_VERSION_MINOR\f[R],
-\f[V]BS_LIBARRAY_VERSION_PATCH\f[R], and
+\f[V]BS_LIBGETARGS_VERSION_PATCH\f[R], and
 \f[V]BS_LIBGETARGS_VERSION_RELEASE\f[R] as a formatted string.
 .IP \[bu] 2
 Format:
@@ -1493,6 +967,500 @@ that differentiates them from the BetterScripts versions.
 (This information should precede the version number.)
 .IP \[bu] 2
 This value is output when the \f[V]--version\f[R] OPTION is used.
+.PP
+   *   *   *   *   *
+.SS \f[V]BS_LIBGETARGS_LAST_ERROR\f[R]
+.IP \[bu] 2
+Stores the error message of the most recent error.
+.IP \[bu] 2
+ONLY valid immediately following a command for which the exit status is
+not \f[V]0\f[R] (\f[V]<zero>\f[R]).
+.IP \[bu] 2
+Available even when error output is suppressed.
+.PP
+   *   *   *   *   *
+.SS \f[V]BS_LIBGETARGS_SOURCED\f[R]
+.IP \[bu] 2
+Set (and non-null) once the library has been sourced.
+.IP \[bu] 2
+Dependant scripts can query if this variable is set to determine if this
+file has been sourced.
+.SS USER PREFERENCE (OVERRIDABLE)
+.PP
+Configuration that CAN be overridden by OPTIONs.
+.PP
+   *   *   *   *   *
+.SS \f[V]BS_LIBGETARGS_CONFIG_ALLOW_ABBREVIATIONS\f[R]
+.IP \[bu] 2
+Type: \f[I]FLAG\f[R]
+.IP \[bu] 2
+Class: \f[I]VARIABLE\f[R]
+.IP \[bu] 2
+Default: \f[I]ON\f[R]
+.IP \[bu] 2
+Override: \f[V]--[no-]abbreviations\f[R]
+.IP \[bu] 2
+[Enable]/Disable LONG-OPTION abbreviations.
+.IP \[bu] 2
+\f[I]ON\f[R]: any LONG-OPTION matches if the name is a prefix of an
+OPTION-CONFIG name (e.g.\ \f[V]--debug\f[R] and \f[V]--deb\f[R] will
+both match \f[V]debug\f[R]).
+.IP \[bu] 2
+\f[I]OFF\f[R]: abbreviations are disabled and long options must match
+exactly.
+.IP \[bu] 2
+MAY cause unexpected results if combined with
+\f[V]BS_LIBGETARGS_CONFIG_ALLOW_AMBIGUOUS\f[R].
+.PP
+   *   *   *   *   *
+.SS \f[V]BS_LIBGETARGS_CONFIG_ALLOW_AMBIGUOUS\f[R]
+.IP \[bu] 2
+Type: \f[I]FLAG\f[R]
+.IP \[bu] 2
+Class: \f[I]VARIABLE\f[R]
+.IP \[bu] 2
+Default: \f[I]OFF\f[R]
+.IP \[bu] 2
+Override: \f[V]--[no-]ambiguous\f[R]
+.IP \[bu] 2
+[Enable]/Disable detection of ambiguous user OPTIONs.
+.IP \[bu] 2
+\f[I]OFF\f[R]: any ambiguous OPTION is an error.
+.IP \[bu] 2
+\f[I]ON\f[R]: all OPTIONs use the first match found - this WILL mask
+some OPTION-CONFIG errors.
+.IP \[bu] 2
+OPTIONs are ambiguous when multiple OPTIONs have the same name or, if
+abbreviations are enabled, when an abbreviation matches multiple
+OPTIONs.
+.IP \[bu] 2
+If abbreviations are also enabled (see
+\f[V]BS_LIBGETARGS_CONFIG_ALLOW_ABBREVIATIONS\f[R]) there is a high
+chance of incorrectly matching OPTIONs.
+.IP \[bu] 2
+\f[I]Has a measurable impact on performance.\f[R] Prefer
+\f[B]\f[BI]ON\f[B]\f[R] for performance.
+.PP
+   *   *   *   *   *
+.SS \f[V]BS_LIBGETARGS_CONFIG_CHECK_CONFIG\f[R]
+.IP \[bu] 2
+Type: \f[I]FLAG\f[R]
+.IP \[bu] 2
+Class: \f[I]VARIABLE\f[R]
+.IP \[bu] 2
+Default: \f[I]OFF\f[R]
+.IP \[bu] 2
+Override: \f[V]--[no-]check-config\f[R]
+.IP \[bu] 2
+Enable/[Disable] performing basic checks on OPTION-CONFIG and
+OPERAND-CONFIG before processing.
+.IP \[bu] 2
+\f[I]OFF\f[R]: don\[cq]t do any additional checks.
+.IP \[bu] 2
+\f[I]ON\f[R]: preform extra checks to ensure that OPTION-CONFIG and
+OPERAND-CONFIG match the required specification.
+.IP \[bu] 2
+The currently available checks are relatively basic but will catch
+errors that MAY otherwise be missed, however some of these may be
+benign.
+.IP \[bu] 2
+\f[I]MAY have a performance impact.\f[R] Prefer \f[B]\f[BI]OFF\f[B]\f[R]
+for performance.
+.PP
+   *   *   *   *   *
+.SS \f[V]BS_LIBGETARGS_CONFIG_FATAL_ERRORS\f[R]
+.IP \[bu] 2
+Suite: \f[V]BETTER_SCRIPTS_CONFIG_FATAL_ERRORS\f[R]
+.IP \[bu] 2
+Type: \f[I]FLAG\f[R]
+.IP \[bu] 2
+Class: \f[I]VARIABLE\f[R]
+.IP \[bu] 2
+Default: \f[I]OFF\f[R]
+.IP \[bu] 2
+Enable/[Disable] causing library errors to terminate the current
+(sub-)shell.
+.IP \[bu] 2
+\f[I]OFF\f[R]: errors stop any further processing, and cause a non-zero
+exit status, but do not cause an exception.
+.IP \[bu] 2
+\f[I]ON\f[R]: any library error will cause an \[lq]unset variable\[rq]
+shell exception using the
+\f[V]${parameter:?[word]}\f[R] (https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/utilities/V3_chap02.html#tag_18_06_02)
+parameter expansion, where \f[V]word\f[R] is set to an error message
+that \f[I]should\f[R] be displayed by the shell (this message is NOT
+suppressed by \f[V]BS_LIBGETARGS_CONFIG_QUIET_ERRORS\f[R]).
+.IP \[bu] 2
+Both the library version of this option and the suite version can be
+modified between command invocations and will affect the next command.
+.PP
+   *   *   *   *   *
+.SS \f[V]BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS\f[R]
+.IP \[bu] 2
+Type: \f[I]FLAG\f[R]
+.IP \[bu] 2
+Class: \f[I]VARIABLE\f[R]
+.IP \[bu] 2
+Default: \f[I]OFF\f[R]
+.IP \[bu] 2
+Override: \f[V]--[no-]interleaved\f[R], \f[V]--[no-]mixed\f[R]
+.IP \[bu] 2
+Enable/[Disable] allowing matching OPTIONs \f[I]after\f[R] an OPERAND is
+matched.
+.IP \[bu] 2
+\f[I]OFF\f[R]: all OPTIONs (and associated OPTION-ARGUMENTs) MUST appear
+before the first OPERAND; i.e., the first ARGUMENT that does NOT start
+with \f[V]-\f[R] (\f[V]<hyphen>\f[R]) and is NOT an OPTION-ARGUMENT
+causes ALL remaining OPTIONs to be assumed to be OPERANDs \f[I]even if
+they start with \f[VI]-\f[I] (\f[VI]<hyphen>\f[I])\f[R].
+.IP \[bu] 2
+\f[I]ON\f[R]: an ARGUMENT that does NOT start with \f[V]-\f[R]
+(\f[V]<hyphen>\f[R]) and is NOT an OPTION-ARGUMENT is assumed to be an
+OPERAND, but following ARGUMENTs continue to be checked for OPTIONs.
+.IP \[bu] 2
+In either mode the special ARGUMENT \f[V]--\f[R] stops OPTION processing
+and any remaining ARGUMENTs are treated as OPERANDs
+.IP \[bu] 2
+Implied by \f[V]BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED\f[R]
+.IP \[bu] 2
+Mutually exclusive with \f[V]BS_LIBGETARGS_CONFIG_STRICT_OPERANDS\f[R]
+.PP
+   *   *   *   *   *
+.SS \f[V]BS_LIBGETARGS_CONFIG_ALLOW_POSIX_LONG\f[R]
+.IP \[bu] 2
+Type: \f[I]FLAG\f[R]
+.IP \[bu] 2
+Class: \f[I]VARIABLE\f[R]
+.IP \[bu] 2
+Default: \f[I]OFF\f[R]
+.IP \[bu] 2
+Override: \f[V]--[no-]posix-long\f[R]
+.IP \[bu] 2
+Enable/[Disable] matching LONG-OPTIONs with a single preceding
+\f[V]-\f[R] (\f[V]<hyphen>\f[R]) character instead of the normally
+required two.
+.IP \[bu] 2
+\f[I]OFF\f[R]: LONG-OPTIONs require the prefix \f[V]--\f[R]
+.IP \[bu] 2
+\f[I]ON\f[R]: any multi-character OPTION following a single \f[V]-\f[R]
+(\f[V]<hyphen>\f[R]) is checked to see if it matches a LONG-OPTION
+before checking if it is a COMPOUND-OPTION, meaning matching
+COMPOUND-OPTIONs is slower.
+.IP \[bu] 2
+\f[I]Has a measurable impact on performance.\f[R] Prefer
+\f[B]\f[BI]OFF\f[B]\f[R] for performance.
+.PP
+   *   *   *   *   *
+.SS \f[V]BS_LIBGETARGS_CONFIG_QUIET_ERRORS\f[R]
+.IP \[bu] 2
+Suite: \f[V]BETTER_SCRIPTS_CONFIG_QUIET_ERRORS\f[R]
+.IP \[bu] 2
+Type: \f[I]FLAG\f[R]
+.IP \[bu] 2
+Class: \f[I]VARIABLE\f[R]
+.IP \[bu] 2
+Default: \f[I]OFF\f[R]
+.IP \[bu] 2
+[Enable]/Disable library error message output.
+.IP \[bu] 2
+\f[I]OFF\f[R]: error messages will be written to \f[V]STDERR\f[R] as:
+\f[V][<ID>]: ERROR: <MESSAGE>\f[R] (where \f[V]<ID>\f[R] is set using
+the \f[V]--name\f[R] OPTION).
+.IP \[bu] 2
+\f[I]ON\f[R]: library error messages will be suppressed.
+.IP \[bu] 2
+The most recent error message is always available in
+\f[V]BS_LIBGETARGS_LAST_ERROR\f[R] even when error output is suppressed.
+.IP \[bu] 2
+Both the library version of this option and the suite version can be
+modified between command invocations and will affect the next command.
+.IP \[bu] 2
+Does NOT affect errors from non-library commands, which \f[I]may\f[R]
+still produce output.
+.PP
+   *   *   *   *   *
+.SS \f[V]BS_LIBGETARGS_CONFIG_STRICT_OPERANDS\f[R]
+.IP \[bu] 2
+Type: \f[I]FLAG\f[R]
+.IP \[bu] 2
+Class: \f[I]VARIABLE\f[R]
+.IP \[bu] 2
+Default: \f[I]OFF\f[R]
+.IP \[bu] 2
+Override: \f[V]--[no-]strict\f[R], \f[V]--[no-]separated\f[R]
+.IP \[bu] 2
+Enable/[Disable] requiring the use of \f[V]--\f[R] to separate OPTIONs
+from OPERANDs.
+.IP \[bu] 2
+\f[I]OFF\f[R]: the first ARGUMENT that is not an OPTION or an
+OPTION-ARGUMENT is an OPERAND and causes all further ARGUMENTs to be
+OPERANDs.
+.IP \[bu] 2
+\f[I]ON\f[R]: an ARGUMENT that is exactly \f[V]--\f[R] must be present
+after \f[I]all\f[R] OPTIONs and before \f[I]any\f[R] OPERANDs.
+.IP \[bu] 2
+If this is enabled (\f[I]ON\f[R]), then optional OPTION-ARGUMENTS can be
+specified using the ARGUMENT \f[I]following\f[R] the OPTION (in addition
+to the normal formats).
+.IP \[bu] 2
+Can help detect some usage errors.
+.IP \[bu] 2
+Mutually exclusive with
+\f[V]BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS\f[R] and
+\f[V]BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED\f[R].
+.PP
+   *   *   *   *   *
+.SS \f[V]BS_LIBGETARGS_CONFIG_ALLOW_UNSAFE_OPTIONS\f[R]
+.IP \[bu] 2
+Type: \f[I]FLAG\f[R]
+.IP \[bu] 2
+Class: \f[I]VARIABLE\f[R]
+.IP \[bu] 2
+Default: \f[I]OFF\f[R]
+.IP \[bu] 2
+Override: \f[V]--[no-]unsafe\f[R]
+.IP \[bu] 2
+[Enable]/Disable escaping OPTION characters to avoid any erroneous
+results when matching with regular expressions.
+Characters in the supported set for OPTION-NAMEs \f[V][[:alnum:]_-]\f[R]
+do not need this processing, while characters outside this range MAY
+(e.g.\ \f[V].\f[R] (\f[V]<period>\f[R]) is problematic).
+.IP \[bu] 2
+\f[I]OFF\f[R]: OPTION-NAMEs have all characters made safe for use in a
+regular expression.
+.IP \[bu] 2
+\f[I]ON\f[R]: OPTION-NAMEs are used as is and may match incorrectly if
+they contain specific characters.
+.IP \[bu] 2
+This affects the OPTIONs being processed and NOT those in the
+OPTION-CONFIG.
+.IP \[bu] 2
+MAY have a performance impact.
+Prefer \f[B]\f[BI]ON\f[B]\f[R] for performance.
+.PP
+   *   *   *   *   *
+.SS \f[V]BS_LIBGETARGS_CONFIG_AUTO_UNSET\f[R]
+.IP \[bu] 2
+Type: \f[I]FLAG\f[R]
+.IP \[bu] 2
+Class: \f[I]VARIABLE\f[R]
+.IP \[bu] 2
+Default: \f[I]OFF\f[R]
+.IP \[bu] 2
+Override: \f[V]--[no-]unset\f[R]
+.IP \[bu] 2
+Enable/[Disable] automatic unsetting of all VARIABLES named in
+OPTION-CONFIG and OPERAND-CONFIG.
+.IP \[bu] 2
+\f[I]ON\f[R]: every variable specified in OPTION-CONFIG and
+OPERAND-CONFIG is automatically unset before ARGUMENTs are processed.
+.IP \[bu] 2
+\f[I]OFF\f[R]: variables need to be set to a known value or it will not
+be possible to correctly determine what OPTIONs have been matched.
+.IP \[bu] 2
+Normally desirable to have enabled, but using it MAY have performance
+issues, and it can not be used alongside default values for variables
+(i.e.\ values set before \f[V]getargs\f[R] is invoked).
+.IP \[bu] 2
+MAY have a performance impact.
+Prefer \f[B]\f[BI]OFF\f[B]\f[R] for performance.
+.PP
+   *   *   *   *   *
+.SS \f[V]BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED\f[R]
+.IP \[bu] 2
+Type: \f[I]FLAG\f[R]
+.IP \[bu] 2
+Class: \f[I]VARIABLE\f[R]
+.IP \[bu] 2
+Default: \f[I]OFF\f[R]
+.IP \[bu] 2
+Override: \f[V]--[no-]unmatched\f[R], \f[V]--unmatched=<VARIABLE>\f[R]
+.IP \[bu] 2
+Enable/[Disable] matching an unrecognized OPTION as an OPERAND.
+.IP \[bu] 2
+\f[I]OFF\f[R]: any unrecognized OPTION is an error.
+.IP \[bu] 2
+\f[I]ON\f[R]: any unrecognized OPTION is treated as an OPERAND.
+.IP \[bu] 2
+Useful for commands where most arguments are not used, but instead
+forwarded to another command, where having this enabled significantly
+reduces code and isolates the command from changes in the arguments
+accepted by the target command.
+.IP \[bu] 2
+In either mode the special ARGUMENT \f[V]--\f[R] stops OPTION processing
+and any remaining ARGUMENTs are treated as OPERANDs.
+.IP \[bu] 2
+Although still permitted, there is no practical way to support the
+normal OPERAND processing when this is enabled; the only OPERAND-CONFIG
+that is useful will be one containing a single \f[V][+]\f[R] type.
+If other OPERANDs are required, these must be manually extracted from
+the resulting array.
+.IP \[bu] 2
+If using a VALIDATOR, any unmatched values will be sent to the VALIDATOR
+as OPERANDs.
+.IP \[bu] 2
+\f[V]--unmatched=<VARIABLE>\f[R] provides functionality that is beyond
+that available using this variable.
+.IP \[bu] 2
+Implies \f[V]BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS\f[R].
+.IP \[bu] 2
+Mutually exclusive with \f[V]BS_LIBGETARGS_CONFIG_STRICT_OPERANDS\f[R].
+.SS USER PREFERENCE
+.PP
+Configuration that can NOT be overridden by OPTIONs.
+.PP
+   *   *   *   *   *
+.SS \f[V]BS_LIBGETARGS_CONFIG_TRUE_VALUE\f[R]
+.IP \[bu] 2
+Type: \f[I]TEXT\f[R]
+.IP \[bu] 2
+Class: \f[I]VARIABLE\f[R]
+.IP \[bu] 2
+Default: \f[V]true\f[R]
+.IP \[bu] 2
+Value used as \f[V]true\f[R] for options with the type negatable
+SWITCH-OPTION (i.e.\ \f[V][\[ti]]\f[R]).
+.IP \[bu] 2
+The value given to a negatable SWITCH-OPTION variable when the ARGUMENT
+was specified without an OPTION-TAG.
+.IP \[bu] 2
+Also one of the values accepted as an OPTION-TAG for negatable
+SWITCH-OPTIONs.
+.IP \[bu] 2
+Can be null.
+.IP \[bu] 2
+SHOULD differ from \f[V]BS_LIBGETARGS_CONFIG_FALSE_VALUE\f[R] however
+this is NOT enforced.
+.IP \[bu] 2
+A negatable SWITCH-OPTION \f[I]only\f[R] accepts the value here or the
+value from \f[V]BS_LIBGETARGS_CONFIG_FALSE_VALUE\f[R] as an OPTION-TAG.
+.PP
+   *   *   *   *   *
+.SS \f[V]BS_LIBGETARGS_CONFIG_FALSE_VALUE\f[R]
+.IP \[bu] 2
+Type: \f[I]TEXT\f[R]
+.IP \[bu] 2
+Class: \f[I]VARIABLE\f[R]
+.IP \[bu] 2
+Default: \f[V]false\f[R]
+.IP \[bu] 2
+Value used as \f[V]false\f[R] for options with the type negatable
+SWITCH-OPTION (i.e.\ \f[V][\[ti]]\f[R]).
+.IP \[bu] 2
+This value can be specified as an OPTION-TAG for the OPTION in which
+case the OPTION variable will receive this value.
+.IP \[bu] 2
+Can be null.
+.IP \[bu] 2
+SHOULD differ from \f[V]BS_LIBGETARGS_CONFIG_TRUE_VALUE\f[R] however
+this is NOT enforced.
+.IP \[bu] 2
+A negatable SWITCH-OPTION \f[I]only\f[R] accepts the value here or the
+value from \f[V]BS_LIBGETARGS_CONFIG_TRUE_VALUE\f[R] as an OPTION-TAG.
+.PP
+   *   *   *   *   *
+.SS \f[V]BS_LIBGETARGS_CONFIG_OPTIONAL_VALUE\f[R]
+.IP \[bu] 2
+Type: \f[I]TEXT\f[R]
+.IP \[bu] 2
+Class: \f[I]VARIABLE\f[R]
+.IP \[bu] 2
+Default: <unset>
+.IP \[bu] 2
+The value an OPTION variable receives if it takes an optional
+OPTION-ARGUMENT and no OPTION-ARGUMENT was specified.
+.IP \[bu] 2
+It is not possible to set a value here that could not have also been set
+as the OPTION-ARGUMENT for the OPTION, e.g., the default of <unset> is
+the same value as would occur if the OPTION-ARGUMENT was an empty
+string.
+.IP \[bu] 2
+It is highly recommended that this be set to a more useful value if
+optional OPTION-ARGUMENTs are used.
+.SS AUTO-HELP CONFIGURATION
+.PP
+Configuration related only to AUTO-HELP mode.
+.PP
+   *   *   *   *   *
+.SS \f[V]BS_LIBGETARGS_CONFIG_HELP_WRAP_COLUMNS\f[R]
+.IP \[bu] 2
+Type: \f[I]TEXT\f[R]
+.IP \[bu] 2
+Class: \f[I]VARIABLE\f[R]
+.IP \[bu] 2
+Default: Value from the \f[V]COLUMNS\f[R] environment variable or
+\f[V]80\f[R] if that variable is not set.
+.IP \[bu] 2
+Specifies the maximum width of the generated help text, any lines longer
+than this will be wrapped.
+.IP \[bu] 2
+May be set to any numeric value greater than \f[V]8\f[R], although small
+values will lead to illegible output.
+.IP \[bu] 2
+If set to the empty string (aka null), wrapping is disabled.
+.IP \[bu] 2
+If set to an invalid value, the default value is used.
+.IP \[bu] 2
+Help text uses an indent of \f[V]8\f[R] characters which counts towards
+the length of lines for the purposes of wrapping.
+.PP
+   *   *   *   *   *
+.SS \f[V]BS_LIBGETARGS_CONFIG_HELP_MULTI_OPTION\f[R]
+.IP \[bu] 2
+Type: \f[I]TEXT\f[R]
+.IP \[bu] 2
+Class: \f[I]VARIABLE\f[R]
+.IP \[bu] 2
+Default: \f[V]May be specified multiple times.\f[R]
+.IP \[bu] 2
+A string added to help for OPTIONs of the \f[V][+]\f[R] type.
+.IP \[bu] 2
+Used to indicate the OPTION can be specified more than once.
+.IP \[bu] 2
+If set to the empty string (aka null), no text is added.
+.IP \[bu] 2
+WILL cause errors if it contains any \f[V]\[rs]n\f[R]
+(\f[V]<newline>\f[R]) characters.
+.PP
+   *   *   *   *   *
+.SS \f[V]BS_LIBGETARGS_CONFIG_HELP_MULTI_OPERAND\f[R]
+.IP \[bu] 2
+Type: \f[I]TEXT\f[R]
+.IP \[bu] 2
+Class: \f[I]VARIABLE\f[R]
+.IP \[bu] 2
+Default: \f[V]May be specified multiple times.\f[R]
+.IP \[bu] 2
+A string added to help for OPERANDs of the \f[V][+]\f[R] type.
+.IP \[bu] 2
+Used to indicate the OPERAND can be specified more than once.
+.IP \[bu] 2
+If set to the empty string (aka null), no text is added.
+.IP \[bu] 2
+WILL cause errors if it contains any \f[V]\[rs]n\f[R]
+(\f[V]<newline>\f[R]) characters.
+.PP
+   *   *   *   *   *
+.SS \f[V]BS_LIBGETARGS_CONFIG_HELP_ALTERNATIVE_OPERAND\f[R]
+.IP \[bu] 2
+Type: \f[I]TEXT\f[R]
+.IP \[bu] 2
+Class: \f[I]VARIABLE\f[R]
+.IP \[bu] 2
+Default: \f[V]Alternative to <OPTION>.\f[R]
+.IP \[bu] 2
+A string added to help for an OPERAND if there is an OPTION that
+provides the same purpose.
+(i.e.\ only OPERANDs of the type \f[V][\[ha]]\f[R] or \f[V][+]\f[R]).
+.IP \[bu] 2
+The literal string \f[V]<OPTION>\f[R] is replaced with one of the
+OPTION-NAMEs for the OPTION that can alternatively be used.
+.IP \[bu] 2
+If set to the empty string (aka null), no text is added.
+.IP \[bu] 2
+WILL cause errors if it contains any \f[V]\[rs]n\f[R]
+(\f[V]<newline>\f[R]) characters.
+.SS EXTERNAL CONSTANTS
 .PP
    *   *   *   *   *
 .SS \f[V]BS_LIBGETARGS_TYPE_OPT_ARG\f[R]
@@ -1552,24 +1520,6 @@ OPERAND.
 Implies the VALUE parameter MUST be a valid OPERAND.
 .IP \[bu] 2
 See \f[V]getargs_validate_option_value\f[R],
-.PP
-   *   *   *   *   *
-.SS \f[V]BS_LIBGETARGS_LAST_ERROR\f[R]
-.IP \[bu] 2
-Stores the error message of the most recent error.
-.IP \[bu] 2
-ONLY valid immediately following a command for which the exit status is
-not \f[V]0\f[R] (\f[V]<zero>\f[R]).
-.IP \[bu] 2
-Available even when error output is suppressed.
-.PP
-   *   *   *   *   *
-.SS \f[V]BS_LIBGETARGS_SOURCED\f[R]
-.IP \[bu] 2
-Set (and non-null) once the library has been sourced.
-.IP \[bu] 2
-Dependant scripts can query if this variable is set to determine if this
-file has been sourced.
 .SS ADDITIONAL COMMANDS
 .PP
    *   *   *   *   *
@@ -1683,7 +1633,7 @@ Can reference an empty array.
 .TP
 \f[V]OPTION\f[R] [in]
 The OPTION-NAME to use for each element in \f[V]VALUES\f[R].
-Each element in \f[V]VALUES\f[R] will become and OPTION-ARGUMENT for
+Each element in \f[V]VALUES\f[R] will become an OPTION-ARGUMENT for
 \f[V]OPTION\f[R].
 A trailing \f[V]=\f[R] (\f[V]<equals>\f[R]) will cause the
 OPTION-ARGUMENT to be made an AGGREGATE-OPTION-ARGUMENT.
@@ -1713,6 +1663,14 @@ OPTION.
 For commands that support \f[V]getargs\f[R] this is not required as an
 array of values can be used directly with \f[V][+]\f[R] type OPTIONs by
 using an OPTION-TAG.
+.RS 2
+.IP
+.nf
+\f[C]
+          in \[ga]word\[ga].
+\f[R]
+.fi
+.RE
 .SS STANDARDS
 .IP \[bu] 2
 \f[I]POSIX.1-2008\f[R] (https://pubs.opengroup.org/onlinepubs/9699919799.2008edition).
@@ -1721,9 +1679,10 @@ FreeBSD SYSEXITS(3) (https://www.freebsd.org/cgi/man.cgi?sysexits(3)).
 .IP \[bu] 2
 Semantic Versioning v2.0.0 (https://semver.org/).
 .IP \[bu] 2
-[Inclusive Naming Initiative][inclusivenaming].
+Inclusive Naming Initiative (https://inclusivenaming.org/).
 .PP
-\f[I]For more details see the common suite documentation.\f[R]
+\f[I]For more details see the \f[VI]shtoolkit\f[I] general
+documentation.\f[R]
 .SS NOTES
 .SS TERMINOLOGY
 .PP
@@ -2055,16 +2014,25 @@ Similarly the specific implementation of utilities like \f[V]sed\f[R],
 or \f[V]grep\f[R] used can have a measurable impact.
 .PP
 The configuration of \f[V]getargs\f[R] can also make a difference.
-The biggest single change is to allow ambiguous options, which will use
-\f[V]expr\f[R] (or rarely \f[V]sed\f[R]) rather than \f[V]grep\f[R],
-resulting in improved performance.
+The biggest single change is to allow ambiguous options: this lets the
+\f[V]sed\f[R] OPTION-matching script quit after the first match, rather
+than scanning for every match to detect ambiguity, resulting in improved
+performance.
 Disabling other options where they are noted to have a performance
 impact will also help (though to a lesser extent).
 Additionally, setting config using the provided environment variables
 rather than passing as options to \f[V]getargs\f[R] options, can make
 minor improvements.
 .PP
-\f[I]For more details see the common suite documentation.\f[R]
+\f[I]For more details see the \f[VI]shtoolkit\f[I] general
+documentation.\f[R]
+.SS PRIOR ART
+.PP
+There are a number of tools available to aid argument processing for
+shell scripts is enormous and continuously growing.
+Despite this, before the creation of \f[V]getargs\f[R], the only options
+found suffered from significant issues, e.g.
+poorly documented, non-portable, etc.
 .SS CAVEATS
 .PP
 The environment in which the library is invoked will dictate limitations
@@ -2078,7 +2046,8 @@ combined length of \f[I]both\f[R] the SPECIFICATION \f[I]and\f[R] the
 ARGUMENTs to process, and may be a particular issue where AUTO-HELP is
 used.
 .PP
-\f[I]For more details see the common suite documentation.\f[R]
+\f[I]For more details see the \f[VI]shtoolkit\f[I] general
+documentation.\f[R]
 .SS EXAMPLE
 .PP
 Additional examples can be found in the test files for the library.
@@ -2125,7 +2094,8 @@ esac
 The following example is adapted from the Wikipedia page for
 \f[V]getopts\f[R] (https://wikipedia.org/wiki/Getopts#Examples) and is
 implemented for \f[V]getopts\f[R], \f[V]getopt\f[R] and
-\f[V]getargs\f[R] to provide a comparison between the available tools.
+\f[V]getargs\f[R] to provide a comparison between the available
+tools.[4]
 .PP
    *   *   *   *   *
 .PP
@@ -2156,7 +2126,7 @@ shift \[dq]$OPTIND\[dq]
 
 if ((VERBOSE > 2)); then
   printf \[aq]%s\[rs]n\[aq] \[aq]Non-option arguments:\[aq]
-  printf \[aq]%q \[aq] \[dq]${remaining[\[at]]]}\[dq]
+  printf \[aq]%s \[aq] \[dq]${remaining[\[at]]}\[dq]
 fi
 
 if ((VERBOSE > 1)); then
@@ -2206,7 +2176,7 @@ remaining=(\[dq]$\[at]\[dq])
 
 if ((VERBOSE > 2)); then
   printf \[aq]%s\[rs]n\[aq] \[aq]Non-option arguments:\[aq]
-  printf \[aq]%q \[aq] \[dq]${remaining[\[at]]]}\[dq]
+  printf \[aq]%s \[aq] \[dq]${remaining[\[at]]}\[dq]
 fi
 
 if ((VERBOSE > 1)); then
@@ -2219,7 +2189,6 @@ if [[ ! $ARTICLE ]]; then
 fi
 
 save_webpage \[dq]https://${LANG}.wikipedia.org/wiki/${ARTICLE}\[dq]
-</pre>
 \f[R]
 .fi
 .PP
@@ -2243,17 +2212,17 @@ eval \[dq]set -- ${REMAINING+${REMAINING}}\[dq]
 : \[dq]${VERBOSE:=0}\[dq]
 : \[dq]${LANG:=en}\[dq]
 
-if ((VERBOSE > 2)); then
+if [ \[dq]$VERBOSE\[dq] -gt 2 ]; then
    printf \[aq]%s\[rs]n\[aq] \[aq]Non-option arguments:\[aq]
-   printf \[aq]%q \[aq] \[dq]$\[at]\[dq]
+   printf \[aq]%s \[aq] \[dq]$\[at]\[dq]
 fi
 
-if ((VERBOSE > 1)); then
+if [ \[dq]$VERBOSE\[dq] -gt 1 ]; then
    printf \[aq]Downloading %s:%s\[rs]n\[aq] \[dq]$LANG\[dq] \[dq]$ARTICLE\[dq]
 fi
 
-if [[ ! $ARTICLE ]]; then
-   printf \[aq]%s\[rs]n\[aq] \[dq]No articles!\[dq] \[rs]>&2
+if [ -z \[dq]$ARTICLE\[dq] ]; then
+   printf \[aq]%s\[rs]n\[aq] \[dq]No articles!\[dq]>&2
    exit 1
 fi
 
@@ -2282,17 +2251,17 @@ eval \[dq]set -- ${REMAINING+${REMAINING}}\[dq]
 : \[dq]${VERBOSE:=0}\[dq]
 : \[dq]${LANG:=en}\[dq]
 
-if ((VERBOSE > 2)); then
+if [ \[dq]$VERBOSE\[dq] -gt 2 ]; then
    printf \[aq]%s\[rs]n\[aq] \[aq]Non-option arguments:\[aq]
-   printf \[aq]%q \[aq] \[dq]$\[at]\[dq]
+   printf \[aq]%s \[aq] \[dq]$\[at]\[dq]
 fi
 
-if ((VERBOSE > 1)); then
+if [ \[dq]$VERBOSE\[dq] -gt 1 ]; then
    printf \[aq]Downloading %s:%s\[rs]n\[aq] \[dq]$LANG\[dq] \[dq]$ARTICLE\[dq]
 fi
 
-if [[ ! $ARTICLE ]]; then
-   printf \[aq]%s\[rs]n\[aq] \[dq]No articles!\[dq] \[rs]>&2
+if [ -z \[dq]$ARTICLE\[dq] ]; then
+   printf \[aq]%s\[rs]n\[aq] \[dq]No articles!\[dq]>&2
    exit 1
 fi
 
@@ -2301,7 +2270,7 @@ save_webpage \[dq]https://${LANG}.wikipedia.org/wiki/${ARTICLE}\[dq]
 .fi
 .SS SEE ALSO
 .PP
-betterscripts(7), libarray(7)
+shtoolkit(7), libarray(7)
 .SH NOTES
 .SS [1]
 .PP
@@ -2322,5 +2291,11 @@ when the sub-shell where \f[V]getarg\f[R] was invoked exits.
 .PP
 An \f[V]OPERAND\f[R] is the \f[V]ARGUMENT\f[R] type most frequently
 referred to with
+.SS [4]
+.PP
+The original uses \f[V]printf \[aq]%q \[aq]\f[R] to quote output output
+but this is omitted here as there is no such format character in
+\f[I]POSIX\f[R] and it is used for code that does not usefully
+contribute to the comparison as a whole.
 .SH AUTHORS
 BetterScripts (better.scripts\[at]proton.me).

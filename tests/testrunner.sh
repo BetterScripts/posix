@@ -6,10 +6,10 @@
 #* BetterScripts 'testrunner': Tools to run tests on the BetterScripts POSIX  *#
 #*                            Suite libraries.                                *#
 #*                                                                            *#
-#* Copyright (c) 2022 BetterScripts ( better.scripts@proton.me,               *#
-#*                                    https://github.com/BetterScripts )      *#
+#* Copyright (c) 2022-2026 BetterScripts ( better.scripts@proton.me,          *#
+#*                         https://github.com/BetterScripts )                 *#
 #*                                                                            *#
-#* This file is part of the BetterScripts POSIX Suite.                        *#
+#* This file is part of the BetterScripts `shtoolkit` (aka _the suite_).      *#
 #*                                                                            *#
 #* This Source Code Form is subject to the terms of the Mozilla Public        *#
 #* License, v. 2.0. If a copy of the MPL was not distributed with this        *#
@@ -20,14 +20,14 @@
 #* ADDENDUM:                                                                  *#
 #*                                                                            *#
 #* In addition to the Mozilla Public License a copy of LICENSE.MD should have *#
-#* been be provided alongside this file; LICENSE.MD clarifies how the Mozilla *#
+#* been provided alongside this file; LICENSE.MD clarifies how the Mozilla    *#
 #* Public License v2.0 applies to this file and MAY confer additional rights. *#
 #*                                                                            *#
 #* Should there be any apparent ambiguity (implied or otherwise) the terms    *#
 #* and conditions from the Mozilla Public License v2.0 shall apply.           *#
 #*                                                                            *#
 #* If a copy of LICENSE.MD was not provided it can be obtained from           *#
-#* https://github.com/BetterScripts/posix/LICENSE.MD.                         *#
+#* https://github.com/BetterScripts/shtoolkit/LICENSE.MD.                     *#
 #*                                                                            *#
 #* NOTE:                                                                      *#
 #*                                                                            *#
@@ -40,8 +40,8 @@
 ################################## TESTRUNNER ##################################
 #
 # Documentation is written inline formatted as [`Markdown`][markdown], this is
-# in addition to the suite wide documentation which includes details common to
-# multiple suite libraries that may not be detailed here.
+# in addition to `shtoolkit` general documentation which includes details
+# common to multiple libraries that may not be noted here.
 #
 # The included `Makefile` can be used to generate standalone documentation in
 # various formats with various verbosity settings. The `Makefile` can also be
@@ -49,12 +49,14 @@
 #
 # As far as possible, terminology and conventions follow those of the
 # [_POSIX.1-2008_ Standard][posix_2008].
+#
 #===============================================================================
 ## cSpell:Ignore testrunner testwrapper
 ################################ DOCUMENTATION #################################
 #
-#% % testrunner(7) BetterScripts | Test harness for BetterScripts POSIX Suite.
+#% % testrunner(7) BetterScripts testrunner.sh v1.1.0 | Test harness for BetterScripts  `shtoolkit`.
 #% % BetterScripts (better.scripts@proton.me)
+#% % July 2026
 #
 #: <!-- #################################################################### -->
 #: <!-- ########### THIS FILE WAS GENERATED FROM 'testrunner.sh' ########### -->
@@ -65,8 +67,8 @@
 #: # TESTRUNNER
 #:
 #
-#  Runs tests for BetterScripts POSIX Suite libraries in one or more shells,
-#+ with options to allow for some basic profiling.
+# Runs tests for BetterScripts `shtoolkit` libraries in one or more shells,
+# with options to allow for some basic profiling.
 #
 ################################################################################
 
@@ -83,7 +85,7 @@
 #                                                                              #
 # SC2034: foo appears unused. Verify it or export it.                          #
 # EXCEPT: Triggered in numerous places where the value **is** used, but in a   #
-#+        construct shellcheck does not correctly parse.                       #
+#        construct shellcheck does not correctly parse.                       #
 # shellcheck disable=SC2034                                                    #
 #                                                                              #
 ################################################################################
@@ -153,7 +155,7 @@
 #:   etc, (a numerical suffix may also be appended)
 #:
   BS_TESTRUNNER_VERSION_MAJOR=1;
-  BS_TESTRUNNER_VERSION_MINOR=0;
+  BS_TESTRUNNER_VERSION_MINOR=1;
   BS_TESTRUNNER_VERSION_PATCH=0;
 BS_TESTRUNNER_VERSION_RELEASE=;
 
@@ -224,6 +226,17 @@ readonly 'BS_TESTRUNNER_VERSION'
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #. <!-- ................................................ -->
 #.
+#. #### `c_BS_TR__SystemLocale`
+#.
+#. - ...
+#.
+c_BS_TR__SystemLocale=${LC_ALL:-${LC_CTYPE:-${LANG:-}}}
+
+readonly 'c_BS_TR__SystemLocale'
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#. <!-- ................................................ -->
+#.
 #. #### `c_BS_TR__newline`
 #.
 #. - Literal `<newline>` (i.e. `\n`) character.
@@ -249,6 +262,18 @@ c_BS_TR__tab='	';
 readonly 'c_BS_TR__tab'
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#. <!-- ................................................ -->
+#.
+#. #### `c_BS_TR__tab`
+#.
+#. - Default IFS: `<space><tab><newline>`.
+#.
+c_BS_TR__IFS='
+'
+
+readonly 'c_BS_TR__IFS'
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #. ---------------------------------------------------------
 #.
 #. #### `c_BS_TR__Param0`
@@ -259,32 +284,9 @@ readonly 'c_BS_TR__tab'
 #.   save `$0` here as then it's certain to contain the
 #.   expected value
 #.
-c_BS_TR__Param0="${0:-<unknown>}";
+c_BS_TR__Param0=${0:-<unknown>};
 
 readonly 'c_BS_TR__Param0'
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#. ---------------------------------------------------------
-#.
-#. #### `c_BS_TR__PWD`
-#.
-#. - Present Working Directory when invoked.
-#. - Some shells do not properly update `$PWD` so prefer
-#.   `pwd` (although if `pwd` fails it's unlikely `$PWD`
-#.   will be any use).
-#.
-{
-  c_BS_TR__PWD=;
-  c_BS_TR__PWD="$(pwd)" && test -d "${c_BS_TR__PWD:-}"
-} || {
-  if test -d "${PWD:-}"; then
-    c_BS_TR__PWD="${PWD:-}"
-  else
-    c_BS_TR__PWD=;
-  fi
-}
-
-readonly 'c_BS_TR__PWD'
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #. <!-- ................................................ -->
@@ -351,19 +353,23 @@ readonly  'c_BS_TR__EX_USAGE' \
 #  Settings
 g_BS_TR__aWrapperArgs=;
 g_BS_TR__aTestArgs=;
+g_BS_TR__Locale=C
+g_BS_TR__IgnoreEnv=;
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #  Flags
-g_BS_TR_CFG__Trace=0;
-g_BS_TR__Timed=0;
+g_BS_TR_CFG__ExitOnFail=0
+g_BS_TR_CFG__Trace=0
+g_BS_TR_CFG__Timed=0
+g_BS_TR_CFG__NoBusyBox=0
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-g_BS_TR_CFG__Quiet="${BS_TESTRUNNER_CONFIG_QUIET:-0}"
+g_BS_TR_CFG__Quiet=${BS_TESTRUNNER_CONFIG_QUIET:-0}
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #  Paths for scripts
-g_BS_TR__TestWrapper='.testwrapper.sh'; ## cSpell:ignore testwrapper
+g_BS_TR__TestWrapper='.testwrapper.sh' ## cSpell:ignore testwrapper
 
 #===============================================================================
 #===============================================================================
@@ -406,7 +412,7 @@ g_BS_TR__TestWrapper='.testwrapper.sh'; ## cSpell:ignore testwrapper
 #;
 #_______________________________________________________________________________
 fn_bs_testrunner_diagnostic() { ## cSpell:Ignore BS_TR_Diag_
-  BS_TR_Diag_Type="${1:?'[testrunner::fn_bs_testrunner_diagnostic]: Internal Error: a diagnostic category is required'}"
+  BS_TR_Diag_Type=${1:?'[testrunner::fn_bs_testrunner_diagnostic]: Internal Error: a diagnostic category is required'}
   shift
 
   {
@@ -539,10 +545,10 @@ fn_bs_testrunner_usage_error() {
 #;
 #_______________________________________________________________________________
 fn_bs_testrunner_print() {
-  #  SC2059: Don't use variables in the printf format string.
-  #+         Use printf "..%s.." "$foo".
-  #  EXCEPT: This is a replacement for `printf` so that output can be made
-  #+         quiet if desired; arguments are passed directly to `printf`.
+  # SC2059: Don't use variables in the printf format string.
+  #         Use printf "..%s.." "$foo".
+  # EXCEPT: This is a replacement for `printf` so that output can be made
+  #         quiet if desired; arguments are passed directly to `printf`.
   # shellcheck disable=SC2059
   case ${g_BS_TR_CFG__Quiet:-0} in
   0) printf "$@" ;;
@@ -557,6 +563,66 @@ fn_bs_testrunner_print() {
 #.
 #===============================================================================
 #===============================================================================
+
+#_______________________________________________________________________________
+#: ---------------------------------------------------------
+#:
+#: ### `path_pwd`
+#:
+#: Set a variable to the value from `pwd`, without potentially losing data if
+#: the path ends `<newline>` characters.
+#:
+#: _SYNOPSIS_
+#: <!-- - -->
+#:
+#:     path_pwd <VARIABLE> [<OPTIONS>...]
+#:
+#: _ARGUMENTS_
+#: <!-- -- -->
+#:
+#: `VARIABLE` \[out:ref]
+#:
+#: : Variable that will contain the output.
+#: : MUST be a valid _POSIX.1_ name.
+#: : Any current contents will be lost.
+#:
+#: _CAVEATS_
+#: <!--  -->
+#:
+#: - The output from `pwd` is defined in the standard in terms of the
+#:   environment variable `PWD` (i.e. `pwd` is supposed to return the value
+#:   stored in `PWD`). However, the value contained in `PWD` can be modified
+#:   directly by scripts and so _may_ not actually contain the current path.
+#:   (What occurs when assigning to `PWD` is implementation defined.) If  `PWD`
+#:   is not the current directory, the output of `pwd` is _not_ specified by
+#:   the standard, however, most implementations seem to do something sensible.
+#:
+#: _NOTES_
+#: <!-- -->
+#:
+#: - Any arguments after the first are passed directly to `pwd` -
+#:   supported arguments and values are determined by the implementation of
+#:   that utility; any non-standard options may be used.
+#: - Standard `pwd` supports `-L` and `-P` options, with no option being
+#:   equivalent to `-L`.
+#:
+#_______________________________________________________________________________
+fn_bs_tr_pwd() { ## cSpell:Ignore BS_TRPWD_
+  BS_TRPWD_refPWD=${1:?'[testrunner::fn_bs_tr_pwd]: Internal Error: an output variable is required'}
+  shift
+
+  if BS_TRPWD_PWD=$(pwd ${1+"$@"} && echo '_') && test -d "${BS_TRPWD_PWD%?_}"
+  then
+    BS_TRPWD_PWD=${BS_TRPWD_PWD%?_}
+  elif test -d "${PWD-}"
+  then
+    BS_TRPWD_PWD=${PWD}
+  else
+    BS_TRPWD_PWD=.
+  fi
+
+  eval "${BS_TRPWD_refPWD}=\"\${BS_TRPWD_PWD}\""
+} #< `fn_bs_tr_pwd()`
 
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
@@ -608,8 +674,8 @@ fn_bs_testrunner_print() {
 #.
 #_______________________________________________________________________________
 fn_bs_tr_get_dirname() { ## cSpell:Ignore BS_TRGD_
-  BS_TRGD_refDirname="${1:?'[testrunner::fn_bs_tr_get_dirname]: Internal Error: an output variable is required'}"
-        BS_TRGD_Path="${2:?'[testrunner::fn_bs_tr_get_dirname]: Internal Error: a path is required'}"
+  BS_TRGD_refDirname=${1:?'[testrunner::fn_bs_tr_get_dirname]: Internal Error: an output variable is required'}
+        BS_TRGD_Path=${2:?'[testrunner::fn_bs_tr_get_dirname]: Internal Error: a path is required'}
 
   #---------------------------------------------------------
   # Add a root if none is already present as it makes
@@ -618,114 +684,14 @@ fn_bs_tr_get_dirname() { ## cSpell:Ignore BS_TRGD_
   #---------------------------------------------------------
   case ${BS_TRGD_Path-} in
   [!/]*)
-    case ${c_BS_TR__PWD:-} in
-    /*) BS_TRGD_Path="${c_BS_TR__PWD}/${BS_TRGD_Path-}" ;;
-     *) fn_bs_testrunner_warning \
-          'Failed to determine a valid current working directory'
-        return "${c_BS_TR__EX_UNAVAILABLE}" ;;
-    esac ;;
+    BS_TRGD_PWD=;
+    fn_bs_tr_pwd BS_TRGD_PWD || return $?
+    BS_TRGD_Path="${BS_TRGD_PWD%/}/${BS_TRGD_Path}"
+  ;;
   esac
 
-  #---------------------------------------------------------
-  # Appending a `/` to path makes processing much simpler,
-  # avoiding edge cases that otherwise require a lot of
-  # extra code - it is removed before the value is returned.
-  # (All trailing `/` characters are removed from the
-  # output.)
-  #
-  # _NOTES_
-  #
-  # - The path also starts with a `/` because of the code
-  #   prior to this section (this also avoids special case
-  #   processing).
-  # - Appending a trailing non-whitespace character also
-  #   avoids losing data if the path ends in a `<newline>`
-  # - There's no need to remove characters from the path
-  #   prior to appending characters as sequences of multiple
-  #   `/` characters are handled in the matching process.
-  #---------------------------------------------------------
-  BS_TRGD_Path="${BS_TRGD_Path}/"
-
-  case ${BS_TRGD_Path} in
-    #.......................................................
-    # Contains self-referencing segments. (If a path has a
-    # trailing `/./` segment without special processing this
-    # would return a path that is functionally identical to
-    # the input path, which is likely not what was expected
-    # and will likely cause errors.)
-    #.......................................................
-    *'/./'*)
-      # `sed` script:
-      #
-      # - Convert all `/./` to `/`
-      # - Remove the final portion of the path and
-      #   replace with a non-whitespace character
-      #
-      # _NOTES_
-      #
-      # - While it is possible to write a single _BRE_ that
-      #   removes the final segment even in the case there
-      #   are trailing `/./` segments, such a _BRE_ becomes
-      #   complex and much more difficult to use portably
-      #   (especially with `expr`). Since `sed` is used
-      #   to avoid the issues `expr` has with this, it is
-      #   simpler to handle these segments separately.
-      BS_TRGD_Dirname="$(
-        {
-          printf '%s/\n' "${BS_TRGD_Path}"
-        } | {
-          sed -e 's|/./|/|g
-                  s|/\{1,\}[^/]\{1,\}/\{1,\}$|/|'
-        }
-      )" || return $?
-
-      # Remove the trailing `/`
-      BS_TRGD_Dirname="${BS_TRGD_Dirname%/}"
-    ;;
-
-    #.......................................................
-    # Has two (or more) segments. (Except in rare cases,
-    # this will be the code used.)
-    #.......................................................
-    */*[!/]*/*[!/]*/*)
-      # `expr` _BRE_:
-      #
-      # - Capture everything from the start of the path
-      #   up to the last segment (i.e. a segment that is
-      #   surrounded by `/` separators and includes at
-      #   least one non-`/` character).
-      #
-      # _NOTES_
-      #
-      # - The value captured includes the trailing `/` which
-      #   is immediately removed, however without capturing
-      #   this, a segment ending in `<newline>` would not
-      #   be properly captured.
-      BS_TRGD_Dirname="$(
-        expr "${BS_TRGD_Path}" : '\(/.*/\)/*[^/]\{1,\}/\{1,\}$'
-      )" || return $?
-
-      # Remove the trailing `/`
-      BS_TRGD_Dirname="${BS_TRGD_Dirname%/}"
-    ;;
-
-    #.......................................................
-    # Zero or one segment. (Special case for a path that
-    # contains either a single segment or consists entirely
-    # of `/` characters; output matches `dirname`.)
-    #.......................................................
-    /*/)
-      BS_TRGD_Dirname='/'
-    ;;
-  esac
-
-  #---------------------------------------------------------
-  # If a value was found, save it in the supplied variable
-  #---------------------------------------------------------
-  case ${BS_TRGD_Dirname:+1} in
-  1) eval "${BS_TRGD_refDirname}=\"\${BS_TRGD_Dirname}\"" ;;
-  *) false ;;
-  esac
+  BS_TRGD_Dirname=$(dirname "${BS_TRGD_Path}" && echo '_') || return $?
+  eval "${BS_TRGD_refDirname}=\"\${BS_TRGD_Dirname%?_}\""
 }
 
 #_______________________________________________________________________________
@@ -776,108 +742,11 @@ fn_bs_tr_get_dirname() { ## cSpell:Ignore BS_TRGD_
 #.
 #_______________________________________________________________________________
 fn_bs_tr_get_basename() { ## cSpell:Ignore BS_TRGB_
-  BS_TRGB_refBasename="${1:?'[testrunner::fn_bs_tr_get_basename]: Internal Error: an output variable is required'}"
-         BS_TRGB_Path="${2:?'[testrunner::fn_bs_tr_get_basename]: Internal Error: a path is required'}"
+  BS_TRGB_refBasename=${1:?'[testrunner::fn_bs_tr_get_basename]: Internal Error: an output variable is required'}
+  shift
 
-  #---------------------------------------------------------
-  # Appending a `/` to both ends of the path makes
-  # processing much simpler, avoiding edge cases that
-  # otherwise require a lot of extra code - these will not
-  # be part of the final output.
-  #
-  # _NOTES_
-  #
-  # - Appending a trailing non-whitespace character also
-  #   avoids losing data if the path ends in a `<newline>`
-  # - There's no need to remove characters from the path
-  #   prior to appending characters as sequences of multiple
-  #   `/` characters are handled in the matching process.
-  #---------------------------------------------------------
-  BS_TRGB_Path="/${BS_TRGB_Path}/"
-
-  #---------------------------------------------------------
-  # Process the path using the most appropriate tools...
-  #---------------------------------------------------------
-  case ${BS_TRGB_Path} in
-    #.......................................................
-    # Contains self-referencing segments. (If a path has a
-    # trailing `/./` segment this would return a value of
-    # `.` which is likely not what was expected and will
-    # likely cause errors.)
-    #.......................................................
-    *'/./'*)
-      # `sed` script:
-      #
-      # - Convert all `/./` to `/`
-      # - Extract the final portion of the path and without
-      #   any preceding `/` characters, and only one
-      #   succeeding `/` character.
-      BS_TRGB_Basename="$(
-        {
-          printf '%s/\n' "${BS_TRGB_Path}"
-        } | {
-          sed -e 's|/./|/|g
-                  s|^.*/\([^/]\{1,\}/\)/*$|\1|'
-        }
-      )" || return $?
-
-      # Remove the trailing `/`
-      BS_TRGB_Basename="${BS_TRGB_Basename%/}"
-    ;;
-
-    #.......................................................
-    # Has one (or more) segments. (Except in rare cases,
-    # this will be the code used.)
-    #.......................................................
-    */*[!/]*/*)
-      # `expr` _BRE_:
-      #
-      # - Capture the last segment (i.e. a segment that is
-      #   surrounded by `/` separators and includes at
-      #   least one non-`/` character).
-      #
-      # _NOTES_
-      #
-      # - The value captured includes the trailing `/` which
-      #   is immediately removed, however without capturing
-      #   this, a segment ending in `<newline>` would not
-      #   be properly captured.
-      BS_TRGB_Basename="$(
-        expr "${BS_TRGB_Path}" : '.*/\([^/]\{1,\}/\)/*$'
-      )" || return $?
-
-      # Remove the trailing `/`
-      BS_TRGB_Basename="${BS_TRGB_Basename%/}"
-    ;;
-
-    #.......................................................
-    # Has zero segments (i.e. only `/` characters). (Need
-    # to deal with this specially to ensure a valid value is
-    # returned; output matches standard `basename`.)
-    #.......................................................
-    *)
-      BS_TRGB_Basename='/'
-    ;;
-  esac
-
-  #---------------------------------------------------------
-  # If a value was found, save it in the supplied variable.
-  #---------------------------------------------------------
-  case ${BS_TRGB_Basename:+1} in
-    1)
-      # Remove any suffix (similar to standard `basename`)
-      case ${3:+1}${3-} in
-      "1${BS_TRGB_Basename}") ;;
-      1?*) BS_TRGB_Basename="${BS_TRGB_Basename%"${3-}"}" ;;
-      esac
-
-      eval "${BS_TRGB_refBasename}=\"\${BS_TRGB_Basename}\""
-    ;;
-
-    *)
-      false
-    ;;
-  esac
+  BS_TRGB_Basename=$(basename "$@" && echo '_') || return $?
+  eval "${BS_TRGB_refBasename}=\"\${BS_TRGB_Basename%?_}\""
 }
 
 #===============================================================================
@@ -951,8 +820,8 @@ fn_bs_tr_array_value() { ## cSpell:Ignore BS_TR_AV_
         # NOTE:
         # - has to account for values that may
         #   contain `<newline>` characters
-        sed -e "  s/'/'\\\\''/g
-                 1s/^/'/
+        sed -e "s/'/'\\\\''/g
+                1s/^/'/
                 \$s/\$/' \\\\/"
       }
     ;;
@@ -1011,9 +880,9 @@ fn_bs_tr_array_create() { ## cSpell:Ignore BS_TR_TA_
 #  fn_bs_tr_shell_array_create
 #  -------------------
 #
-#  Initialize anything that has not already been set; primarily constants that
-#+ require the use of commands to initialize and so are not initialized on
-#+ declaration.
+# Initialize anything that has not already been set; primarily constants that
+# require the use of commands to initialize and so are not initialized on
+# declaration.
 #
 #  USAGE:
 #     fn_bs_tr_shell_array_create
@@ -1024,18 +893,30 @@ fn_bs_tr_array_create() { ## cSpell:Ignore BS_TR_TA_
 #
 #  EXAMPLES:
 #     fn_bs_tr_shell_array_create
+#
 #_______________________________________________________________________________
 fn_bs_tr_shell_array_create() { ## cSpell:Ignore BS_TRInit_
   #-------------------------------------
   #  Known shells
-  ## cSpell:Ignore ksh rksh lksh mksh rmksh yash qsh zsh rzsh rustybox
-  for BS_TRInit_Shell in \
+  #
+  ## cSpell:Ignore busybox rustybox
+  ## cSpell:Ignore rksh lksh
+  ## cSpell:Ignore modernish
+  ## cSpell:Ignore bosh jbosh pbosh
+  ## cSpell:Ignore posixlycorrect
+  #
+  #  Omitted:
+  #  - `nsh`: does not properly process command line arguments
+  #
+  set 'BS_DUMMY_PARAM' \
         'sh' \
+        \
         'ash' \
         \
-        'busybox sh'  'busybox ash' \
+        'bosh' 'jbosh' 'pbosh' \
         \
-        'rustybox sh' 'rustybox ash' \
+        'bash'      'bash --posix'    \
+        'bash -r'   'bash --posix -r' \
         \
         'dash' \
         \
@@ -1043,26 +924,43 @@ fn_bs_tr_shell_array_create() { ## cSpell:Ignore BS_TRInit_
         'ksh -r'  'ksh88 -r'  'ksh93 -r'  'ksh2020 -r'  \
         'rksh'                                          \
         \
-        'mksh'    'lksh'      'mksh -r' \
+        'mksh'    'mksh -r' \
+        'lksh' \
         \
-        'oksh'      'oksh -r' \
+        'modernish' \
         \
-        'bash'      'bash --posix'    \
-        'bash -r'   'bash --posix -r' \
+        'osh' \
+        \
+        'oksh' 'oksh -r' \
         \
         'posh' \
+        \
         'qsh'  \
         \
-        'yash'      'yash -o posixlycorrect' \
+        'rustybox sh' 'rustybox ash' \
         \
-        'zsh'       'zsh --emulate sh'    \
-        'zsh -r'    'zsh --emulate sh -r'
+        'yash' 'yash -o posixlycorrect' \
+        \
+        'zsh'    'zsh --emulate sh'    \
+        'zsh -r' 'zsh --emulate sh -r'
+  shift
+
+  case ${g_BS_TR_CFG__NoBusyBox:-0} in
+  0)  set 'BS_DUMMY_PARAM'          \
+        'busybox sh'  'busybox ash' \
+        "$@"
+      shift ;;
+  esac
+
+  ## cSpell:disable
+  for BS_TRInit_Shell
   do
     if fn_bs_tr_cmd_is_shell "${BS_TRInit_Shell}"; then
       fn_bs_tr_array_value "${BS_TRInit_Shell}"
     fi
   done
   echo ' '
+  ## cSpell:enable
 }
 
 #_______________________________________________________________________________
@@ -1108,27 +1006,28 @@ fn_bs_tr_shell_array_create() { ## cSpell:Ignore BS_TRInit_
 #;
 #_______________________________________________________________________________
 fn_bs_tr_locate_item() { ## cSpell:Ignore BS_TR_LI_
-  BS_TR_LI_Test="${1:?'[testrunner::fn_bs_tr_locate_item]: Internal Error: a test is required'}"
+  BS_TR_LI_Test=${1:?'[testrunner::fn_bs_tr_locate_item]: Internal Error: a test is required'}
   shift
-  BS_TR_LI_refName="${1:?'[testrunner::fn_bs_tr_locate_item]: Internal Error: a script variable is required'}"
+  BS_TR_LI_refName=${1:?'[testrunner::fn_bs_tr_locate_item]: Internal Error: a script variable is required'}
   shift
 
   #---------------------------------------------------------
   # Unpack variable and check it's set
   #---------------------------------------------------------
-  eval "BS_TR_LI_Name=\"\${${BS_TR_LI_refName}-}\""
+  eval "BS_TR_LI_Name=\${${BS_TR_LI_refName}-}"
   case ${BS_TR_LI_Name:+1} in
-  1) ;; *)  fn_bs_testrunner_invalid_args \
-              "'${BS_TR_LI_refName}' does not contain a path"
-            return "${c_BS_TR__EX_USAGE}" ;;
+  1) ;;   *)  fn_bs_testrunner_invalid_args "'${BS_TR_LI_refName}' does not contain a path"
+              return "${c_BS_TR__EX_USAGE}" ;;
   esac
 
   #---------------------------------------------------------
   # Easy check first
   #---------------------------------------------------------
-  if test "${BS_TR_LI_Test}" "${BS_TR_LI_Name}"; then
+  if test "${BS_TR_LI_Test}" "${BS_TR_LI_Name}"
+  then
     case ${BS_TR_LI_Name} in
-    [!/]*)  BS_TR_LI_Name="${c_BS_TR__PWD:+${c_BS_TR__PWD}/}${BS_TR_LI_Name}"
+    [!/]*)  fn_bs_tr_pwd BS_TR_LI_PWD || return $?
+            BS_TR_LI_Name="${BS_TR_LI_PWD:+${BS_TR_LI_PWD}/}${BS_TR_LI_Name}"
             eval "${BS_TR_LI_refName}=\"\${BS_TR_LI_Name}\"" ;;
     esac
     return
@@ -1149,15 +1048,13 @@ fn_bs_tr_locate_item() { ## cSpell:Ignore BS_TR_LI_
     case ${BS_TR_LI_SearchDir:-} in
       *:*)
         BS_TR_LI_RemainingPath=":${BS_TR_LI_SearchDir%:}:"
-        while : #< [ -n ${BS_TR_LI_RemainingPath} ]
+        while test -n "${BS_TR_LI_RemainingPath}"
         do
-          #> LOOP TEST --------------
-          case ${BS_TR_LI_RemainingPath:+1} in 1) ;; *) break ;; esac #< [ -n ${BS_TR_LI_RemainingPath} ]
-          #> ------------------------
 
                BS_TR_LI_TestPath="${BS_TR_LI_RemainingPath##*:}/${BS_TR_LI_Name}"
-          BS_TR_LI_RemainingPath="${BS_TR_LI_RemainingPath%:*}"
-          if test "${BS_TR_LI_Test}" "${BS_TR_LI_TestPath}"; then
+          BS_TR_LI_RemainingPath=${BS_TR_LI_RemainingPath%:*}
+          if test "${BS_TR_LI_Test}" "${BS_TR_LI_TestPath}"
+          then
             eval "${BS_TR_LI_refName}=\"\${BS_TR_LI_TestPath}\""
             return
           fi
@@ -1165,7 +1062,8 @@ fn_bs_tr_locate_item() { ## cSpell:Ignore BS_TR_LI_
       ;;
       *)
         BS_TR_LI_TestPath="${BS_TR_LI_SearchDir:+${BS_TR_LI_SearchDir}/}${BS_TR_LI_Name}"
-        if test "${BS_TR_LI_Test}" "${BS_TR_LI_TestPath}"; then
+        if test "${BS_TR_LI_Test}" "${BS_TR_LI_TestPath}"
+        then
           eval "${BS_TR_LI_refName}=\"\${BS_TR_LI_TestPath}\""
           return
         fi
@@ -1215,8 +1113,8 @@ fn_bs_tr_locate_directory() { fn_bs_tr_locate_item '-d' ${1+"$@"}; }
 #  -----------------
 #
 #  Run the test wrapper script with a given command and arguments, optionally
-#+ writing out the command before invoking and/or timing how long the test
-#+ takes to complete.
+# writing out the command before invoking and/or timing how long the test
+# takes to complete.
 #
 #  USAGE:
 #     fn_bs_tr_shell_run_test <COMMAND> <ARGUMENT> [<ARGUMENT>...]
@@ -1228,9 +1126,9 @@ fn_bs_tr_locate_directory() { fn_bs_tr_locate_item '-d' ${1+"$@"}; }
 #     "Command":
 #         - the shell to use to run the wrapper script
 #         - will be subject to "Field Splitting"; may
-#+          contain shell specific arguments
+#          contain shell specific arguments
 #         - must accept a script to run as the next argument
-#+          followed by arguments to pass to that script
+#          followed by arguments to pass to that script
 #
 #     "Arguments":
 #         - arguments for the wrapper script
@@ -1241,34 +1139,78 @@ fn_bs_tr_locate_directory() { fn_bs_tr_locate_item '-d' ${1+"$@"}; }
 #
 #  NOTE:
 #   - wrapper script is assumed to be correctly stored in the variable
-#+    `g_BS_TR__TestWrapper`
+#    `g_BS_TR__TestWrapper`
 #
 #   - If `g_BS_TR_CFG__Trace` is set to '1' will trace the command before
-#+    invoking.
+#    invoking.
 #_______________________________________________________________________________
 fn_bs_tr_shell_run_test() { ## cSpell:Ignore BS_TRTR
-  BS_TR_SR_ShellCmd="${1:?'[testrunner::fn_bs_tr_shell_run_test] A shell command is required'}"
+  BS_TR_SR_ShellCmd=${1:?'[testrunner::fn_bs_tr_shell_run_test] A shell command is required'}
   shift
+
+  # Even if `-i` is in effect, pass-through all standard
+  # defined environment variables that are not otherwise
+  # explicitly set.
+  #
+  ## cSpell:Ignore DATEMSK LOGNAME MSGVERB
+  # SC2312: Double quote to prevent globbing and word splitting.
+  # EXCEPT: It's meant to be split
+  # shellcheck disable=SC2086
+  set 'BS_TRM_DUMMY' \
+    \
+           "LANG=${g_BS_TR__Locale}" \
+         "LC_ALL=${g_BS_TR__Locale}" \
+     "LC_COLLATE=${g_BS_TR__Locale}" \
+       "LC_CTYPE=${g_BS_TR__Locale}" \
+    "LC_MESSAGES=${g_BS_TR__Locale}" \
+    "LC_MONETARY=${g_BS_TR__Locale}" \
+     "LC_NUMERIC=${g_BS_TR__Locale}" \
+        "LC_TIME=${g_BS_TR__Locale}" \
+    \
+    ${BS_TR_SR_ShellCmd}             \
+    "${g_BS_TR__TestWrapper}"        \
+    ${1+"$@"}                        && shift
+
+  case ${g_BS_TR__IgnoreEnv:+1} in
+    1)  set \
+          'env' \
+          '-i'  \
+          \
+          ${BS_TEST_SHELL:+"COLUMNS=${BS_TEST_SHELL}"} \
+          \
+          ${COLUMNS:+"COLUMNS=${COLUMNS}"} \
+          ${DATEMSK:+"DATEMSK=${DATEMSK}"} \
+             ${HOME:+"HOME=${HOME}"}       \
+            ${LINES:+"LINES=${LINES}"}     \
+          ${LOGNAME:+"LOGNAME=${LOGNAME}"} \
+          ${MSGVERB:+"MSGVERB=${MSGVERB}"} \
+            ${SHELL:+"SHELL=${SHELL}"}     \
+           ${TMPDIR:+"TMPDIR=${TMPDIR}"}   \
+             ${TERM:+"TERM=${TERM}"}       \
+               ${TZ:+"TZ=${TZ}"}           \
+          \
+          "PATH=${PATH}" \
+          \
+          "$@"
+    ;;
+
+    *) set 'env' "IFS=${c_BS_TR__IFS}" "$@" ;;
+  esac
 
   # Output the command line
   case ${g_BS_TR_CFG__Trace:-0} in
-  0)  ;;
-  *)  {
-        printf '%s %s' "${BS_TR_SR_ShellCmd}" "${g_BS_TR__TestWrapper}"
-        printf ' %s'   "$@"
-        echo   ''
-      } >&2 || true ;;
+  1) printf '%s\n' "$*" >&2 || true ;;
   esac
 
-  #  Run the test
-  #  SC2312: Consider invoking this command separately to avoid masking
-  #+         its return value (or use '|| true' to ignore).
-  #  EXCEPT: `time -p` needs to run the given command and the error code is
-  #+         used to determine if tested failed.
+  # Run the test
+  # SC2312: Consider invoking this command separately to avoid masking
+  #         its return value (or use '|| true' to ignore).
+  # EXCEPT: `time -p` needs to run the given command and the error code is
+  #         used to determine if tested failed.
   # shellcheck disable=SC2312
-  case ${g_BS_TR__Timed:-0} in
-  1) time -p ${BS_TR_SR_ShellCmd} "${g_BS_TR__TestWrapper}" "$@" && echo '' ;;
-  0)         ${BS_TR_SR_ShellCmd} "${g_BS_TR__TestWrapper}" "$@"            ;;
+  case ${g_BS_TR_CFG__Timed:-0} in
+  1) time -p "$@" && echo '' ;;
+  0) "$@" ;;
   esac
 }
 
@@ -1279,7 +1221,7 @@ fn_bs_tr_shell_run_test() { ## cSpell:Ignore BS_TRTR
 #  Run the test configuration specified by the configuration ID.
 #
 #  If the configuration ID is either zero (i.e. '0') or 'all', run all available
-#+ configurations.
+# configurations.
 #
 #  USAGE:
 #     fn_bs_tr_run_test_config <SHELL> <TEST> <ARGUMENT>
@@ -1292,15 +1234,15 @@ fn_bs_tr_shell_run_test() { ## cSpell:Ignore BS_TRTR
 #     "Shell":
 #         - the shell to use to run the wrapper script
 #         - will be subject to "Field Splitting"; may
-#+          contain shell specific arguments
+#          contain shell specific arguments
 #         - must accept a script to run as the next argument
-#+          followed by arguments to pass to that script
+#          followed by arguments to pass to that script
 #
 #     "Test":
 #         - the test script to be run
 #         - should be only a name, not a full path (PATH
-#+          should have been set to contain the file path,
-#+          this is to accommodate restricted shells)
+#          should have been set to contain the file path,
+#          this is to accommodate restricted shells)
 #
 #     "Arguments Variable":
 #         - an array variable
@@ -1313,17 +1255,17 @@ fn_bs_tr_shell_run_test() { ## cSpell:Ignore BS_TRTR
 #
 #  NOTE:
 #   - wrapper script is assumed to be correctly stored in the variable
-#+    `g_BS_TR__TestWrapper`
+#    `g_BS_TR__TestWrapper`
 #
 #   - The number of iterations is read from `opt_Iterations`,
-#+    while the configuration ID is read from `opt_ConfigID`
+#    while the configuration ID is read from `opt_ConfigID`
 #_______________________________________________________________________________
 fn_bs_tr_run_test_config() { ## cSpell:Ignore BS_TR_RTC
-       BS_TR_RTC_Shell="${1:?'[testrunner::fn_bs_tr_run_test_config] a command to run is required'}"
-        BS_TR_RTC_Tool="${2:?'[testrunner::fn_bs_tr_run_test_config] a tool to run is required'}"
-        BS_TR_RTC_Test="${3:?'[testrunner::fn_bs_tr_run_test_config] a test to run is required'}"
-    BS_TR_RTC_ConfigID="${4:?'[testrunner::fn_bs_tr_run_test_config] a config to run is required'}"
-  BS_TR_RTC_Iterations="${5:?'[testrunner::fn_bs_tr_run_test_config] an iteration count is required'}"
+       BS_TR_RTC_Shell=${1:?'[testrunner::fn_bs_tr_run_test_config] a command to run is required'}
+        BS_TR_RTC_Tool=${2:?'[testrunner::fn_bs_tr_run_test_config] a tool to run is required'}
+        BS_TR_RTC_Test=${3:?'[testrunner::fn_bs_tr_run_test_config] a test to run is required'}
+    BS_TR_RTC_ConfigID=${4:?'[testrunner::fn_bs_tr_run_test_config] a config to run is required'}
+  BS_TR_RTC_Iterations=${5:?'[testrunner::fn_bs_tr_run_test_config] an iteration count is required'}
 
   set 'BS_DUMMY_PARAM'                       \
       "--tool=${BS_TR_RTC_Tool}"             \
@@ -1363,7 +1305,7 @@ fn_bs_tr_run_test_config() { ## cSpell:Ignore BS_TR_RTC
 #  ---------------------
 #
 #  Test if the given command appears to be a shell that is available in the
-#+ current environment.
+# current environment.
 #
 #  USAGE:
 #     fn_bs_tr_cmd_is_shell <COMMAND>
@@ -1374,27 +1316,35 @@ fn_bs_tr_run_test_config() { ## cSpell:Ignore BS_TR_RTC
 #     "Command":
 #         - the command to test
 #         - will be subject to "Field Splitting"; may
-#+          contain shell specific arguments
+#          contain shell specific arguments
 #         - must accept input from a pipe (i.e. standard
-#+          input)
+#          input)
 #
 #  EXAMPLES:
 #     if fn_bs_tr_cmd_is_shell 'bash -r'; then ...
 #
 #  IMPLEMENTATION NOTE:
 #   - There is no good way to test if a command exists that is supported in all
-#+    cases and in all shells. Even many shells that are relatively modern or
-#+    actively updated do not support some of the standard supplied ways of
-#+    checking this. Even if there was such a test there is no way of
-#+    determining if the given command is actually a shell (or just a command
-#+    that happens to have the same name). Instead, this command tries to run
-#+    a small script via a pipe with the given command, if the output is as
-#+    expected, the command is deemed to be a shell, otherwise it is not.
+#    cases and in all shells. Even many shells that are relatively modern or
+#    actively updated do not support some of the standard supplied ways of
+#    checking this. Even if there was such a test there is no way of
+#    determining if the given command is actually a shell (or just a command
+#    that happens to have the same name). Instead, this command tries to run
+#    a small script via a pipe with the given command, if the output is as
+#    expected, the command is deemed to be a shell, otherwise it is not.
 #_______________________________________________________________________________
 fn_bs_tr_cmd_is_shell() { ## cSpell:Ignore BS_TRCIS_
-  case ${1:+1}$($1 -c 'if : ; then echo "Hello World"; fi' 2>&1 || true) in
-  '1Hello World') : ;;
-               *) false ;;
+  case $(
+      (
+        $1 -c  'if [ "X" = "X" ]
+                then
+                  echo "Hello World"
+                fi' || true
+
+      ) 2>&1
+    ) in
+  'Hello World') return 0 ;;
+              *) return 1 ;;
   esac
 }
 
@@ -1430,39 +1380,43 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
   case $- in *f*)       set +f ;; esac #< `noglob`:   Enable pathname expansion
 
   #---------------------------------------------------------
-  #  Ensure IFS is the default
+  #  For this script use the POSIX locale - this may be
+  #  overridden for tests with the `--locale` option
   #---------------------------------------------------------
-  case ${IFS-} in
-  " ${c_BS_TR__tab}${c_BS_TR__newline}") ;;
-  *)  IFS=" ${c_BS_TR__tab}${c_BS_TR__newline}"
-      export IFS ;;
-  esac
+  for BS_TR_refLocaleVar in       \
+      'LANG'        'LC_ALL'      \
+      'LC_CTYPE'    'LC_COLLATE'  \
+      'LC_MONETARY' 'LC_NUMERIC'  \
+      'LC_MESSAGES'
+  do
+    eval "${BS_TR_refLocaleVar}=C
+          export '${BS_TR_refLocaleVar}'"
+  done
 
   #---------------------------------------------------------
-  #  Enable POSIX compatibility as far as possible
+  # Unset GNU specific locale variables - these should _not_
+  # be an issue, but some reports suggest that LANGUAGE at
+  # least _may_ override other `LC_*` variables
   #---------------------------------------------------------
-  LANG='C';         LC_ALL='C';             LANGUAGE='C';
-  LC_CTYPE='C';     LC_COLLATE='C';         LC_MONETARY='C';
-  LC_NUMERIC='C';   LC_MESSAGES='C';        LC_TIME='C';
-  LC_ADDRESS='C';   LC_IDENTIFICATION='C';  LC_MEASUREMENT='C';
-  LC_NAME='C';      LC_PAPER='C';           LC_TELEPHONE='C';
-
-  export  'LANG'         'LC_ALL'             'LANGUAGE'        \
-          'LC_CTYPE'     'LC_COLLATE'         'LC_MONETARY'     \
-          'LC_NUMERIC'   'LC_MESSAGES'        'LC_TIME'         \
-          'LC_ADDRESS'   'LC_IDENTIFICATION'  'LC_MEASUREMENT'  \
-          'LC_NAME'      'LC_PAPER'           'LC_TELEPHONE'    \
-          'POSIXLY_CORRECT'
-
-  POSIXLY_CORRECT=1
-  export 'POSIXLY_CORRECT'
+  for BS_TR_refLocaleVar in                 \
+      'LANGUAGE'        'LC_TIME'           \
+      'LC_ADDRESS'      'LC_IDENTIFICATION' \
+      'LC_MEASUREMENT'  'LC_NAME'           \
+      'LC_PAPER'        'LC_TELEPHONE'
+  do
+    eval "case \${${BS_TR_refLocaleVar}+1} in
+          1) unset ${BS_TR_refLocaleVar} ;;
+          esac"
+  done
 
   #---------------------------------------------------------
   # Initialize local variables
   #---------------------------------------------------------
   opt_Tool=;     opt_TestDir=;
   opt_TestName=; opt_aShells=;
-  opt_ConfigID=; g_BS_TR_CFG__ExitOnFail=;
+  opt_ConfigID=; opt_PlatformConfigID=;
+
+  opt_Locale=; unset opt_Locale
 
   #---------------------------------------------------------
   # Get the directory of this script
@@ -1473,7 +1427,7 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
       'BS_TR_Main_TestRunnerDir' \
       "${c_BS_TR__Param0}"
   } || {
-    BS_TR_Main_TestRunnerDir="${c_BS_TR__Param0%/*}"
+    BS_TR_Main_TestRunnerDir=${c_BS_TR__Param0%/*}
   }
 
   #---------------------------------------------------------
@@ -1486,18 +1440,19 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
   #---------------------------------------------------------
   # Process command line arguments...
   #---------------------------------------------------------
-  while : #< [ $# -gt 0 ]
+  while [ $# -gt 0 ]
   do
-    #> LOOP TEST --------------
-    case $# in 0) break ;; esac #< [ $# -gt 0 ]
-    #> ------------------------
-
     case $1 in
       #.................................
       # End of arguments
       '--')
         shift
-        break ;;
+        if [ $# -gt 0 ]
+        then
+          g_BS_TR__aTestArgs="${g_BS_TR__aTestArgs-}$(fn_bs_tr_array_create "$@")"
+        fi
+        break
+      ;;
 
       #.................................
       # Help
@@ -1514,22 +1469,30 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
       #.................................
       # Timed
       '--time'|'--timed'|'--profile')
-        g_BS_TR__Timed=1
+        g_BS_TR_CFG__Timed=1
         g_BS_TR__aWrapperArgs="${g_BS_TR__aWrapperArgs-}$(fn_bs_tr_array_create '--no-assert')"
       ;;
 
       #.................................
       # Flag arguments
-         '--quiet') g_BS_TR_CFG__Quiet=$(( ${g_BS_TR_CFG__Quiet:-0} + 1 )) ;;
-      '--no-quiet') g_BS_TR_CFG__Quiet=$(( ${g_BS_TR_CFG__Quiet:-1} - 1 )) ;;
-         '--trace') g_BS_TR_CFG__Trace=$(( ${g_BS_TR_CFG__Trace:-0} + 1 )) ;;
-      '--no-trace') g_BS_TR_CFG__Trace=$(( ${g_BS_TR_CFG__Trace:-1} - 1 )) ;;
-          '--exit') g_BS_TR_CFG__ExitOnFail=1 ;;
-       '--no-exit') g_BS_TR_CFG__ExitOnFail=0 ;;
+                '--quiet') g_BS_TR_CFG__Quiet=$(( ${g_BS_TR_CFG__Quiet:-0} + 1 )) ;;
+             '--no-quiet') g_BS_TR_CFG__Quiet=$(( ${g_BS_TR_CFG__Quiet:-1} - 1 )) ;;
+                '--trace') g_BS_TR_CFG__Trace=$(( ${g_BS_TR_CFG__Trace:-0} + 1 )) ;;
+             '--no-trace') g_BS_TR_CFG__Trace=$(( ${g_BS_TR_CFG__Trace:-1} - 1 )) ;;
+                 '--exit') g_BS_TR_CFG__ExitOnFail=1 ;;
+              '--no-exit') g_BS_TR_CFG__ExitOnFail=0 ;;
+           '--ignore-env') g_BS_TR__IgnoreEnv=1      ;;
+        '--no-ignore-env') g_BS_TR__IgnoreEnv=;      ;;
+           '--no-busybox') g_BS_TR_CFG__NoBusyBox=1  ;;
+
+      #.................................
+      # locale
+      '--locale='*) opt_Locale=${1#-*=} ;;
+      '--locale'  ) opt_Locale=; ;;
 
       #.................................
       # Pass-through arguments
-      '--color'|'--no-color'|'--colour'|'--no-colour'|'--no-assert'|'--assert')
+      '--color'|'--no-color'|'--colour'|'--no-colour'|'--no-assert'|'--assert'|'--test-platform-config'|'--no-test-platform-config')
         g_BS_TR__aWrapperArgs="${g_BS_TR__aWrapperArgs-}$(fn_bs_tr_array_create "$1")" ;;
 
       #.................................
@@ -1539,7 +1502,7 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
         1)  fn_bs_testrunner_usage_error '"--tool|-t" can only be specified once'
             return "${c_BS_TR__EX_USAGE}" ;;
         esac
-        opt_Tool="${1#-*=}"
+        opt_Tool=${1#-*=}
         case ${opt_Tool:+1} in
         1) ;; *)  fn_bs_testrunner_usage_error "a value is required with '$1'"
                   return "${c_BS_TR__EX_USAGE}" ;;
@@ -1551,7 +1514,7 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
         1)  fn_bs_testrunner_usage_error '"--tool|-t" can only be specified once'
             return "${c_BS_TR__EX_USAGE}" ;;
         esac
-        opt_Tool="${1#-?}" ;;
+        opt_Tool=${1#-?} ;;
 
       '--tool'|'-t')
         case ${2:+1} in
@@ -1559,7 +1522,7 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
             1)  fn_bs_testrunner_usage_error '"--tool|-t" can only be specified once'
                 return "${c_BS_TR__EX_USAGE}" ;;
             esac
-            opt_Tool="$2"
+            opt_Tool=$2
             shift ;;
         *)  fn_bs_testrunner_usage_error "a value is required with '$1'"
             return "${c_BS_TR__EX_USAGE}" ;;
@@ -1572,7 +1535,7 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
         1)  fn_bs_testrunner_usage_error '"--test|-u" can only be specified once'
             return "${c_BS_TR__EX_USAGE}" ;;
         esac
-        opt_TestName="${1#-*=}"
+        opt_TestName=${1#-*=}
         case ${opt_TestName:+1} in
         1) ;; *)  fn_bs_testrunner_usage_error "a value is required with '$1'"
                   return "${c_BS_TR__EX_USAGE}" ;;
@@ -1584,7 +1547,7 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
         1)  fn_bs_testrunner_usage_error '"--test|-u" can only be specified once'
             return "${c_BS_TR__EX_USAGE}" ;;
         esac
-        opt_TestName="${1#-?}" ;;
+        opt_TestName=${1#-?} ;;
 
       '--test'|'-u')
         case ${2:+1} in
@@ -1592,7 +1555,7 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
             1)  fn_bs_testrunner_usage_error '"--test|-u" can only be specified once'
                 return "${c_BS_TR__EX_USAGE}" ;;
             esac
-            opt_TestName="$2"
+            opt_TestName=$2
             shift ;;
         *)  fn_bs_testrunner_usage_error "a value is required with '$1'"
             return "${c_BS_TR__EX_USAGE}" ;;
@@ -1605,7 +1568,7 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
         1)  fn_bs_testrunner_usage_error '"--test-dir|-d" can only be specified once'
             return "${c_BS_TR__EX_USAGE}" ;;
         esac
-        opt_TestDir="${1#-*=}"
+        opt_TestDir=${1#-*=}
         case ${opt_TestDir:+1} in
         1) ;; *)  fn_bs_testrunner_usage_error "a value is required with '$1'"
                   return "${c_BS_TR__EX_USAGE}" ;;
@@ -1617,7 +1580,7 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
         1)  fn_bs_testrunner_usage_error '"--test-dir|-d" can only be specified once'
             return "${c_BS_TR__EX_USAGE}" ;;
         esac
-        opt_TestDir="${1#-?}" ;;
+        opt_TestDir=${1#-?} ;;
 
       '--test-dir'|'-d')
         case ${2:+1} in
@@ -1625,7 +1588,7 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
             1)  fn_bs_testrunner_usage_error '"--test-dir|-d" can only be specified once'
                 return "${c_BS_TR__EX_USAGE}" ;;
             esac
-            opt_TestDir="$2"
+            opt_TestDir=$2
             shift ;;
         *)  fn_bs_testrunner_usage_error "a value is required with '$1'"
             return "${c_BS_TR__EX_USAGE}" ;;
@@ -1638,7 +1601,7 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
         1)  fn_bs_testrunner_usage_error '"--config-id|-c" can only be specified once'
             return "${c_BS_TR__EX_USAGE}" ;;
         esac
-        opt_ConfigID="${1#-*=}"
+        opt_ConfigID=${1#-*=}
         case ${opt_ConfigID:+1} in
         1) ;; *)  fn_bs_testrunner_usage_error "a value is required with '$1'"
                   return "${c_BS_TR__EX_USAGE}" ;;
@@ -1650,7 +1613,7 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
         1)  fn_bs_testrunner_usage_error '"--config-id|-c" can only be specified once'
             return "${c_BS_TR__EX_USAGE}" ;;
         esac
-        opt_ConfigID="${1#-?}" ;;
+        opt_ConfigID=${1#-?} ;;
 
       '--config-id'|'--config'|'-c')
         case ${2:+1} in
@@ -1658,7 +1621,40 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
             1)  fn_bs_testrunner_usage_error '"--config-id|-c" can only be specified once'
                 return "${c_BS_TR__EX_USAGE}" ;;
             esac
-            opt_ConfigID="$2"
+            opt_ConfigID=$2
+            shift ;;
+        *)  fn_bs_testrunner_usage_error "a value is required with '$1'"
+            return "${c_BS_TR__EX_USAGE}" ;;
+        esac ;;
+
+      #.................................
+      # Config number
+      '--platform-config-id='*|'--platform-config='*|'-p='*)
+        case ${opt_PlatformConfigID:+1} in
+        1)  fn_bs_testrunner_usage_error '"--config-id|-c" can only be specified once'
+            return "${c_BS_TR__EX_USAGE}" ;;
+        esac
+        opt_PlatformConfigID=${1#-*=}
+        case ${opt_PlatformConfigID:+1} in
+        1) ;; *)  fn_bs_testrunner_usage_error "a value is required with '$1'"
+                  return "${c_BS_TR__EX_USAGE}" ;;
+        esac
+      ;;
+
+      '-p'[!=]*)
+        case ${opt_PlatformConfigID:+1} in
+        1)  fn_bs_testrunner_usage_error '"--config-id|-c" can only be specified once'
+            return "${c_BS_TR__EX_USAGE}" ;;
+        esac
+        opt_PlatformConfigID=${1#-?} ;;
+
+      '--platform-config-id'|'--platform-config'|'-p')
+        case ${2:+1} in
+        1)  case ${opt_PlatformConfigID:+1} in
+            1)  fn_bs_testrunner_usage_error '"--config-id|-c" can only be specified once'
+                return "${c_BS_TR__EX_USAGE}" ;;
+            esac
+            opt_PlatformConfigID=$2
             shift ;;
         *)  fn_bs_testrunner_usage_error "a value is required with '$1'"
             return "${c_BS_TR__EX_USAGE}" ;;
@@ -1671,7 +1667,7 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
         1)  fn_bs_testrunner_usage_error '"--iterations|-i" can only be specified once'
             return "${c_BS_TR__EX_USAGE}" ;;
         esac
-        opt_Iterations="${1#-*=}"
+        opt_Iterations=${1#-*=}
         case ${opt_Iterations:+1} in
         1) ;; *)  fn_bs_testrunner_usage_error "a value is required with '$1'"
                   return "${c_BS_TR__EX_USAGE}" ;;
@@ -1683,7 +1679,7 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
         1)  fn_bs_testrunner_usage_error '"--iterations|-i" can only be specified once'
             return "${c_BS_TR__EX_USAGE}" ;;
         esac
-        opt_Iterations="${1#-?}" ;;
+        opt_Iterations=${1#-?} ;;
 
       '--iterations'|'-i')
         case ${2:+1} in
@@ -1691,7 +1687,7 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
             1)  fn_bs_testrunner_usage_error '"--iterations|-i" can only be specified once'
                 return "${c_BS_TR__EX_USAGE}" ;;
             esac
-            opt_Iterations="$2"
+            opt_Iterations=$2
             shift ;;
         *)  fn_bs_testrunner_usage_error "a value is required with '$1'"
             return "${c_BS_TR__EX_USAGE}" ;;
@@ -1728,10 +1724,6 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
   #---------------------------------------------------------
   # Validate & process arguments
   #---------------------------------------------------------
-  case $# in
-  0) ;;
-  *) g_BS_TR__aTestArgs="${g_BS_TR__aTestArgs-}$(fn_bs_tr_array_create "$@")" ;;
-  esac
 
   #.....................................
   # Tool to test
@@ -1762,7 +1754,7 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
   #.....................................
   BS_TR_Main_TestDir=;
   case ${opt_TestDir:+1} in
-  1)  BS_TR_Main_TestDir="${opt_TestDir}" ;;
+  1)  BS_TR_Main_TestDir=${opt_TestDir} ;;
   *)  case ${opt_TestName-} in
       */*)  fn_bs_tr_get_dirname   \
               'BS_TR_Main_TestDir' \
@@ -1770,14 +1762,16 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
             fn_bs_tr_get_basename \
               'opt_TestName'      \
               "${opt_TestName}"   || return $? ;;
-        *)  BS_TR_Main_TestDir="${BS_TR_Main_ToolFile%.sh}" ;;
+        *)  BS_TR_Main_TestDir=${BS_TR_Main_ToolFile%.sh} ;;
       esac ;;
   esac
 
-  fn_bs_tr_locate_directory       \
-    'BS_TR_Main_TestDir'          \
-    "${BS_TR_Main_TestRunnerDir}" \
-    "${c_BS_TR__PWD}"             || return $?
+  fn_bs_tr_pwd BS_TR_Main_PWD || BS_TR_Main_PWD=;
+
+  fn_bs_tr_locate_directory                \
+    'BS_TR_Main_TestDir'                   \
+    "${BS_TR_Main_TestRunnerDir}"          \
+    ${BS_TR_Main_PWD:+"${BS_TR_Main_PWD}"} || return $?
 
   #.....................................
   # Determine what shells to use
@@ -1793,7 +1787,7 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
         }
         BS_TRM_aShells="${BS_TRM_aShells-}$(fn_bs_tr_array_create "${BS_TRM_Shell}")"
       done ;;
-  *)  BS_TRM_aShells="$(fn_bs_tr_shell_array_create)" ;;
+  *)  BS_TRM_aShells=$(fn_bs_tr_shell_array_create) ;;
   esac
 
   #.....................................
@@ -1807,12 +1801,25 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
     return "${c_BS_TR__EX_USAGE}" ;;
   esac
 
+  : "${opt_PlatformConfigID:=0}"
+  case ${opt_PlatformConfigID} in
+  *[!0123456789]*)
+    fn_bs_testrunner_usage_error "invalid config ID '${opt_PlatformConfigID}'"
+    return "${c_BS_TR__EX_USAGE}" ;;
+  esac
+
   #.....................................
   # Iterations
   #.....................................
-  case ${g_BS_TR__Timed:-0} in
+  case ${g_BS_TR_CFG__Timed:-0} in
   1) : "${opt_Iterations:=8}" ;;
   0) : "${opt_Iterations:=1}" ;;
+  esac
+
+  case ${opt_Iterations} in
+  *[!0123456789]*)
+    fn_bs_testrunner_usage_error "invalid config ID '${opt_Iterations}'"
+    return "${c_BS_TR__EX_USAGE}" ;;
   esac
 
   #.....................................
@@ -1820,21 +1827,59 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
   #.....................................
   case ${g_BS_TR_CFG__Trace:-0} in 1) g_BS_TR_CFG__Quiet=0 ;; esac
 
+  #.....................................
+  # Find a locale if needed - if no
+  # locale was specified, use the first
+  # `UTF8` locale available.
+  #.....................................
+  case ${opt_Locale+SET}:${opt_Locale:+NZ} in
+    SET:)
+      case ${c_BS_TR__SystemLocale-} in
+        *[Uu][Tt][Ff]8*|*[Uu][Tt][Ff]-8*)
+          opt_Locale=${c_BS_TR__SystemLocale}
+        ;;
+
+        *)
+            opt_Locale=$(
+                {
+                  locale -a 2>&1
+                } | {
+                  sed -n -e '
+                    /[Uu][Tt][Ff]-\{0,1\}8/{
+                      p
+                      q
+                    }'
+                }
+              ) ;;
+      esac
+
+      case ${opt_Locale:+1} in
+      1)  g_BS_TR__Locale=${opt_Locale} ;;
+      *)  fn_bs_testrunner_warning "Disabling '--locale' option: could not find a suitable locale"
+          opt_Locale=; unset opt_Locale ;;
+      esac
+    ;;
+
+    SET:NZ)
+      g_BS_TR__Locale=${opt_Locale}
+    ;;
+  esac
+
   #---------------------------------------------------------
   #  ADD DIRECTORIES TO PATH
   #
   #  Restricted shells generally do not permit the use of
-  #+ full paths for execution or sourcing, to work around
-  #+ this requires that the files needed are all available
-  #+ on the search path, so do that for all shells (since
-  #+ it works for unrestricted shells too).
+  # full paths for execution or sourcing, to work around
+  # this requires that the files needed are all available
+  # on the search path, so do that for all shells (since
+  # it works for unrestricted shells too).
   #
   #  NOTE: There is a potential issue here: if `ToolDir` or
-  #+       `TestDir` contain any executable files that are
-  #+       named the same as any command invoked they will
-  #+       be invoked instead. This is deemed unlikely and
-  #+       for running tests not likely to be something that
-  #+       is of large concern.
+  #       `TestDir` contain any executable files that are
+  #       named the same as any command invoked they will
+  #       be invoked instead. This is deemed unlikely and
+  #       for running tests not likely to be something that
+  #       is of large concern.
   #---------------------------------------------------------
   PATH="${BS_TR_Main_ToolDir}:${BS_TR_Main_TestDir}${PATH:+:${PATH#:}}"
   export PATH
@@ -1852,13 +1897,26 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
   #---------------------------------------------------------
   # RUN TEST(S)
   #---------------------------------------------------------
-  BS_TRM_FailedShellInfo=; BS_TRM_FailedTotal=0
-  for BS_TRM_Shell
+  BS_TRM_Shells=;
+  BS_TRM_SkippedShellInfo=; BS_TRM_FailedShellInfo=;
+  BS_TRM_SkippedTotal=0;    BS_TRM_FailedTotal=0;
+  BS_TRM_TestsRun=0
+  for BS_TEST_SHELL
   do
+    #...................................
+    # Export so tests can query
+    #...................................
+    export BS_TEST_SHELL
+
+    #...................................
+    # Add to the list of shells used
+    #...................................
+    BS_TRM_Shells="${BS_TRM_Shells:+${BS_TRM_Shells}, }'${BS_TEST_SHELL}'"
+
     #...................................
     # Header
     #...................................
-    fn_bs_testrunner_print 'RUNNING TESTS (using %s)\n' "${BS_TRM_Shell}"
+    fn_bs_testrunner_print 'RUNNING TESTS (using %s)\n' "${BS_TEST_SHELL}"
     fn_bs_testrunner_print '==========================\n'
     fn_bs_testrunner_print '\n'
 
@@ -1870,8 +1928,9 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
       #-------------------------------
       # Single Test from argument
       #-------------------------------
-      1)  fn_bs_tr_run_test_config   \
-            "${BS_TRM_Shell}"        \
+      1)  BS_TRM_TestsRun=$(( BS_TRM_TestsRun + 1 ))
+          fn_bs_tr_run_test_config   \
+            "${BS_TEST_SHELL}"       \
             "${BS_TR_Main_ToolFile}" \
             "${opt_TestName}"        \
             "${opt_ConfigID}"        \
@@ -1880,15 +1939,21 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
       #-------------------------------
       # All Tests from directory
       #-------------------------------
-      *)  for BS_TRM_TestFile in "${BS_TR_Main_TestDir}"/*
+      *)
+          for BS_TRM_TestFile in "${BS_TR_Main_TestDir}"/*
           do
             fn_bs_tr_get_basename  \
               'BS_TRM_TestFile'    \
               "${BS_TRM_TestFile}" || return $?
 
+            case ${opt_Locale:+1}:${BS_TRM_TestFile} in
+            ':'*'.locale') continue ;;
+            esac
+
             {
+              BS_TRM_TestsRun=$(( BS_TRM_TestsRun + 1 ))
               fn_bs_tr_run_test_config   \
-                "${BS_TRM_Shell}"        \
+                "${BS_TEST_SHELL}"       \
                 "${BS_TR_Main_ToolFile}" \
                 "${BS_TRM_TestFile}"     \
                 "${opt_ConfigID}"        \
@@ -1908,33 +1973,57 @@ fn_bs_tr_main() { ## cSpell:Ignore BS_TRM_
     #...................................
     case ${BS_TRM_ShellFailedCount} in
     0)  ;;
-    *)  BS_TRM_FailedShellInfo="${BS_TRM_FailedShellInfo-}${BS_TRM_Shell} (${BS_TRM_ShellFailedCount}), "
+    *)  BS_TRM_FailedShellInfo="${BS_TRM_FailedShellInfo-}${BS_TEST_SHELL} (${BS_TRM_ShellFailedCount}), "
             BS_TRM_FailedTotal=$(( BS_TRM_FailedTotal + BS_TRM_ShellFailedCount ))
         case ${g_BS_TR_CFG__ExitOnFail:-0} in
         0) ;; *) break ;;
         esac ;;
     esac
-  done #< `for BS_TRM_Shell`
+  done #< `for BS_TEST_SHELL`
 
   #---------------------------------------------------------
   # Output Results
   #---------------------------------------------------------
-  printf "'%s' TESTS COMPLETE; USED %d SHELL(S):\n" "${BS_TR_Main_ToolFile}" $#
+  BS_TRM_ShellsTested=$(( $# - BS_TRM_SkippedTotal ))
+
+  case ${BS_TRM_ShellsTested:-0} in
+  0) ;;
+  *) BS_TRM_TestsRun=$(( BS_TRM_TestsRun / BS_TRM_ShellsTested )) ;;
+  esac
+
+  printf  "'%s' TESTS COMPLETE: USED %d TESTS FILE(S) WITH %d SHELL(S) [%s]\n" \
+          "${BS_TR_Main_ToolFile}"    \
+          "${BS_TRM_TestsRun:-0}"     \
+          "${BS_TRM_ShellsTested:-0}" \
+          "${BS_TRM_Shells}"
+
+  case ${BS_TRM_SkippedShellInfo:+1} in
+  1)  printf '    *WARNING* SKIPPED TESTS FOR SHELL(S): %s\n' \
+             "${BS_TRM_SkippedShellInfo%,?}" ;;
+  esac
 
   BS_TRM_ExitStatus=0
-  case ${BS_TRM_FailedShellInfo:+1} in
-  1)  if test 255 -gt "${BS_TRM_FailedTotal}"; then
-        printf '    %d TESTS FAILED: %s\n'    \
-               "${BS_TRM_FailedTotal}"        \
-               "${BS_TRM_FailedShellInfo%,?}"
-        BS_TRM_ExitStatus="${BS_TRM_FailedTotal}"
-      else
-        printf '    AT LEAST %d TESTS FAILED: %s\n' \
-               "${BS_TRM_FailedTotal}"              \
-               "${BS_TRM_FailedShellInfo%,?}"
-        BS_TRM_ExitStatus=255
-      fi ;;
-  *) echo '    ALL TESTS SUCCEEDED' ;;
+  case ${BS_TRM_FailedShellInfo:+1}:${BS_TRM_TestsRun:-0} in
+  1:*)
+    if test 255 -gt "${BS_TRM_FailedTotal}"; then
+      printf  '    %d TESTS FAILED: %s\n'    \
+              "${BS_TRM_FailedTotal}"        \
+              "${BS_TRM_FailedShellInfo%,?}"
+      BS_TRM_ExitStatus=${BS_TRM_FailedTotal}
+    else
+      printf  '    AT LEAST %d TESTS FAILED: %s\n' \
+              "${BS_TRM_FailedTotal}"              \
+              "${BS_TRM_FailedShellInfo%,?}"
+      BS_TRM_ExitStatus=255
+    fi
+
+    case "${BS_TRM_FailedShellInfo}" in
+    *'busybox'*)
+      printf 'NOTE: busybox failures may be false negatives (see documentation for more information), use --no-busybox to omit this shell\n'
+    ;;
+    esac ;;
+  :0) echo '    *WARNING* NO TESTS RUN!' ;;
+   *) echo '    ALL TESTS SUCCEEDED' ;;
   esac
 
   #---------------------------------------------------------
@@ -1971,13 +2060,13 @@ fn_bs_tr_display_usage() { ## cSpell:Ignore BS_TR_DU_ risation TOOLNAME colour
   BS_TR_DU_Name=;
   {
     fn_bs_tr_get_basename 'BS_TR_DU_Name' "${c_BS_TR__Param0}"
-  } || BS_TR_DU_Name="${c_BS_TR__Param0##*/}"
+  } || BS_TR_DU_Name=${c_BS_TR__Param0##*/}
 
   cat <<EndOfUsageText
 Usage:
     ${BS_TR_DU_Name} --tool <TOOL> [OPTION...] [-- [TEST_ARG]]
 
-Run tests for a library from the BetterScripts POSIX Suite.
+Run tests for a library from the BetterScripts shtoolkit.
 
 Main Options:
 -------------
@@ -2014,10 +2103,34 @@ Main Options:
 
 Other Options:
 --------------
+      --locale[=<LOCALE>]         Run the tests using the given locale. If a
+                                  locale is not specified, uses the first UTF8
+                                  locale available. Test files with the suffix
+                                  '.locale' will be ignored unless this option
+                                  is specified.
+                                  (Default: Use the POSIX locale.)
+
+      --[no-]ignore-env           Run tests using 'env -i' (i.e. ignore the
+                                  current environment). Note, some environment
+                                  variables will always be set explicitly
+                                  regardless of this setting.
+                                  (Default: Environment is passed through.)
+
+      --no-busybox                Omit busybox from the list of known shells to
+                                  check: awk in busybox appears to be
+                                  significantly problematic in some versions,
+                                  with frequent segmentation faults. Does not
+                                  apply to shells specified manually with
+                                  --shell.
+                                  (Default: Use all known shells.)
+
+      --[no-]quiet                Suppress most output. (Intended for use with
+                                  --time).
+
+      --[no-]trace                Display shell commands before executing.
+
       --time                      Run the tests under 'time -p' (for profiling).
                                   Implies '--no-assert'.
-
-      --trace                     Display shell commands before executing.
 
   -h, --help                      Display this text and exit.
   -v, --version                   Display version text and exit.
@@ -2025,12 +2138,15 @@ Other Options:
 testwrapper Options:
 --------------------
 
-      --color/--colour            Use output colo[u]risation if possible.
+      --[no-]color/--[no-]colour  Use output colo[u]risation if possible.
 
-      --no-assert                 Disable test asserts, for most test this will
+      --[no-]assert               Disable test asserts, for most test this will
                                   only run the command being tested and omit
                                   any tests on the results. Useful for profiling
                                   and debugging.
+
+      --[no-]test-platform-config Enable testing of platform workarounds.
+                                  Intended for developers and not end users.
 
 These options are not used directly by ${BS_TR_DU_Name}, but are forwarded to
 'testwrapper'.
@@ -2084,23 +2200,35 @@ esac
 #.
 #. ## VERSIONS
 #.
-#. v1.0.0          First Release
+#. v1.1.0       - \[NEW] Added `osh` as an automatically recognized shell.
+#.              - \[NEW] Added `--locale` to allow running tests under
+#.                alternative locales.
+#.              - \[NEW] Added `--[no-]ignore-env` to allow ignoring current
+#.                environment.
+#.              - \[NEW] `busybox` can now be omitted via `--no-busybox` -
+#.                `busybox` v0.36.0 has significant issues with `awk` that
+#.                result in segmentation faults in many circumstances.
+#.                Additionally, `busybox` is massively configurable and is
+#.                often distributed in configurations that will fail tests
+#.                while `defconfig` will pass.
+#.              - \[NEW] Added additional statistics to final output.
+#.              - \[FIXED] Corrected help text.
+#.              - \[CHANGED] GNU locale environment variables are now _unset_
+#.                rather than being set to a specific value.
+#.              - \[CHANGED] Test now always run via `env`.
+#.
+#. v1.0.0       - First Release
 #.
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
 #: ## STANDARDS
 #:
-#: - [_POSIX.1-2008_][posix]
-#:   - also known as:
-#:     - _The Open Group Base Specifications Issue 7_
-#:     - _IEEE Std 1003.1-2008_
-#:     - _The Single UNIX Specification Version 4 (SUSv4)_
-#:   - the more recent
-#:     [_POSIX.1-2017_][posix_2017]
-#:     is functionally identical to _POSIX.1-2008_, but incorporates some errata
-#: - [FreeBSD SYSEXITS(3)][sysexits]
-#:   - while not truly standard, these are used by many projects
-#: - [Semantic Versioning v2.0.0][semver]
+#: - [_POSIX.1-2008_][posix].
+#: - [FreeBSD SYSEXITS(3)][sysexits].
+#: - [Semantic Versioning v2.0.0][semver].
+#: - [Inclusive Naming Initiative][inclusivenaming].
+#:
+#: _For more details see the `shtoolkit` general [documentation](./README.MD#standards)._
 #:
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:

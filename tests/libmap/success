@@ -1,0 +1,606 @@
+#!/usr/bin/env false
+# SPDX-License-Identifier: MPL-2.0
+#################################### LICENSE ###################################
+#******************************************************************************#
+#*                                                                            *#
+#* BetterScripts 'libmap/success': Tests for 'libmap' success conditions.     *#
+#*                                                                            *#
+#* Copyright (c) 2026 BetterScripts ( better.scripts@proton.me,               *#
+#*                                    https://github.com/BetterScripts )      *#
+#*                                                                            *#
+#*                                                                            *#
+#* This file is part of the BetterScripts `shtoolkit` (aka _the suite_).      *#
+#* This Source Code Form is subject to the terms of the Mozilla Public        *#
+#* License, v. 2.0. If a copy of the MPL was not distributed with this        *#
+#* file, You can obtain one at https://mozilla.org/MPL/2.0/.                  *#
+#*                                                                            *#
+#* -------------------------------------------------------------------------- *#
+#*                                                                            *#
+#* ADDENDUM:                                                                  *#
+#*                                                                            *#
+#* In addition to the Mozilla Public License a copy of LICENSE.MD should have *#
+#* been provided alongside this file; LICENSE.MD clarifies how the Mozilla    *#
+#* Public License v2.0 applies to this file and MAY confer additional rights. *#
+#*                                                                            *#
+#* Should there be any apparent ambiguity (implied or otherwise) the terms    *#
+#* and conditions from the Mozilla Public License v2.0 shall apply.           *#
+#*                                                                            *#
+#* If a copy of LICENSE.MD was not provided it can be obtained from           *#
+#* https://github.com/BetterScripts/shtoolkit/LICENSE.MD.                     *#
+#*                                                                            *#
+#* NOTE:                                                                      *#
+#*                                                                            *#
+#* The Mozilla Public License v2.0 is compatible with the GNU General Public  *#
+#* License v2.0.                                                              *#
+#*                                                                            *#
+#******************************************************************************#
+################################################################################
+
+############################### LIBMAP/SUCCESS #################################
+#
+# Documentation is written inline formatted as [`Markdown`][markdown], this is
+# in addition to `shtoolkit` general documentation which includes details
+# common to multiple libraries that may not be noted here.
+#
+# The included `Makefile` can be used to generate standalone documentation in
+# various formats with various verbosity settings. The `Makefile` can also be
+# used to install scripts and documentation in appropriate locations.
+#
+# As far as possible, terminology and conventions follow those of the
+# [_POSIX.1-2008_ Standard][posix_2008].
+#
+#===============================================================================
+## cSpell:Ignore libmap testrunner testwrapper LMTS
+################################ DOCUMENTATION #################################
+#
+#% % libmap-success(7) BetterScripts | Tests for 'libmap' success conditions.
+#% % BetterScripts (better.scripts@proton.me)
+#
+#: # LIBMAP/SUCCESS
+#:
+#  `libmap` Test Success (LMTS)
+#  ============================
+#
+#  Tests for `libmap` checking success conditions.
+#
+################################################################################
+
+############################## SHELLCHECK: GLOBAL ##############################
+# shellcheck shell=sh
+# shellcheck enable=avoid-nullary-conditions
+# shellcheck enable=check-extra-masked-returns
+# shellcheck enable=deprecate-which
+# shellcheck enable=require-variable-braces
+################################################################################
+
+#===============================================================================
+#  COMMON VALUES
+#===============================================================================
+
+c_BS_LMTS__Key_1='key1'
+c_BS_LMTS__Key_2='key2'
+c_BS_LMTS__Key_3='key3'
+c_BS_LMTS__Key_4='key4'
+c_BS_LMTS__Value_1='value1'
+c_BS_LMTS__Value_2='value2'
+c_BS_LMTS__Value_3='value3'
+c_BS_LMTS__Value_4='value4'
+
+#===============================================================================
+#  TESTS
+#===============================================================================
+
+#_______________________________________________________________________________
+#  fn_bs_lmts_constants
+#  --------------------
+fn_bs_lmts_constants() {
+  set 'BS_DUMMY_PARAM' && shift
+  test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBMAP_SOURCED-}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBMAP_VERSION_MAJOR-}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBMAP_VERSION_MINOR-}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBMAP_VERSION_PATCH-}" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBMAP_VERSION_FULL-}"  || return $?
+  test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBMAP_VERSION-}"       || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBMAP_VERSION_MAJOR-}" -notmatch ".*[^0123456789].*" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBMAP_VERSION_MINOR-}" -notmatch ".*[^0123456789].*" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBMAP_VERSION_PATCH-}" -notmatch ".*[^0123456789].*" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBMAP_VERSION_FULL-}"  -notmatch ".*[^0123456789].*" || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBMAP_VERSION-}" -match "BetterScripts 'libmap' v.*" || return $?
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lmts_map_new
+#  --------------------------
+fn_bs_lmts_map_new() {
+  set 'BS_DUMMY_PARAM' && shift
+
+  {
+    TestMap=; unset TestMap
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      map_new                 \
+        'TestMap'             \
+        "${c_BS_LMTS__Key_1}=${c_BS_LMTS__Value_1}" \
+        "${c_BS_LMTS__Key_2}=${c_BS_LMTS__Value_2}" || return $?
+
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      map_is_map 'TestMap'    || return $?
+
+    {
+        Size=; unset Size
+        test_run_expect_success   \
+          ${LINENO:+"@${LINENO}"} \
+          map_size                \
+            'TestMap'             \
+            'Size'                || return $?
+
+        test_assert               \
+          ${LINENO:+"@${LINENO}"} \
+          "${Size}" -eq 2         || return $?
+    }
+
+    {
+        Output=; unset Output
+        test_run_expect_success   \
+          ${LINENO:+"@${LINENO}"} \
+          map_get                 \
+            'TestMap'             \
+            "${c_BS_LMTS__Key_1}" \
+            'Output'              || return $?
+
+        test_assert                             \
+          ${LINENO:+"@${LINENO}"}               \
+          "${Output}" = "${c_BS_LMTS__Value_1}" || return $?
+    }
+
+    {
+        Output=; unset Output
+        test_run_expect_success   \
+          ${LINENO:+"@${LINENO}"} \
+          map_get                 \
+            'TestMap'             \
+            "${c_BS_LMTS__Key_2}" \
+            'Output'              || return $?
+
+        test_assert                             \
+          ${LINENO:+"@${LINENO}"}               \
+          "${Output}" = "${c_BS_LMTS__Value_2}" || return $?
+    }
+  }
+
+  {
+    TestMap=; unset TestMap
+    # `bosh` doesn't correctly pipe this if it
+    # is split into multiple commands - only the last
+    # command is piped - the others are sent directly
+    # to `TestMap`.
+    TestMap=$(
+        {
+          printf  '%s=%s\n%s=%s\n' \
+                  "${c_BS_LMTS__Key_1}" "${c_BS_LMTS__Value_1}" \
+                  "${c_BS_LMTS__Key_2}" "${c_BS_LMTS__Value_2}"
+        } | {
+          test_run_expect_success   \
+            ${LINENO:+"@${LINENO}"} \
+            map_new
+        }
+      ) || return $?
+
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      map_is_map 'TestMap'    || return $?
+
+    {
+        Size=; unset Size
+        test_run_expect_success   \
+          ${LINENO:+"@${LINENO}"} \
+          map_size                \
+            'TestMap'             \
+            'Size'                || return $?
+
+        test_assert               \
+          ${LINENO:+"@${LINENO}"} \
+          "${Size}" -eq 2         || return $?
+    }
+
+    {
+        Output=; unset Output
+        test_run_expect_success   \
+          ${LINENO:+"@${LINENO}"} \
+          map_get                 \
+            'TestMap'             \
+            "${c_BS_LMTS__Key_1}" \
+            'Output'              || return $?
+
+        test_assert                             \
+          ${LINENO:+"@${LINENO}"}               \
+          "${Output}" = "${c_BS_LMTS__Value_1}" || return $?
+    }
+
+    {
+        Output=; unset Output
+        test_run_expect_success   \
+          ${LINENO:+"@${LINENO}"} \
+          map_get                 \
+            'TestMap'             \
+            "${c_BS_LMTS__Key_2}" \
+            'Output'              || return $?
+
+        test_assert                             \
+          ${LINENO:+"@${LINENO}"}               \
+          "${Output}" = "${c_BS_LMTS__Value_2}" || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lmts_map_add_and_get
+#  --------------------------
+fn_bs_lmts_map_add_and_get() {
+  set 'BS_DUMMY_PARAM' && shift
+  TestMap=; unset TestMap
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_add 'TestMap' "${c_BS_LMTS__Key_1}" "${c_BS_LMTS__Value_1}" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_add 'TestMap' "${c_BS_LMTS__Key_2}" "${c_BS_LMTS__Value_2}" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_add 'TestMap' "${c_BS_LMTS__Key_3}" "${c_BS_LMTS__Value_3}" || return $?
+  Output=; unset Output
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_get 'TestMap' "${c_BS_LMTS__Key_1}" 'Output' || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${Output}" = "${c_BS_LMTS__Value_1}" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_get 'TestMap' "${c_BS_LMTS__Key_2}" 'Output' || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${Output}" = "${c_BS_LMTS__Value_2}" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_get 'TestMap' "${c_BS_LMTS__Key_3}" 'Output' || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${Output}" = "${c_BS_LMTS__Value_3}" || return $?
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lmts_map_add
+#  --------------------------
+fn_bs_lmts_map_add() {
+  set 'BS_DUMMY_PARAM' && shift
+  TestMap=; unset TestMap
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_add 'TestMap' "${c_BS_LMTS__Key_1}=${c_BS_LMTS__Value_1}" "${c_BS_LMTS__Key_2}=${c_BS_LMTS__Value_2}" || return $?
+  Output=; unset Output
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_get 'TestMap' "${c_BS_LMTS__Key_1}" 'Output' || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${Output}" = "${c_BS_LMTS__Value_1}" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_get 'TestMap' "${c_BS_LMTS__Key_2}" 'Output' || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${Output}" = "${c_BS_LMTS__Value_2}" || return $?
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lmts_map_set
+#  -------------------------------
+fn_bs_lmts_map_set() {
+  set 'BS_DUMMY_PARAM' && shift
+  TestMap=; unset TestMap
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_add 'TestMap' "${c_BS_LMTS__Key_1}" "${c_BS_LMTS__Value_1}" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_set 'TestMap' "${c_BS_LMTS__Key_1}" "${c_BS_LMTS__Value_2}" || return $?
+  Output=; unset Output
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_get 'TestMap' "${c_BS_LMTS__Key_1}" 'Output' || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${Output}" = "${c_BS_LMTS__Value_2}" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_set 'TestMap' "${c_BS_LMTS__Key_1}" "${c_BS_LMTS__Value_3}" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_get 'TestMap' "${c_BS_LMTS__Key_1}" 'Output' || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${Output}" = "${c_BS_LMTS__Value_3}" || return $?
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lmts_map_contains_and_is_map
+#  ----------------------------------
+fn_bs_lmts_map_contains_and_is_map() {
+  set 'BS_DUMMY_PARAM' && shift
+  TestMap=; unset TestMap
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_add 'TestMap' "${c_BS_LMTS__Key_1}" "${c_BS_LMTS__Value_1}" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_contains 'TestMap' "${c_BS_LMTS__Key_1}" || return $?
+  test_run_expect_failure ${LINENO:+"@${LINENO}"} map_contains 'TestMap' 'not_in_map' || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_is_map 'TestMap' || return $?
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lmts_map_delete
+#  -------------------------------------
+fn_bs_lmts_map_delete() {
+  set 'BS_DUMMY_PARAM' && shift
+  TestMap=; unset TestMap
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_add 'TestMap' "${c_BS_LMTS__Key_1}" "${c_BS_LMTS__Value_1}" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_add 'TestMap' "${c_BS_LMTS__Key_2}" "${c_BS_LMTS__Value_2}" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_size 'TestMap' 'Output' || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${Output}" = "2" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_delete 'TestMap' "${c_BS_LMTS__Key_1}" || return $?
+  test_run_expect_failure ${LINENO:+"@${LINENO}"} map_contains 'TestMap' "${c_BS_LMTS__Key_1}" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_size 'TestMap' 'Output' || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${Output}" = "1" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_delete 'TestMap' "${c_BS_LMTS__Key_2}" || return $?
+  test_run_expect_failure ${LINENO:+"@${LINENO}"} map_contains 'TestMap' "${c_BS_LMTS__Key_2}" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_size 'TestMap' 'Output' || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${Output}" = "0" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_add 'TestMap' "${c_BS_LMTS__Key_1}" "${c_BS_LMTS__Value_1}" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_add 'TestMap' "${c_BS_LMTS__Key_2}" "${c_BS_LMTS__Value_2}" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_size 'TestMap' 'Output' || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${Output}" = "2" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_delete 'TestMap' "${c_BS_LMTS__Key_1}" || return $?
+  test_run_expect_failure ${LINENO:+"@${LINENO}"} map_contains 'TestMap' "${c_BS_LMTS__Key_1}" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_size 'TestMap' 'Output' || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${Output}" = "1" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_add 'TestMap' "${c_BS_LMTS__Key_1}" "${c_BS_LMTS__Value_1}" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_size 'TestMap' 'Output' || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${Output}" = "2" || return $?
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lmts_map_size
+#  -------------------
+fn_bs_lmts_map_size() {
+  set 'BS_DUMMY_PARAM' && shift
+  TestMap=; unset TestMap
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_add 'TestMap' "${c_BS_LMTS__Key_1}" "${c_BS_LMTS__Value_1}" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_add 'TestMap' "${c_BS_LMTS__Key_2}" "${c_BS_LMTS__Value_2}" || return $?
+  Output=; unset Output
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_size 'TestMap' 'Output' || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${Output}" = "2" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_set 'TestMap' "${c_BS_LMTS__Key_2}" "${c_BS_LMTS__Value_3}" || return $?
+  Output=; unset Output
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_size 'TestMap' 'Output' || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${Output}" = "2" || return $?
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lmts_map_foreach
+#  ----------------------
+fn_bs_lmts_map_foreach() {
+  set 'BS_DUMMY_PARAM' && shift
+  TestMap=; unset TestMap
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_add 'TestMap' "${c_BS_LMTS__Key_1}" "${c_BS_LMTS__Value_1}" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_add 'TestMap' "${c_BS_LMTS__Key_2}" "${c_BS_LMTS__Value_2}" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_delete 'TestMap' "${c_BS_LMTS__Key_1}" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_add 'TestMap' "${c_BS_LMTS__Key_1}" "${c_BS_LMTS__Value_1}" || return $?
+  TestOutput=; unset 'TestOutput'
+  test_run_expect_success   \
+    ${LINENO:+"@${LINENO}"} \
+    --output=TestOutput     \
+    map_foreach             \
+      'TestMap' 'echo'      || return $?
+  test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match ".*${c_BS_LMTS__Key_1}.*"
+  test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match ".*${c_BS_LMTS__Key_2}.*"
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lmts_map_keys_and_values
+#  ------------------------------
+fn_bs_lmts_map_keys_and_values() {
+  set 'BS_DUMMY_PARAM' && shift
+  TestMap=; unset TestMap
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_add 'TestMap' "${c_BS_LMTS__Key_1}" "${c_BS_LMTS__Value_1}" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_add 'TestMap' "${c_BS_LMTS__Key_2}" "${c_BS_LMTS__Value_2}" || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_add 'TestMap' "${c_BS_LMTS__Key_3}" "${c_BS_LMTS__Value_3}" || return $?
+  Keys=; unset Keys
+  Values=; unset Values
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_keys 'TestMap' 'Keys' || return $?
+  test_run_expect_success ${LINENO:+"@${LINENO}"} map_values 'TestMap' 'Values' || return $?
+  eval "set -- ${Keys-}"
+  test_assert ${LINENO:+"@${LINENO}"} $# -eq 3 || return $?
+  eval "set -- ${Values-}"
+  test_assert ${LINENO:+"@${LINENO}"} $# -eq 3 || return $?
+}
+
+#===============================================================================
+#  TEST MAIN
+#===============================================================================
+
+#_______________________________________________________________________________
+#  fn_bs_lmts_run_units
+#  ----------------
+#
+#
+#_______________________________________________________________________________
+fn_bs_lmts_run_units() {
+  #  Ensure always at least one argument so no issues with "$@"
+  case $# in 0) set 'BS_DUMMY_PARAM' '--' && shift ;; esac
+
+  #-------------------------------------
+  #  CONSTANTS
+  test_run_unit            \
+    -u 'libmap: constants' \
+    'fn_bs_lmts_constants' \
+      "$@"
+
+  #-------------------------------------
+  #
+  test_run_unit          \
+    -u 'libmap: map_new' \
+    'fn_bs_lmts_map_new' \
+      "$@"
+
+  #-------------------------------------
+  #
+  test_run_unit                  \
+    -u 'libmap: map_add/get'     \
+    'fn_bs_lmts_map_add_and_get' \
+      "$@"
+
+  #-------------------------------------
+  #
+  test_run_unit          \
+    -u 'libmap: map_add' \
+    'fn_bs_lmts_map_add' \
+      "$@"
+
+  #-------------------------------------
+  #
+  test_run_unit          \
+    -u 'libmap: map_set' \
+    'fn_bs_lmts_map_set' \
+      "$@"
+
+  #-------------------------------------
+  #
+  test_run_unit                          \
+    -u 'libmap: map_contains'            \
+    'fn_bs_lmts_map_contains_and_is_map' \
+      "$@"
+
+  #-------------------------------------
+  #
+  test_run_unit             \
+    -u 'libmap: map_delete' \
+    'fn_bs_lmts_map_delete' \
+      "$@"
+
+  #-------------------------------------
+  #
+  test_run_unit           \
+    -u 'libmap: map_size' \
+    'fn_bs_lmts_map_size' \
+      "$@"
+
+  #-------------------------------------
+  #
+  test_run_unit              \
+    -u 'libmap: map_foreach' \
+    'fn_bs_lmts_map_foreach' \
+      "$@"
+
+  #-------------------------------------
+  #
+  test_run_unit                      \
+    -u 'libmap: map_keys/values'     \
+    'fn_bs_lmts_map_keys_and_values' \
+      "$@"
+}
+
+################################################################################
+#  TESTWRAPPER Values & Commands
+################################################################################
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  FRIENDLY NAME
+BS_TEST_NAME='libmap/success'
+export BS_TEST_NAME
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  NUMBER OF AVAILABLE CONFIGURATIONS
+BS_TEST_CONFIG_COUNT=1
+export BS_TEST_CONFIG_COUNT
+
+#_______________________________________________________________________________
+#  test_set_config
+#  ---------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_set_config() { ## cSpell:Ignore BS_TRC_
+  BS_TRC_Config=${1:?'[libmap::success::test_set_config]: Error: expected a configuration index'}
+
+  #---------------------------------------------------------
+  #  Set Configuration Accordingly
+  case ${BS_TRC_Config} in
+    #...................................
+    #  CONFIG: DEFAULT
+    1)  test_print_config_info 'Config: DEFAULT' ;;
+
+    #...................................
+    #  CONFIG: UNKNOWN
+    *)  return 1 ;;
+  esac
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  NUMBER OF AVAILABLE CONFIGURATIONS
+BS_TEST_PLATFORM_CONFIG_COUNT=0
+export BS_TEST_PLATFORM_CONFIG_COUNT
+
+#_______________________________________________________________________________
+#  test_set_platform_config
+#  ---------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_set_platform_config() { ## cSpell:Ignore BS_TRC_
+  BS_TRC_PlatformConfig=${1:?'[libmap::success::test_set_platform_config]: Error: expected a configuration index'}
+
+  #---------------------------------------------------------
+  #  Set Configuration Accordingly
+  case ${BS_TRC_PlatformConfig} in
+    #...................................
+    #
+    0) ;;
+
+    #...................................
+    #  CONFIG: UNKNOWN
+    *)  return 1 ;;
+  esac
+}
+
+#_______________________________________________________________________________
+#  test_check_config
+#  ---------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_check_config() { ## cSpell:Ignore BS_TCC_
+  #---------------------------------------------------------
+  #  Get Library File
+  BS_TCC_Library=${1:?'[libmap::success::test_check_config]: Error: expected a library to source'}
+  shift
+
+  return
+}
+
+#_______________________________________________________________________________
+#  test_run_all
+#  ------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_run_all() { ## cSpell:Ignore BS_TRC_
+  #---------------------------------------------------------
+  #  Get Library File
+  BS_TRC_Library=${1:?'[libmap::success::test_run_all]: Error: expected a library to source'}
+  shift
+
+  #---------------------------------------------------------
+  test_print_config_info 'Type: NORMAL USAGE'
+  #---------------------------------------------------------
+
+  #---------------------------------------------------------
+  # Source the tool
+  # shellcheck source=SCRIPTDIR/../../libmap.sh
+  . "${BS_TRC_Library:?}" || return $?
+  #---------------------------------------------------------
+
+  #---------------------------------------------------------
+  #  Run the tests
+  fn_bs_lmts_run_units ${1+"$@"}
+  #---------------------------------------------------------
+}
+
+############################ DOCUMENTATION CONTINUED ###########################
+#. <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+#.
+#. ## VERSIONS
+#.
+#. v1.0.0       - First Release
+#.
+################################################################################
+
+################################################################################
+# END
+################################################################################

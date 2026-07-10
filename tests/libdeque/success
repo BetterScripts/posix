@@ -3,12 +3,12 @@
 #################################### LICENSE ###################################
 #******************************************************************************#
 #*                                                                            *#
-#* BetterScripts 'libqueue/success': Tests for 'libqueue' success conditions. *#
+#* BetterScripts 'libdeque/success': Tests for 'libdeque' success conditions. *#
 #*                                                                            *#
-#* Copyright (c) 2022 BetterScripts ( better.scripts@proton.me,               *#
-#*                                    https://github.com/BetterScripts )      *#
+#* Copyright (c) 2022-2026 BetterScripts ( better.scripts@proton.me,          *#
+#*                         https://github.com/BetterScripts )                 *#
 #*                                                                            *#
-#* This file is part of the BetterScripts POSIX Suite.                        *#
+#* This file is part of the BetterScripts `shtoolkit` (aka _the suite_).      *#
 #*                                                                            *#
 #* This Source Code Form is subject to the terms of the Mozilla Public        *#
 #* License, v. 2.0. If a copy of the MPL was not distributed with this        *#
@@ -19,14 +19,14 @@
 #* ADDENDUM:                                                                  *#
 #*                                                                            *#
 #* In addition to the Mozilla Public License a copy of LICENSE.MD should have *#
-#* been be provided alongside this file; LICENSE.MD clarifies how the Mozilla *#
+#* been provided alongside this file; LICENSE.MD clarifies how the Mozilla    *#
 #* Public License v2.0 applies to this file and MAY confer additional rights. *#
 #*                                                                            *#
 #* Should there be any apparent ambiguity (implied or otherwise) the terms    *#
 #* and conditions from the Mozilla Public License v2.0 shall apply.           *#
 #*                                                                            *#
 #* If a copy of LICENSE.MD was not provided it can be obtained from           *#
-#* https://github.com/BetterScripts/posix/LICENSE.MD.                         *#
+#* https://github.com/BetterScripts/shtoolkit/LICENSE.MD.                     *#
 #*                                                                            *#
 #* NOTE:                                                                      *#
 #*                                                                            *#
@@ -36,11 +36,11 @@
 #******************************************************************************#
 ################################################################################
 
-############################### LIBQUEUE/SUCCESS ###############################
+############################### LIBDEQUE/SUCCESS ###############################
 #
 # Documentation is written inline formatted as [`Markdown`][markdown], this is
-# in addition to the suite wide documentation which includes details common to
-# multiple suite libraries that may not be detailed here.
+# in addition to `shtoolkit` general documentation which includes details
+# common to multiple libraries that may not be noted here.
 #
 # The included `Makefile` can be used to generate standalone documentation in
 # various formats with various verbosity settings. The `Makefile` can also be
@@ -48,28 +48,29 @@
 #
 # As far as possible, terminology and conventions follow those of the
 # [_POSIX.1-2008_ Standard][posix_2008].
+#
 #===============================================================================
-## cSpell:Ignore libqueue testrunner testwrapper LQTS
+## cSpell:Ignore libdeque testrunner testwrapper LDTS
 ################################ DOCUMENTATION #################################
 #
-#% % libqueue-success(7) BetterScripts | Tests for 'libqueue' success conditions.
+#% % libdeque-success(7) BetterScripts | Tests for 'libdeque' success conditions.
 #% % BetterScripts (better.scripts@proton.me)
 #
 #: <!-- #################################################################### -->
-#: <!-- ########## THIS FILE WAS GENERATED FROM 'libqueue/success' ######### -->
+#: <!-- ########## THIS FILE WAS GENERATED FROM 'libdeque/success' ######### -->
 #: <!-- #################################################################### -->
 #: <!-- ########################### DO NOT EDIT! ########################### -->
 #: <!-- #################################################################### -->
 #:
-#: # LIBQUEUE/SUCCESS
+#: # LIBDEQUE/SUCCESS
 #:
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
 #: ## DESCRIPTION
 #:
-#: > `libqueue` Test Success (LQTS)
+#: > `libdeque` Test Success (LDTS)
 #:
-#: Tests for `libqueue` checking success conditions.
+#: Tests for `libdeque` checking success conditions.
 #:
 ################################################################################
 
@@ -112,19 +113,19 @@
 ## cSpell:Ignore Lorem ipsum dolor sit amet, consectetur adipiscing elit,
 ## cSpell:Ignore sed do eiusmod tempor incididunt ut labore et dolore magna
 ## cSpell:Ignore aliqua. Ut enim ad minim veniam,
-c_BS_LQTS__Value_1='1 Lorem ipsum '
-c_BS_LQTS__Value_2='"2 dolor sit amet,"'
-c_BS_LQTS__Value_3='!3 consectetur adipiscing '
-c_BS_LQTS__Value_4='4 "
+c_BS_LDTS__Value_1='1 Lorem ipsum '
+c_BS_LDTS__Value_2='"2 dolor sit amet,"'
+c_BS_LDTS__Value_3='!3 consectetur adipiscing '
+c_BS_LDTS__Value_4='4 "
 " elit,'
-c_BS_LQTS__Value_5='[5]( sed do eiusmod tempor incididunt
+c_BS_LDTS__Value_5='[5]( sed do eiusmod tempor incididunt
 '
-c_BS_LQTS__Value_6='*6* ut labore et dolore magna  '
-c_BS_LQTS__Value_7='aliqua.
+c_BS_LDTS__Value_6='*6* ut labore et dolore magna  '
+c_BS_LDTS__Value_7='aliqua.
 '\''#Ut'\'' enim "ad" minim veniam,#'\''
 !'
 
-c_BS_LQTS__Size=7
+c_BS_LDTS__Size=7
 
 #===============================================================================
 #===============================================================================
@@ -163,143 +164,143 @@ c_BS_LQTS__Size=7
 #: None.
 #:
 #_______________________________________________________________________________
-fn_bs_test_deque_push_back() { ## cSpell:Ignore BS_LQTS_DPB_
+fn_bs_test_deque_push_back() { ## cSpell:Ignore BS_LDTS_DPB_
   #=========================================================
   # deque_push_back/deque_peek_back/deque_pop_back
   #=========================================================
   {
-    BS_LQTS_DPB_Deque=; unset 'BS_LQTS_DPB_Deque'
+    BS_LDTS_DPB_Deque=; unset 'BS_LDTS_DPB_Deque'
     test_run_expect_success     \
       ${LINENO:+"@${LINENO}"}   \
       deque_push_back           \
-        'BS_LQTS_DPB_Deque'     \
-        "${c_BS_LQTS__Value_1}" \
-        "${c_BS_LQTS__Value_2}" \
-        "${c_BS_LQTS__Value_3}" \
-        "${c_BS_LQTS__Value_4}" \
-        "${c_BS_LQTS__Value_5}" \
-        "${c_BS_LQTS__Value_6}" \
-        "${c_BS_LQTS__Value_7}" || return $?
+        'BS_LDTS_DPB_Deque'     \
+        "${c_BS_LDTS__Value_1}" \
+        "${c_BS_LDTS__Value_2}" \
+        "${c_BS_LDTS__Value_3}" \
+        "${c_BS_LDTS__Value_4}" \
+        "${c_BS_LDTS__Value_5}" \
+        "${c_BS_LDTS__Value_6}" \
+        "${c_BS_LDTS__Value_7}" || return $?
 
-    { # `deque_size` == "${c_BS_LQTS__Size}"
-      BS_LQTS_DPB_Size=; unset 'BS_LQTS_DPB_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPB_Size-}" -eq "${c_BS_LQTS__Size}" || return $?
+    { # `deque_size` == "${c_BS_LDTS__Size}"
+      BS_LDTS_DPB_Size=; unset 'BS_LDTS_DPB_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPB_Size-}" -eq "${c_BS_LDTS__Size}" || return $?
     }
 
-    { # `deque_peek_back` == "${c_BS_LQTS__Value_7}"
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_peek_back 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_7}" || return $?
+    { # `deque_peek_back` == "${c_BS_LDTS__Value_7}"
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_peek_back 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_7}" || return $?
     }
 
-    { # `deque_size` == "${c_BS_LQTS__Size}"
-      BS_LQTS_DPB_Size=; unset 'BS_LQTS_DPB_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPB_Size-}" -eq "${c_BS_LQTS__Size}" || return $?
+    { # `deque_size` == "${c_BS_LDTS__Size}"
+      BS_LDTS_DPB_Size=; unset 'BS_LDTS_DPB_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPB_Size-}" -eq "${c_BS_LDTS__Size}" || return $?
     }
 
     { # `deque_pop_back` x 7
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_7}" || return $?
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_7}" || return $?
 
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_6}" || return $?
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_6}" || return $?
 
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_5}" || return $?
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_5}" || return $?
 
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_4}" || return $?
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_4}" || return $?
 
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_3}" || return $?
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_3}" || return $?
 
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_2}" || return $?
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_2}" || return $?
 
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_1}" || return $?
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_1}" || return $?
     }
 
     # empty
-    test_assert ${LINENO:+"@${LINENO}"} -z "${BS_LQTS_DPB_Deque}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} -z "${BS_LDTS_DPB_Deque}" || return $?
   }
 
   #=========================================================
   # deque_push_back/deque_peek_front/deque_pop_front
   #=========================================================
   {
-    BS_LQTS_DPB_Deque=; unset 'BS_LQTS_DPB_Deque'
+    BS_LDTS_DPB_Deque=; unset 'BS_LDTS_DPB_Deque'
     test_run_expect_success     \
       ${LINENO:+"@${LINENO}"}   \
       deque_push_back           \
-        'BS_LQTS_DPB_Deque'     \
-        "${c_BS_LQTS__Value_1}" \
-        "${c_BS_LQTS__Value_2}" \
-        "${c_BS_LQTS__Value_3}" \
-        "${c_BS_LQTS__Value_4}" \
-        "${c_BS_LQTS__Value_5}" \
-        "${c_BS_LQTS__Value_6}" \
-        "${c_BS_LQTS__Value_7}" || return $?
+        'BS_LDTS_DPB_Deque'     \
+        "${c_BS_LDTS__Value_1}" \
+        "${c_BS_LDTS__Value_2}" \
+        "${c_BS_LDTS__Value_3}" \
+        "${c_BS_LDTS__Value_4}" \
+        "${c_BS_LDTS__Value_5}" \
+        "${c_BS_LDTS__Value_6}" \
+        "${c_BS_LDTS__Value_7}" || return $?
 
-    { # `deque_size` == "${c_BS_LQTS__Size}"
-      BS_LQTS_DPB_Size=; unset 'BS_LQTS_DPB_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPB_Size-}" -eq "${c_BS_LQTS__Size}" || return $?
+    { # `deque_size` == "${c_BS_LDTS__Size}"
+      BS_LDTS_DPB_Size=; unset 'BS_LDTS_DPB_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPB_Size-}" -eq "${c_BS_LDTS__Size}" || return $?
     }
 
-    { # `deque_peek_front` == "${c_BS_LQTS__Value_7}"
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_peek_front 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_1}" || return $?
+    { # `deque_peek_front` == "${c_BS_LDTS__Value_7}"
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_peek_front 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_1}" || return $?
     }
 
-    { # `deque_size` == "${c_BS_LQTS__Size}"
-      BS_LQTS_DPB_Size=; unset 'BS_LQTS_DPB_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPB_Size-}" -eq "${c_BS_LQTS__Size}" || return $?
+    { # `deque_size` == "${c_BS_LDTS__Size}"
+      BS_LDTS_DPB_Size=; unset 'BS_LDTS_DPB_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPB_Size-}" -eq "${c_BS_LDTS__Size}" || return $?
     }
 
     { # `deque_pop_front` x 7
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_1}" || return $?
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_1}" || return $?
 
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_2}" || return $?
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_2}" || return $?
 
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_3}" || return $?
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_3}" || return $?
 
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_4}" || return $?
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_4}" || return $?
 
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_5}" || return $?
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_5}" || return $?
 
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_6}" || return $?
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_6}" || return $?
 
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_7}" || return $?
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_7}" || return $?
     }
 
     # empty
-    test_assert ${LINENO:+"@${LINENO}"} -z "${BS_LQTS_DPB_Deque}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} -z "${BS_LDTS_DPB_Deque}" || return $?
   }
 } #< `fn_bs_test_deque_push_back()`
 
@@ -331,143 +332,143 @@ fn_bs_test_deque_push_back() { ## cSpell:Ignore BS_LQTS_DPB_
 #: None.
 #:
 #_______________________________________________________________________________
-fn_bs_test_deque_push_front() { ## cSpell:Ignore BS_LQTS_DPF_
+fn_bs_test_deque_push_front() { ## cSpell:Ignore BS_LDTS_DPF_
   #=========================================================
   # deque_push_front/deque_peek_front/deque_pop_front
   #=========================================================
   {
-    BS_LQTS_DPF_Deque=; unset 'BS_LQTS_DPF_Deque'
+    BS_LDTS_DPF_Deque=; unset 'BS_LDTS_DPF_Deque'
     test_run_expect_success     \
       ${LINENO:+"@${LINENO}"}   \
       deque_push_front          \
-        'BS_LQTS_DPF_Deque'     \
-        "${c_BS_LQTS__Value_1}" \
-        "${c_BS_LQTS__Value_2}" \
-        "${c_BS_LQTS__Value_3}" \
-        "${c_BS_LQTS__Value_4}" \
-        "${c_BS_LQTS__Value_5}" \
-        "${c_BS_LQTS__Value_6}" \
-        "${c_BS_LQTS__Value_7}" || return $?
+        'BS_LDTS_DPF_Deque'     \
+        "${c_BS_LDTS__Value_1}" \
+        "${c_BS_LDTS__Value_2}" \
+        "${c_BS_LDTS__Value_3}" \
+        "${c_BS_LDTS__Value_4}" \
+        "${c_BS_LDTS__Value_5}" \
+        "${c_BS_LDTS__Value_6}" \
+        "${c_BS_LDTS__Value_7}" || return $?
 
-    { # `deque_size` == "${c_BS_LQTS__Size}"
-        BS_LQTS_DPF_Size=; unset 'BS_LQTS_DPF_Size'
-        test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Size' || return $?
-        test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPF_Size-}" -eq "${c_BS_LQTS__Size}" || return $?
+    { # `deque_size` == "${c_BS_LDTS__Size}"
+        BS_LDTS_DPF_Size=; unset 'BS_LDTS_DPF_Size'
+        test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Size' || return $?
+        test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPF_Size-}" -eq "${c_BS_LDTS__Size}" || return $?
     }
 
-    { # `deque_peek_front` == "${c_BS_LQTS__Value_7}"
-      BS_LQTS_DPF_Value=; unset 'BS_LQTS_DPF_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_peek_front 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPF_Value-}" = "_${c_BS_LQTS__Value_7}" || return $?
+    { # `deque_peek_front` == "${c_BS_LDTS__Value_7}"
+      BS_LDTS_DPF_Value=; unset 'BS_LDTS_DPF_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_peek_front 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPF_Value-}" = "_${c_BS_LDTS__Value_7}" || return $?
     }
 
-    { # `deque_size` == "${c_BS_LQTS__Size}"
-      BS_LQTS_DPF_Size=; unset 'BS_LQTS_DPF_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPF_Size-}" -eq "${c_BS_LQTS__Size}" || return $?
+    { # `deque_size` == "${c_BS_LDTS__Size}"
+      BS_LDTS_DPF_Size=; unset 'BS_LDTS_DPF_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPF_Size-}" -eq "${c_BS_LDTS__Size}" || return $?
     }
 
     { # `deque_pop_front` x 7
-      BS_LQTS_DPF_Value=; unset 'BS_LQTS_DPF_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPF_Value-}" = "_${c_BS_LQTS__Value_7}" || return $?
+      BS_LDTS_DPF_Value=; unset 'BS_LDTS_DPF_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPF_Value-}" = "_${c_BS_LDTS__Value_7}" || return $?
 
-      BS_LQTS_DPF_Value=; unset 'BS_LQTS_DPF_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPF_Value-}" = "_${c_BS_LQTS__Value_6}" || return $?
+      BS_LDTS_DPF_Value=; unset 'BS_LDTS_DPF_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPF_Value-}" = "_${c_BS_LDTS__Value_6}" || return $?
 
-      BS_LQTS_DPF_Value=; unset 'BS_LQTS_DPF_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPF_Value-}" = "_${c_BS_LQTS__Value_5}" || return $?
+      BS_LDTS_DPF_Value=; unset 'BS_LDTS_DPF_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPF_Value-}" = "_${c_BS_LDTS__Value_5}" || return $?
 
-      BS_LQTS_DPF_Value=; unset 'BS_LQTS_DPF_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPF_Value-}" = "_${c_BS_LQTS__Value_4}" || return $?
+      BS_LDTS_DPF_Value=; unset 'BS_LDTS_DPF_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPF_Value-}" = "_${c_BS_LDTS__Value_4}" || return $?
 
-      BS_LQTS_DPF_Value=; unset 'BS_LQTS_DPF_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPF_Value-}" = "_${c_BS_LQTS__Value_3}" || return $?
+      BS_LDTS_DPF_Value=; unset 'BS_LDTS_DPF_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPF_Value-}" = "_${c_BS_LDTS__Value_3}" || return $?
 
-      BS_LQTS_DPF_Value=; unset 'BS_LQTS_DPF_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPF_Value-}" = "_${c_BS_LQTS__Value_2}" || return $?
+      BS_LDTS_DPF_Value=; unset 'BS_LDTS_DPF_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPF_Value-}" = "_${c_BS_LDTS__Value_2}" || return $?
 
-      BS_LQTS_DPF_Value=; unset 'BS_LQTS_DPF_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPF_Value-}" = "_${c_BS_LQTS__Value_1}" || return $?
+      BS_LDTS_DPF_Value=; unset 'BS_LDTS_DPF_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPF_Value-}" = "_${c_BS_LDTS__Value_1}" || return $?
     }
 
     # empty
-    test_assert ${LINENO:+"@${LINENO}"} -z "${BS_LQTS_DPF_Deque}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} -z "${BS_LDTS_DPF_Deque}" || return $?
   }
 
   #=========================================================
   # deque_push_front/deque_peek_back/deque_pop_back
   #=========================================================
   {
-    BS_LQTS_DPF_Deque=; unset 'BS_LQTS_DPF_Deque'
+    BS_LDTS_DPF_Deque=; unset 'BS_LDTS_DPF_Deque'
     test_run_expect_success     \
       ${LINENO:+"@${LINENO}"}   \
       deque_push_front          \
-        'BS_LQTS_DPF_Deque'     \
-        "${c_BS_LQTS__Value_1}" \
-        "${c_BS_LQTS__Value_2}" \
-        "${c_BS_LQTS__Value_3}" \
-        "${c_BS_LQTS__Value_4}" \
-        "${c_BS_LQTS__Value_5}" \
-        "${c_BS_LQTS__Value_6}" \
-        "${c_BS_LQTS__Value_7}" || return $?
+        'BS_LDTS_DPF_Deque'     \
+        "${c_BS_LDTS__Value_1}" \
+        "${c_BS_LDTS__Value_2}" \
+        "${c_BS_LDTS__Value_3}" \
+        "${c_BS_LDTS__Value_4}" \
+        "${c_BS_LDTS__Value_5}" \
+        "${c_BS_LDTS__Value_6}" \
+        "${c_BS_LDTS__Value_7}" || return $?
 
-    { # `deque_size` == "${c_BS_LQTS__Size}"
-        BS_LQTS_DPF_Size=; unset 'BS_LQTS_DPF_Size'
-        test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Size' || return $?
-        test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPF_Size-}" -eq "${c_BS_LQTS__Size}" || return $?
+    { # `deque_size` == "${c_BS_LDTS__Size}"
+        BS_LDTS_DPF_Size=; unset 'BS_LDTS_DPF_Size'
+        test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Size' || return $?
+        test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPF_Size-}" -eq "${c_BS_LDTS__Size}" || return $?
     }
 
-    { # `deque_peek_back` == "${c_BS_LQTS__Value_1}"
-      BS_LQTS_DPF_Value=; unset 'BS_LQTS_DPF_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_peek_back 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPF_Value-}" = "_${c_BS_LQTS__Value_1}" || return $?
+    { # `deque_peek_back` == "${c_BS_LDTS__Value_1}"
+      BS_LDTS_DPF_Value=; unset 'BS_LDTS_DPF_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_peek_back 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPF_Value-}" = "_${c_BS_LDTS__Value_1}" || return $?
     }
 
-    { # `deque_size` == "${c_BS_LQTS__Size}"
-      BS_LQTS_DPF_Size=; unset 'BS_LQTS_DPF_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPF_Size-}" -eq "${c_BS_LQTS__Size}" || return $?
+    { # `deque_size` == "${c_BS_LDTS__Size}"
+      BS_LDTS_DPF_Size=; unset 'BS_LDTS_DPF_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPF_Size-}" -eq "${c_BS_LDTS__Size}" || return $?
     }
 
     { # `deque_pop_back` x 7
-      BS_LQTS_DPF_Value=; unset 'BS_LQTS_DPF_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPF_Value-}" = "_${c_BS_LQTS__Value_1}" || return $?
+      BS_LDTS_DPF_Value=; unset 'BS_LDTS_DPF_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPF_Value-}" = "_${c_BS_LDTS__Value_1}" || return $?
 
-      BS_LQTS_DPF_Value=; unset 'BS_LQTS_DPF_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPF_Value-}" = "_${c_BS_LQTS__Value_2}" || return $?
+      BS_LDTS_DPF_Value=; unset 'BS_LDTS_DPF_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPF_Value-}" = "_${c_BS_LDTS__Value_2}" || return $?
 
-      BS_LQTS_DPF_Value=; unset 'BS_LQTS_DPF_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPF_Value-}" = "_${c_BS_LQTS__Value_3}" || return $?
+      BS_LDTS_DPF_Value=; unset 'BS_LDTS_DPF_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPF_Value-}" = "_${c_BS_LDTS__Value_3}" || return $?
 
-      BS_LQTS_DPF_Value=; unset 'BS_LQTS_DPF_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPF_Value-}" = "_${c_BS_LQTS__Value_4}" || return $?
+      BS_LDTS_DPF_Value=; unset 'BS_LDTS_DPF_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPF_Value-}" = "_${c_BS_LDTS__Value_4}" || return $?
 
-      BS_LQTS_DPF_Value=; unset 'BS_LQTS_DPF_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPF_Value-}" = "_${c_BS_LQTS__Value_5}" || return $?
+      BS_LDTS_DPF_Value=; unset 'BS_LDTS_DPF_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPF_Value-}" = "_${c_BS_LDTS__Value_5}" || return $?
 
-      BS_LQTS_DPF_Value=; unset 'BS_LQTS_DPF_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPF_Value-}" = "_${c_BS_LQTS__Value_6}" || return $?
+      BS_LDTS_DPF_Value=; unset 'BS_LDTS_DPF_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPF_Value-}" = "_${c_BS_LDTS__Value_6}" || return $?
 
-      BS_LQTS_DPF_Value=; unset 'BS_LQTS_DPF_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPF_Value-}" = "_${c_BS_LQTS__Value_7}" || return $?
+      BS_LDTS_DPF_Value=; unset 'BS_LDTS_DPF_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPF_Value-}" = "_${c_BS_LDTS__Value_7}" || return $?
     }
 
     # empty
-    test_assert ${LINENO:+"@${LINENO}"} -z "${BS_LQTS_DPF_Deque}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} -z "${BS_LDTS_DPF_Deque}" || return $?
   }
 } #< `fn_bs_test_deque_push_front()`
 
@@ -499,40 +500,40 @@ fn_bs_test_deque_push_front() { ## cSpell:Ignore BS_LQTS_DPF_
 #: None.
 #:
 #_______________________________________________________________________________
-fn_bs_test_deque_push_pop_push() { ## cSpell:Ignore BS_LQTS_DPB_
+fn_bs_test_deque_push_pop_push() { ## cSpell:Ignore BS_LDTS_DPB_
   #=========================================================
   # push_back -> pop -> push_back
   #=========================================================
   {
-    BS_LQTS_DPB_Deque=; unset 'BS_LQTS_DPB_Deque'
+    BS_LDTS_DPB_Deque=; unset 'BS_LDTS_DPB_Deque'
     test_run_expect_success     \
       ${LINENO:+"@${LINENO}"}   \
       deque_push_back           \
-        'BS_LQTS_DPB_Deque'     \
-        "${c_BS_LQTS__Value_1}" \
-        "${c_BS_LQTS__Value_2}" \
-        "${c_BS_LQTS__Value_3}" \
-        "${c_BS_LQTS__Value_4}" \
-        "${c_BS_LQTS__Value_5}" \
-        "${c_BS_LQTS__Value_6}" \
-        "${c_BS_LQTS__Value_7}" || return $?
+        'BS_LDTS_DPB_Deque'     \
+        "${c_BS_LDTS__Value_1}" \
+        "${c_BS_LDTS__Value_2}" \
+        "${c_BS_LDTS__Value_3}" \
+        "${c_BS_LDTS__Value_4}" \
+        "${c_BS_LDTS__Value_5}" \
+        "${c_BS_LDTS__Value_6}" \
+        "${c_BS_LDTS__Value_7}" || return $?
 
-    { # `deque_size` == "${c_BS_LQTS__Size}"
-      BS_LQTS_DPB_Size=; unset 'BS_LQTS_DPB_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPB_Size-}" -eq "${c_BS_LQTS__Size}" || return $?
+    { # `deque_size` == "${c_BS_LDTS__Size}"
+      BS_LDTS_DPB_Size=; unset 'BS_LDTS_DPB_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPB_Size-}" -eq "${c_BS_LDTS__Size}" || return $?
     }
 
-    { # `deque_pop_back` == "${c_BS_LQTS__Value_7}"
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_7}" || return $?
+    { # `deque_pop_back` == "${c_BS_LDTS__Value_7}"
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_7}" || return $?
     }
 
-    { # `deque_size` == $(( c_BS_LQTS__Size - 1 ))
-      BS_LQTS_DPB_Size=; unset 'BS_LQTS_DPB_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPB_Size-}" -eq $(( c_BS_LQTS__Size - 1 )) || return $?
+    { # `deque_size` == $(( c_BS_LDTS__Size - 1 ))
+      BS_LDTS_DPB_Size=; unset 'BS_LDTS_DPB_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPB_Size-}" -eq $(( c_BS_LDTS__Size - 1 )) || return $?
     }
 
     #-------------------------------------------------------
@@ -541,31 +542,31 @@ fn_bs_test_deque_push_pop_push() { ## cSpell:Ignore BS_LQTS_DPB_
     test_run_expect_success     \
       ${LINENO:+"@${LINENO}"}   \
       deque_push_back           \
-        'BS_LQTS_DPB_Deque'     \
-        "${c_BS_LQTS__Value_3}" || return $?
+        'BS_LDTS_DPB_Deque'     \
+        "${c_BS_LDTS__Value_3}" || return $?
 
-    { # `deque_size` == "${c_BS_LQTS__Size}"
-      BS_LQTS_DPB_Size=; unset 'BS_LQTS_DPB_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPB_Size-}" -eq "${c_BS_LQTS__Size}" || return $?
+    { # `deque_size` == "${c_BS_LDTS__Size}"
+      BS_LDTS_DPB_Size=; unset 'BS_LDTS_DPB_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPB_Size-}" -eq "${c_BS_LDTS__Size}" || return $?
     }
 
-    { # `deque_pop_front` == "${c_BS_LQTS__Value_1}"
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_1}" || return $?
+    { # `deque_pop_front` == "${c_BS_LDTS__Value_1}"
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_1}" || return $?
     }
 
-    { # `deque_pop_back` == "${c_BS_LQTS__Value_3}"
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_3}" || return $?
+    { # `deque_pop_back` == "${c_BS_LDTS__Value_3}"
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_3}" || return $?
     }
 
-    { # `deque_size` == "$(( c_BS_LQTS__Size - 2 ))"
-      BS_LQTS_DPB_Size=; unset 'BS_LQTS_DPB_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPB_Size-}" -eq $(( c_BS_LQTS__Size - 2 )) || return $?
+    { # `deque_size` == "$(( c_BS_LDTS__Size - 2 ))"
+      BS_LDTS_DPB_Size=; unset 'BS_LDTS_DPB_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPB_Size-}" -eq $(( c_BS_LDTS__Size - 2 )) || return $?
     }
   }
 
@@ -573,35 +574,35 @@ fn_bs_test_deque_push_pop_push() { ## cSpell:Ignore BS_LQTS_DPB_
   # push_front -> pop -> push_front
   #=========================================================
   {
-    BS_LQTS_DPB_Deque=; unset 'BS_LQTS_DPB_Deque'
+    BS_LDTS_DPB_Deque=; unset 'BS_LDTS_DPB_Deque'
     test_run_expect_success     \
       ${LINENO:+"@${LINENO}"}   \
       deque_push_front          \
-        'BS_LQTS_DPB_Deque'     \
-        "${c_BS_LQTS__Value_1}" \
-        "${c_BS_LQTS__Value_2}" \
-        "${c_BS_LQTS__Value_3}" \
-        "${c_BS_LQTS__Value_4}" \
-        "${c_BS_LQTS__Value_5}" \
-        "${c_BS_LQTS__Value_6}" \
-        "${c_BS_LQTS__Value_7}" || return $?
+        'BS_LDTS_DPB_Deque'     \
+        "${c_BS_LDTS__Value_1}" \
+        "${c_BS_LDTS__Value_2}" \
+        "${c_BS_LDTS__Value_3}" \
+        "${c_BS_LDTS__Value_4}" \
+        "${c_BS_LDTS__Value_5}" \
+        "${c_BS_LDTS__Value_6}" \
+        "${c_BS_LDTS__Value_7}" || return $?
 
-    { # `deque_size` == "${c_BS_LQTS__Size}"
-      BS_LQTS_DPB_Size=; unset 'BS_LQTS_DPB_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPB_Size-}" -eq "${c_BS_LQTS__Size}" || return $?
+    { # `deque_size` == "${c_BS_LDTS__Size}"
+      BS_LDTS_DPB_Size=; unset 'BS_LDTS_DPB_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPB_Size-}" -eq "${c_BS_LDTS__Size}" || return $?
     }
 
-    { # `deque_pop_back` == "${c_BS_LQTS__Value_1}"
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_1}" || return $?
+    { # `deque_pop_back` == "${c_BS_LDTS__Value_1}"
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_1}" || return $?
     }
 
-    { # `deque_size` == $(( c_BS_LQTS__Size - 1 ))
-      BS_LQTS_DPB_Size=; unset 'BS_LQTS_DPB_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPB_Size-}" -eq $(( c_BS_LQTS__Size - 1 )) || return $?
+    { # `deque_size` == $(( c_BS_LDTS__Size - 1 ))
+      BS_LDTS_DPB_Size=; unset 'BS_LDTS_DPB_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPB_Size-}" -eq $(( c_BS_LDTS__Size - 1 )) || return $?
     }
 
     #-------------------------------------------------------
@@ -610,31 +611,31 @@ fn_bs_test_deque_push_pop_push() { ## cSpell:Ignore BS_LQTS_DPB_
     test_run_expect_success     \
       ${LINENO:+"@${LINENO}"}   \
       deque_push_front          \
-        'BS_LQTS_DPB_Deque'     \
-        "${c_BS_LQTS__Value_5}" || return $?
+        'BS_LDTS_DPB_Deque'     \
+        "${c_BS_LDTS__Value_5}" || return $?
 
-    { # `deque_size` == "${c_BS_LQTS__Size}"
-      BS_LQTS_DPB_Size=; unset 'BS_LQTS_DPB_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPB_Size-}" -eq "${c_BS_LQTS__Size}" || return $?
+    { # `deque_size` == "${c_BS_LDTS__Size}"
+      BS_LDTS_DPB_Size=; unset 'BS_LDTS_DPB_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPB_Size-}" -eq "${c_BS_LDTS__Size}" || return $?
     }
 
-    { # `deque_pop_back` == "${c_BS_LQTS__Value_2}"
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_2}" || return $?
+    { # `deque_pop_back` == "${c_BS_LDTS__Value_2}"
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_2}" || return $?
     }
 
-    { # `deque_pop_front` == "${c_BS_LQTS__Value_5}"
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_5}" || return $?
+    { # `deque_pop_front` == "${c_BS_LDTS__Value_5}"
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_5}" || return $?
     }
 
-    { # `deque_size` == $(( c_BS_LQTS__Size - 2 ))
-      BS_LQTS_DPB_Size=; unset 'BS_LQTS_DPB_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPB_Size-}" -eq $(( c_BS_LQTS__Size - 2 )) || return $?
+    { # `deque_size` == $(( c_BS_LDTS__Size - 2 ))
+      BS_LDTS_DPB_Size=; unset 'BS_LDTS_DPB_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPB_Size-}" -eq $(( c_BS_LDTS__Size - 2 )) || return $?
     }
   }
 }
@@ -667,52 +668,52 @@ fn_bs_test_deque_push_pop_push() { ## cSpell:Ignore BS_LQTS_DPB_
 #: None.
 #:
 #_______________________________________________________________________________
-fn_bs_test_deque_peek_front() { ## cSpell:Ignore BS_LQTS_DPF_
+fn_bs_test_deque_peek_front() { ## cSpell:Ignore BS_LDTS_DPF_
   #=========================================================
   # deque_push_front/deque_peek_front
   #=========================================================
   {
-    BS_LQTS_DPF_Deque=; unset 'BS_LQTS_DPF_Deque'
+    BS_LDTS_DPF_Deque=; unset 'BS_LDTS_DPF_Deque'
     test_run_expect_success     \
       ${LINENO:+"@${LINENO}"}   \
       deque_push_front          \
-        'BS_LQTS_DPF_Deque'     \
-        "${c_BS_LQTS__Value_1}" \
-        "${c_BS_LQTS__Value_2}" \
-        "${c_BS_LQTS__Value_3}" \
-        "${c_BS_LQTS__Value_4}" \
-        "${c_BS_LQTS__Value_5}" \
-        "${c_BS_LQTS__Value_6}" \
-        "${c_BS_LQTS__Value_7}" || return $?
+        'BS_LDTS_DPF_Deque'     \
+        "${c_BS_LDTS__Value_1}" \
+        "${c_BS_LDTS__Value_2}" \
+        "${c_BS_LDTS__Value_3}" \
+        "${c_BS_LDTS__Value_4}" \
+        "${c_BS_LDTS__Value_5}" \
+        "${c_BS_LDTS__Value_6}" \
+        "${c_BS_LDTS__Value_7}" || return $?
 
-    { # `deque_size` == "${c_BS_LQTS__Size}"
-      BS_LQTS_DPF_Size=; unset 'BS_LQTS_DPF_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPF_Size-}" -eq "${c_BS_LQTS__Size}" || return $?
+    { # `deque_size` == "${c_BS_LDTS__Size}"
+      BS_LDTS_DPF_Size=; unset 'BS_LDTS_DPF_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPF_Size-}" -eq "${c_BS_LDTS__Size}" || return $?
     }
 
-    { # `deque_peek_front` == "${c_BS_LQTS__Value_7}"
-      BS_LQTS_DPF_Value=; unset 'BS_LQTS_DPF_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_peek_front 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPF_Value-}" = "_${c_BS_LQTS__Value_7}" || return $?
+    { # `deque_peek_front` == "${c_BS_LDTS__Value_7}"
+      BS_LDTS_DPF_Value=; unset 'BS_LDTS_DPF_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_peek_front 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPF_Value-}" = "_${c_BS_LDTS__Value_7}" || return $?
     }
 
-    { # `deque_size` == "${c_BS_LQTS__Size}"
-      BS_LQTS_DPF_Size=; unset 'BS_LQTS_DPF_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPF_Size-}" -eq "${c_BS_LQTS__Size}" || return $?
+    { # `deque_size` == "${c_BS_LDTS__Size}"
+      BS_LDTS_DPF_Size=; unset 'BS_LDTS_DPF_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPF_Size-}" -eq "${c_BS_LDTS__Size}" || return $?
     }
 
-    { # `deque_pop_front` == "${c_BS_LQTS__Value_7}"
-      BS_LQTS_DPF_Value=; unset 'BS_LQTS_DPF_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPF_Value-}" = "_${c_BS_LQTS__Value_7}" || return $?
+    { # `deque_pop_front` == "${c_BS_LDTS__Value_7}"
+      BS_LDTS_DPF_Value=; unset 'BS_LDTS_DPF_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPF_Value-}" = "_${c_BS_LDTS__Value_7}" || return $?
     }
 
-    { # `deque_size` == $(( c_BS_LQTS__Size - 1 ))
-      BS_LQTS_DPF_Size=; unset 'BS_LQTS_DPF_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPF_Size-}" -eq $(( c_BS_LQTS__Size - 1 )) || return $?
+    { # `deque_size` == $(( c_BS_LDTS__Size - 1 ))
+      BS_LDTS_DPF_Size=; unset 'BS_LDTS_DPF_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPF_Size-}" -eq $(( c_BS_LDTS__Size - 1 )) || return $?
     }
   }
 
@@ -720,47 +721,47 @@ fn_bs_test_deque_peek_front() { ## cSpell:Ignore BS_LQTS_DPF_
   # deque_push_front/deque_peek_back
   #=========================================================
   {
-    BS_LQTS_DPF_Deque=; unset 'BS_LQTS_DPF_Deque'
+    BS_LDTS_DPF_Deque=; unset 'BS_LDTS_DPF_Deque'
     test_run_expect_success     \
       ${LINENO:+"@${LINENO}"}   \
       deque_push_front          \
-        'BS_LQTS_DPF_Deque'     \
-        "${c_BS_LQTS__Value_1}" \
-        "${c_BS_LQTS__Value_2}" \
-        "${c_BS_LQTS__Value_3}" \
-        "${c_BS_LQTS__Value_4}" \
-        "${c_BS_LQTS__Value_5}" \
-        "${c_BS_LQTS__Value_6}" \
-        "${c_BS_LQTS__Value_7}" || return $?
+        'BS_LDTS_DPF_Deque'     \
+        "${c_BS_LDTS__Value_1}" \
+        "${c_BS_LDTS__Value_2}" \
+        "${c_BS_LDTS__Value_3}" \
+        "${c_BS_LDTS__Value_4}" \
+        "${c_BS_LDTS__Value_5}" \
+        "${c_BS_LDTS__Value_6}" \
+        "${c_BS_LDTS__Value_7}" || return $?
 
-    { # `deque_size` == "${c_BS_LQTS__Size}"
-      BS_LQTS_DPF_Size=; unset 'BS_LQTS_DPF_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPF_Size-}" -eq "${c_BS_LQTS__Size}" || return $?
+    { # `deque_size` == "${c_BS_LDTS__Size}"
+      BS_LDTS_DPF_Size=; unset 'BS_LDTS_DPF_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPF_Size-}" -eq "${c_BS_LDTS__Size}" || return $?
     }
 
-    { # `deque_peek_back` == "${c_BS_LQTS__Value_1}"
-      BS_LQTS_DPF_Value=; unset 'BS_LQTS_DPF_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_peek_back 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPF_Value-}" = "_${c_BS_LQTS__Value_1}" || return $?
+    { # `deque_peek_back` == "${c_BS_LDTS__Value_1}"
+      BS_LDTS_DPF_Value=; unset 'BS_LDTS_DPF_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_peek_back 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPF_Value-}" = "_${c_BS_LDTS__Value_1}" || return $?
     }
 
-    { # `deque_size` == "${c_BS_LQTS__Size}"
-      BS_LQTS_DPF_Size=; unset 'BS_LQTS_DPF_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPF_Size-}" -eq "${c_BS_LQTS__Size}" || return $?
+    { # `deque_size` == "${c_BS_LDTS__Size}"
+      BS_LDTS_DPF_Size=; unset 'BS_LDTS_DPF_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPF_Size-}" -eq "${c_BS_LDTS__Size}" || return $?
     }
 
-    { # `deque_pop_back` == "${c_BS_LQTS__Value_1}"
-      BS_LQTS_DPF_Value=; unset 'BS_LQTS_DPF_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPF_Value-}" = "_${c_BS_LQTS__Value_1}" || return $?
+    { # `deque_pop_back` == "${c_BS_LDTS__Value_1}"
+      BS_LDTS_DPF_Value=; unset 'BS_LDTS_DPF_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPF_Value-}" = "_${c_BS_LDTS__Value_1}" || return $?
     }
 
-    { # `deque_size` == $(( c_BS_LQTS__Size - 1 ))
-      BS_LQTS_DPF_Size=; unset 'BS_LQTS_DPF_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPF_Deque' 'BS_LQTS_DPF_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPF_Size-}" -eq $(( c_BS_LQTS__Size - 1 )) || return $?
+    { # `deque_size` == $(( c_BS_LDTS__Size - 1 ))
+      BS_LDTS_DPF_Size=; unset 'BS_LDTS_DPF_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPF_Deque' 'BS_LDTS_DPF_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPF_Size-}" -eq $(( c_BS_LDTS__Size - 1 )) || return $?
     }
   }
 }
@@ -793,52 +794,52 @@ fn_bs_test_deque_peek_front() { ## cSpell:Ignore BS_LQTS_DPF_
 #: None.
 #:
 #_______________________________________________________________________________
-fn_bs_test_deque_peek_back() { ## cSpell:Ignore BS_LQTS_DPB_
+fn_bs_test_deque_peek_back() { ## cSpell:Ignore BS_LDTS_DPB_
   #=========================================================
   # deque_push_back/deque_peek_front
   #=========================================================
   {
-    BS_LQTS_DPB_Deque=; unset 'BS_LQTS_DPB_Deque'
+    BS_LDTS_DPB_Deque=; unset 'BS_LDTS_DPB_Deque'
     test_run_expect_success     \
       ${LINENO:+"@${LINENO}"}   \
       deque_push_back           \
-        'BS_LQTS_DPB_Deque'     \
-        "${c_BS_LQTS__Value_1}" \
-        "${c_BS_LQTS__Value_2}" \
-        "${c_BS_LQTS__Value_3}" \
-        "${c_BS_LQTS__Value_4}" \
-        "${c_BS_LQTS__Value_5}" \
-        "${c_BS_LQTS__Value_6}" \
-        "${c_BS_LQTS__Value_7}" || return $?
+        'BS_LDTS_DPB_Deque'     \
+        "${c_BS_LDTS__Value_1}" \
+        "${c_BS_LDTS__Value_2}" \
+        "${c_BS_LDTS__Value_3}" \
+        "${c_BS_LDTS__Value_4}" \
+        "${c_BS_LDTS__Value_5}" \
+        "${c_BS_LDTS__Value_6}" \
+        "${c_BS_LDTS__Value_7}" || return $?
 
-    { # `deque_size` == "${c_BS_LQTS__Size}"
-      BS_LQTS_DPB_Size=; unset 'BS_LQTS_DPB_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPB_Size-}" -eq "${c_BS_LQTS__Size}" || return $?
+    { # `deque_size` == "${c_BS_LDTS__Size}"
+      BS_LDTS_DPB_Size=; unset 'BS_LDTS_DPB_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPB_Size-}" -eq "${c_BS_LDTS__Size}" || return $?
     }
 
-    { # `deque_peek_front` == "${c_BS_LQTS__Value_1}"
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_peek_front 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_1}" || return $?
+    { # `deque_peek_front` == "${c_BS_LDTS__Value_1}"
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_peek_front 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_1}" || return $?
     }
 
-    { # `deque_size` == "${c_BS_LQTS__Size}"
-      BS_LQTS_DPB_Size=; unset 'BS_LQTS_DPB_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPB_Size-}" -eq "${c_BS_LQTS__Size}" || return $?
+    { # `deque_size` == "${c_BS_LDTS__Size}"
+      BS_LDTS_DPB_Size=; unset 'BS_LDTS_DPB_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPB_Size-}" -eq "${c_BS_LDTS__Size}" || return $?
     }
 
-    { # `deque_pop_front` == "${c_BS_LQTS__Value_1}"
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_1}" || return $?
+    { # `deque_pop_front` == "${c_BS_LDTS__Value_1}"
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_front 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_1}" || return $?
     }
 
-    { # `deque_size` == $(( c_BS_LQTS__Size - 1 ))
-      BS_LQTS_DPB_Size=; unset 'BS_LQTS_DPB_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPB_Size-}" -eq $(( c_BS_LQTS__Size - 1 )) || return $?
+    { # `deque_size` == $(( c_BS_LDTS__Size - 1 ))
+      BS_LDTS_DPB_Size=; unset 'BS_LDTS_DPB_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPB_Size-}" -eq $(( c_BS_LDTS__Size - 1 )) || return $?
     }
   }
 
@@ -846,47 +847,47 @@ fn_bs_test_deque_peek_back() { ## cSpell:Ignore BS_LQTS_DPB_
   # deque_push_back/deque_peek_back
   #=========================================================
   {
-    BS_LQTS_DPB_Deque=; unset 'BS_LQTS_DPB_Deque'
+    BS_LDTS_DPB_Deque=; unset 'BS_LDTS_DPB_Deque'
     test_run_expect_success     \
       ${LINENO:+"@${LINENO}"}   \
       deque_push_back           \
-        'BS_LQTS_DPB_Deque'     \
-        "${c_BS_LQTS__Value_1}" \
-        "${c_BS_LQTS__Value_2}" \
-        "${c_BS_LQTS__Value_3}" \
-        "${c_BS_LQTS__Value_4}" \
-        "${c_BS_LQTS__Value_5}" \
-        "${c_BS_LQTS__Value_6}" \
-        "${c_BS_LQTS__Value_7}" || return $?
+        'BS_LDTS_DPB_Deque'     \
+        "${c_BS_LDTS__Value_1}" \
+        "${c_BS_LDTS__Value_2}" \
+        "${c_BS_LDTS__Value_3}" \
+        "${c_BS_LDTS__Value_4}" \
+        "${c_BS_LDTS__Value_5}" \
+        "${c_BS_LDTS__Value_6}" \
+        "${c_BS_LDTS__Value_7}" || return $?
 
-    { # `deque_size` == "${c_BS_LQTS__Size}"
-      BS_LQTS_DPB_Size=; unset 'BS_LQTS_DPB_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPB_Size-}" -eq "${c_BS_LQTS__Size}" || return $?
+    { # `deque_size` == "${c_BS_LDTS__Size}"
+      BS_LDTS_DPB_Size=; unset 'BS_LDTS_DPB_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPB_Size-}" -eq "${c_BS_LDTS__Size}" || return $?
     }
 
-    { # `deque_peek_back` == "${c_BS_LQTS__Value_7}"
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_peek_back 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_7}" || return $?
+    { # `deque_peek_back` == "${c_BS_LDTS__Value_7}"
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_peek_back 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_7}" || return $?
     }
 
-    { # `deque_size` == "${c_BS_LQTS__Size}"
-      BS_LQTS_DPB_Size=; unset 'BS_LQTS_DPB_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPB_Size-}" -eq "${c_BS_LQTS__Size}" || return $?
+    { # `deque_size` == "${c_BS_LDTS__Size}"
+      BS_LDTS_DPB_Size=; unset 'BS_LDTS_DPB_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPB_Size-}" -eq "${c_BS_LDTS__Size}" || return $?
     }
 
-    { # `deque_pop_back` == "${c_BS_LQTS__Value_7}"
-      BS_LQTS_DPB_Value=; unset 'BS_LQTS_DPB_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_DPB_Value-}" = "_${c_BS_LQTS__Value_7}" || return $?
+    { # `deque_pop_back` == "${c_BS_LDTS__Value_7}"
+      BS_LDTS_DPB_Value=; unset 'BS_LDTS_DPB_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop_back 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DPB_Value-}" = "_${c_BS_LDTS__Value_7}" || return $?
     }
 
-    { # `deque_size` == $(( c_BS_LQTS__Size - 1 ))
-      BS_LQTS_DPB_Size=; unset 'BS_LQTS_DPB_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LQTS_DPB_Deque' 'BS_LQTS_DPB_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_DPB_Size-}" -eq $(( c_BS_LQTS__Size - 1 )) || return $?
+    { # `deque_size` == $(( c_BS_LDTS__Size - 1 ))
+      BS_LDTS_DPB_Size=; unset 'BS_LDTS_DPB_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_size 'BS_LDTS_DPB_Deque' 'BS_LDTS_DPB_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_DPB_Size-}" -eq $(( c_BS_LDTS__Size - 1 )) || return $?
     }
   }
 }
@@ -917,71 +918,71 @@ fn_bs_test_deque_peek_back() { ## cSpell:Ignore BS_LQTS_DPB_
 #: None.
 #:
 #_______________________________________________________________________________
-fn_bs_test_queue_push_pop() { ## cSpell:Ignore BS_LQTS_QPP_
+fn_bs_test_queue_push_pop() { ## cSpell:Ignore BS_LDTS_QPP_
   {
-    BS_LQTS_QPP_Queue=; unset 'BS_LQTS_QPP_Queue'
+    BS_LDTS_QPP_Queue=; unset 'BS_LDTS_QPP_Queue'
     test_run_expect_success     \
       ${LINENO:+"@${LINENO}"}   \
       queue_push                \
-        'BS_LQTS_QPP_Queue'     \
-        "${c_BS_LQTS__Value_1}" \
-        "${c_BS_LQTS__Value_2}" \
-        "${c_BS_LQTS__Value_3}" \
-        "${c_BS_LQTS__Value_4}" \
-        "${c_BS_LQTS__Value_5}" \
-        "${c_BS_LQTS__Value_6}" \
-        "${c_BS_LQTS__Value_7}" || return $?
+        'BS_LDTS_QPP_Queue'     \
+        "${c_BS_LDTS__Value_1}" \
+        "${c_BS_LDTS__Value_2}" \
+        "${c_BS_LDTS__Value_3}" \
+        "${c_BS_LDTS__Value_4}" \
+        "${c_BS_LDTS__Value_5}" \
+        "${c_BS_LDTS__Value_6}" \
+        "${c_BS_LDTS__Value_7}" || return $?
 
-    { # `queue_size` == "${c_BS_LQTS__Size}"
-      BS_LQTS_QPP_Size=; unset 'BS_LQTS_QPP_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} queue_size 'BS_LQTS_QPP_Queue' 'BS_LQTS_QPP_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_QPP_Size-}" -eq "${c_BS_LQTS__Size}" || return $?
+    { # `queue_size` == "${c_BS_LDTS__Size}"
+      BS_LDTS_QPP_Size=; unset 'BS_LDTS_QPP_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} queue_size 'BS_LDTS_QPP_Queue' 'BS_LDTS_QPP_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_QPP_Size-}" -eq "${c_BS_LDTS__Size}" || return $?
     }
 
-    { # `queue_peek` == "${c_BS_LQTS__Value_1}"
-      BS_LQTS_QPP_Value=; unset 'BS_LQTS_QPP_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} queue_peek 'BS_LQTS_QPP_Queue' 'BS_LQTS_QPP_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_QPP_Value-}" = "_${c_BS_LQTS__Value_1}" || return $?
+    { # `queue_peek` == "${c_BS_LDTS__Value_1}"
+      BS_LDTS_QPP_Value=; unset 'BS_LDTS_QPP_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} queue_peek 'BS_LDTS_QPP_Queue' 'BS_LDTS_QPP_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_QPP_Value-}" = "_${c_BS_LDTS__Value_1}" || return $?
     }
 
-    { # `queue_size` == "${c_BS_LQTS__Size}"
-      BS_LQTS_QPP_Size=; unset 'BS_LQTS_QPP_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} queue_size 'BS_LQTS_QPP_Queue' 'BS_LQTS_QPP_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_QPP_Size-}" -eq "${c_BS_LQTS__Size}" || return $?
+    { # `queue_size` == "${c_BS_LDTS__Size}"
+      BS_LDTS_QPP_Size=; unset 'BS_LDTS_QPP_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} queue_size 'BS_LDTS_QPP_Queue' 'BS_LDTS_QPP_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_QPP_Size-}" -eq "${c_BS_LDTS__Size}" || return $?
     }
 
     { # `queue_pop` x 7
-      BS_LQTS_QPP_Value=; unset 'BS_LQTS_QPP_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} queue_pop 'BS_LQTS_QPP_Queue' 'BS_LQTS_QPP_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_QPP_Value-}" = "_${c_BS_LQTS__Value_1}" || return $?
+      BS_LDTS_QPP_Value=; unset 'BS_LDTS_QPP_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} queue_pop 'BS_LDTS_QPP_Queue' 'BS_LDTS_QPP_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_QPP_Value-}" = "_${c_BS_LDTS__Value_1}" || return $?
 
-      BS_LQTS_QPP_Value=; unset 'BS_LQTS_QPP_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} queue_pop 'BS_LQTS_QPP_Queue' 'BS_LQTS_QPP_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_QPP_Value-}" = "_${c_BS_LQTS__Value_2}" || return $?
+      BS_LDTS_QPP_Value=; unset 'BS_LDTS_QPP_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} queue_pop 'BS_LDTS_QPP_Queue' 'BS_LDTS_QPP_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_QPP_Value-}" = "_${c_BS_LDTS__Value_2}" || return $?
 
-      BS_LQTS_QPP_Value=; unset 'BS_LQTS_QPP_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} queue_pop 'BS_LQTS_QPP_Queue' 'BS_LQTS_QPP_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_QPP_Value-}" = "_${c_BS_LQTS__Value_3}" || return $?
+      BS_LDTS_QPP_Value=; unset 'BS_LDTS_QPP_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} queue_pop 'BS_LDTS_QPP_Queue' 'BS_LDTS_QPP_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_QPP_Value-}" = "_${c_BS_LDTS__Value_3}" || return $?
 
-      BS_LQTS_QPP_Value=; unset 'BS_LQTS_QPP_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} queue_pop 'BS_LQTS_QPP_Queue' 'BS_LQTS_QPP_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_QPP_Value-}" = "_${c_BS_LQTS__Value_4}" || return $?
+      BS_LDTS_QPP_Value=; unset 'BS_LDTS_QPP_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} queue_pop 'BS_LDTS_QPP_Queue' 'BS_LDTS_QPP_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_QPP_Value-}" = "_${c_BS_LDTS__Value_4}" || return $?
 
-      BS_LQTS_QPP_Value=; unset 'BS_LQTS_QPP_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} queue_pop 'BS_LQTS_QPP_Queue' 'BS_LQTS_QPP_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_QPP_Value-}" = "_${c_BS_LQTS__Value_5}" || return $?
+      BS_LDTS_QPP_Value=; unset 'BS_LDTS_QPP_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} queue_pop 'BS_LDTS_QPP_Queue' 'BS_LDTS_QPP_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_QPP_Value-}" = "_${c_BS_LDTS__Value_5}" || return $?
 
-      BS_LQTS_QPP_Value=; unset 'BS_LQTS_QPP_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} queue_pop 'BS_LQTS_QPP_Queue' 'BS_LQTS_QPP_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_QPP_Value-}" = "_${c_BS_LQTS__Value_6}" || return $?
+      BS_LDTS_QPP_Value=; unset 'BS_LDTS_QPP_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} queue_pop 'BS_LDTS_QPP_Queue' 'BS_LDTS_QPP_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_QPP_Value-}" = "_${c_BS_LDTS__Value_6}" || return $?
 
-      BS_LQTS_QPP_Value=; unset 'BS_LQTS_QPP_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} queue_pop 'BS_LQTS_QPP_Queue' 'BS_LQTS_QPP_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_QPP_Value-}" = "_${c_BS_LQTS__Value_7}" || return $?
+      BS_LDTS_QPP_Value=; unset 'BS_LDTS_QPP_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} queue_pop 'BS_LDTS_QPP_Queue' 'BS_LDTS_QPP_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_QPP_Value-}" = "_${c_BS_LDTS__Value_7}" || return $?
     }
 
     # empty
-    test_assert ${LINENO:+"@${LINENO}"} -z "${BS_LQTS_QPP_Queue}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} -z "${BS_LDTS_QPP_Queue}" || return $?
   }
 }
 
@@ -1010,71 +1011,318 @@ fn_bs_test_queue_push_pop() { ## cSpell:Ignore BS_LQTS_QPP_
 #: None.
 #:
 #_______________________________________________________________________________
-fn_bs_test_stack_push_pop() { ## cSpell:Ignore BS_LQTS_SPP_
+fn_bs_test_stack_push_pop() { ## cSpell:Ignore BS_LDTS_SPP_
   {
-    BS_LQTS_SPP_Stack=; unset 'BS_LQTS_SPP_Stack'
+    BS_LDTS_SPP_Stack=; unset 'BS_LDTS_SPP_Stack'
     test_run_expect_success     \
       ${LINENO:+"@${LINENO}"}   \
       stack_push                \
-        'BS_LQTS_SPP_Stack'     \
-        "${c_BS_LQTS__Value_1}" \
-        "${c_BS_LQTS__Value_2}" \
-        "${c_BS_LQTS__Value_3}" \
-        "${c_BS_LQTS__Value_4}" \
-        "${c_BS_LQTS__Value_5}" \
-        "${c_BS_LQTS__Value_6}" \
-        "${c_BS_LQTS__Value_7}" || return $?
+        'BS_LDTS_SPP_Stack'     \
+        "${c_BS_LDTS__Value_1}" \
+        "${c_BS_LDTS__Value_2}" \
+        "${c_BS_LDTS__Value_3}" \
+        "${c_BS_LDTS__Value_4}" \
+        "${c_BS_LDTS__Value_5}" \
+        "${c_BS_LDTS__Value_6}" \
+        "${c_BS_LDTS__Value_7}" || return $?
 
-    { # `stack_size` == "${c_BS_LQTS__Size}"
-      BS_LQTS_SPP_Size=; unset 'BS_LQTS_SPP_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} stack_size 'BS_LQTS_SPP_Stack' 'BS_LQTS_SPP_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_SPP_Size-}" -eq "${c_BS_LQTS__Size}" || return $?
+    { # `stack_size` == "${c_BS_LDTS__Size}"
+      BS_LDTS_SPP_Size=; unset 'BS_LDTS_SPP_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} stack_size 'BS_LDTS_SPP_Stack' 'BS_LDTS_SPP_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_SPP_Size-}" -eq "${c_BS_LDTS__Size}" || return $?
     }
 
-    { # `stack_peek` == "${c_BS_LQTS__Value_7}"
-      BS_LQTS_SPP_Value=; unset 'BS_LQTS_SPP_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} stack_peek 'BS_LQTS_SPP_Stack' 'BS_LQTS_SPP_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_SPP_Value-}" = "_${c_BS_LQTS__Value_7}" || return $?
+    { # `stack_peek` == "${c_BS_LDTS__Value_7}"
+      BS_LDTS_SPP_Value=; unset 'BS_LDTS_SPP_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} stack_peek 'BS_LDTS_SPP_Stack' 'BS_LDTS_SPP_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_SPP_Value-}" = "_${c_BS_LDTS__Value_7}" || return $?
     }
 
-    { # `stack_size` == "${c_BS_LQTS__Size}"
-      BS_LQTS_SPP_Size=; unset 'BS_LQTS_SPP_Size'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} stack_size 'BS_LQTS_SPP_Stack' 'BS_LQTS_SPP_Size' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "${BS_LQTS_SPP_Size-}" -eq "${c_BS_LQTS__Size}" || return $?
+    { # `stack_size` == "${c_BS_LDTS__Size}"
+      BS_LDTS_SPP_Size=; unset 'BS_LDTS_SPP_Size'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} stack_size 'BS_LDTS_SPP_Stack' 'BS_LDTS_SPP_Size' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "${BS_LDTS_SPP_Size-}" -eq "${c_BS_LDTS__Size}" || return $?
     }
 
     { # `stack_pop` x 7
-      BS_LQTS_SPP_Value=; unset 'BS_LQTS_SPP_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} stack_pop 'BS_LQTS_SPP_Stack' 'BS_LQTS_SPP_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_SPP_Value-}" = "_${c_BS_LQTS__Value_7}" || return $?
+      BS_LDTS_SPP_Value=; unset 'BS_LDTS_SPP_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} stack_pop 'BS_LDTS_SPP_Stack' 'BS_LDTS_SPP_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_SPP_Value-}" = "_${c_BS_LDTS__Value_7}" || return $?
 
-      BS_LQTS_SPP_Value=; unset 'BS_LQTS_SPP_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} stack_pop 'BS_LQTS_SPP_Stack' 'BS_LQTS_SPP_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_SPP_Value-}" = "_${c_BS_LQTS__Value_6}" || return $?
+      BS_LDTS_SPP_Value=; unset 'BS_LDTS_SPP_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} stack_pop 'BS_LDTS_SPP_Stack' 'BS_LDTS_SPP_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_SPP_Value-}" = "_${c_BS_LDTS__Value_6}" || return $?
 
-      BS_LQTS_SPP_Value=; unset 'BS_LQTS_SPP_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} stack_pop 'BS_LQTS_SPP_Stack' 'BS_LQTS_SPP_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_SPP_Value-}" = "_${c_BS_LQTS__Value_5}" || return $?
+      BS_LDTS_SPP_Value=; unset 'BS_LDTS_SPP_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} stack_pop 'BS_LDTS_SPP_Stack' 'BS_LDTS_SPP_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_SPP_Value-}" = "_${c_BS_LDTS__Value_5}" || return $?
 
-      BS_LQTS_SPP_Value=; unset 'BS_LQTS_SPP_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} stack_pop 'BS_LQTS_SPP_Stack' 'BS_LQTS_SPP_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_SPP_Value-}" = "_${c_BS_LQTS__Value_4}" || return $?
+      BS_LDTS_SPP_Value=; unset 'BS_LDTS_SPP_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} stack_pop 'BS_LDTS_SPP_Stack' 'BS_LDTS_SPP_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_SPP_Value-}" = "_${c_BS_LDTS__Value_4}" || return $?
 
-      BS_LQTS_SPP_Value=; unset 'BS_LQTS_SPP_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} stack_pop 'BS_LQTS_SPP_Stack' 'BS_LQTS_SPP_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_SPP_Value-}" = "_${c_BS_LQTS__Value_3}" || return $?
+      BS_LDTS_SPP_Value=; unset 'BS_LDTS_SPP_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} stack_pop 'BS_LDTS_SPP_Stack' 'BS_LDTS_SPP_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_SPP_Value-}" = "_${c_BS_LDTS__Value_3}" || return $?
 
-      BS_LQTS_SPP_Value=; unset 'BS_LQTS_SPP_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} stack_pop 'BS_LQTS_SPP_Stack' 'BS_LQTS_SPP_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_SPP_Value-}" = "_${c_BS_LQTS__Value_2}" || return $?
+      BS_LDTS_SPP_Value=; unset 'BS_LDTS_SPP_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} stack_pop 'BS_LDTS_SPP_Stack' 'BS_LDTS_SPP_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_SPP_Value-}" = "_${c_BS_LDTS__Value_2}" || return $?
 
-      BS_LQTS_SPP_Value=; unset 'BS_LQTS_SPP_Value'
-      test_run_expect_success ${LINENO:+"@${LINENO}"} stack_pop 'BS_LQTS_SPP_Stack' 'BS_LQTS_SPP_Value' || return $?
-      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LQTS_SPP_Value-}" = "_${c_BS_LQTS__Value_1}" || return $?
+      BS_LDTS_SPP_Value=; unset 'BS_LDTS_SPP_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} stack_pop 'BS_LDTS_SPP_Stack' 'BS_LDTS_SPP_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_SPP_Value-}" = "_${c_BS_LDTS__Value_1}" || return $?
     }
 
     # empty
-    test_assert ${LINENO:+"@${LINENO}"} -z "${BS_LQTS_SPP_Stack}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} -z "${BS_LDTS_SPP_Stack}" || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#: ---------------------------------------------------------
+#:
+#: ### `fn_bs_test_deque_pop_peek_empty`
+#:
+#: Tests `deque_pop_front`/`deque_pop_back`/`deque_peek_front`/`deque_peek_back`
+#: (and the `queue_*`/`stack_*` equivalents) on an empty deque, queue, or stack.
+#:
+#: _TESTED COMMANDS_
+#: <!-- -------- -->
+#:
+#: - `deque_pop_front`
+#: - `deque_pop_back`
+#: - `deque_peek_front`
+#: - `deque_peek_back`
+#: - `queue_pop`
+#: - `queue_peek`
+#: - `stack_pop`
+#: - `stack_peek`
+#:
+#: _SYNOPSIS_
+#: <!-- - -->
+#:
+#:      fn_bs_test_deque_pop_peek_empty
+#:
+#: _ARGUMENTS_
+#: <!-- -- -->
+#:
+#: None.
+#:
+#_______________________________________________________________________________
+fn_bs_test_deque_pop_peek_empty() { ## cSpell:Ignore BS_LDTS_DPE_
+  #=========================================================
+  # deque_pop_front/deque_pop_back/deque_peek_front/deque_peek_back
+  #=========================================================
+  {
+    BS_LDTS_DPE_Deque=; unset 'BS_LDTS_DPE_Deque'
+
+    BS_LDTS_DPE_Value=; unset 'BS_LDTS_DPE_Value'
+    test_run_expect_failure ${LINENO:+"@${LINENO}"} deque_pop_front  'BS_LDTS_DPE_Deque' 'BS_LDTS_DPE_Value' || return $?
+
+    BS_LDTS_DPE_Value=; unset 'BS_LDTS_DPE_Value'
+    test_run_expect_failure ${LINENO:+"@${LINENO}"} deque_pop_back   'BS_LDTS_DPE_Deque' 'BS_LDTS_DPE_Value' || return $?
+
+    BS_LDTS_DPE_Value=; unset 'BS_LDTS_DPE_Value'
+    test_run_expect_failure ${LINENO:+"@${LINENO}"} deque_peek_front 'BS_LDTS_DPE_Deque' 'BS_LDTS_DPE_Value' || return $?
+
+    BS_LDTS_DPE_Value=; unset 'BS_LDTS_DPE_Value'
+    test_run_expect_failure ${LINENO:+"@${LINENO}"} deque_peek_back  'BS_LDTS_DPE_Deque' 'BS_LDTS_DPE_Value' || return $?
+
+    # still empty
+    test_assert ${LINENO:+"@${LINENO}"} -z "${BS_LDTS_DPE_Deque}" || return $?
+  }
+
+  #=========================================================
+  # queue_pop/queue_peek
+  #=========================================================
+  {
+    BS_LDTS_DPE_Queue=; unset 'BS_LDTS_DPE_Queue'
+
+    BS_LDTS_DPE_Value=; unset 'BS_LDTS_DPE_Value'
+    test_run_expect_failure ${LINENO:+"@${LINENO}"} queue_pop  'BS_LDTS_DPE_Queue' 'BS_LDTS_DPE_Value' || return $?
+
+    BS_LDTS_DPE_Value=; unset 'BS_LDTS_DPE_Value'
+    test_run_expect_failure ${LINENO:+"@${LINENO}"} queue_peek 'BS_LDTS_DPE_Queue' 'BS_LDTS_DPE_Value' || return $?
+  }
+
+  #=========================================================
+  # stack_pop/stack_peek
+  #=========================================================
+  {
+    BS_LDTS_DPE_Stack=; unset 'BS_LDTS_DPE_Stack'
+
+    BS_LDTS_DPE_Value=; unset 'BS_LDTS_DPE_Value'
+    test_run_expect_failure ${LINENO:+"@${LINENO}"} stack_pop  'BS_LDTS_DPE_Stack' 'BS_LDTS_DPE_Value' || return $?
+
+    BS_LDTS_DPE_Value=; unset 'BS_LDTS_DPE_Value'
+    test_run_expect_failure ${LINENO:+"@${LINENO}"} stack_peek 'BS_LDTS_DPE_Stack' 'BS_LDTS_DPE_Value' || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#: ---------------------------------------------------------
+#:
+#: ### `fn_bs_test_is_deque_like`
+#:
+#: Tests for `deque_is_deque_like`/`queue_is_queue_like`/`stack_is_stack_like`.
+#:
+#: _TESTED COMMANDS_
+#: <!-- -------- -->
+#:
+#: - `deque_push_back`
+#: - `deque_is_deque_like`
+#: - `queue_is_queue_like`
+#: - `stack_is_stack_like`
+#:
+#: _SYNOPSIS_
+#: <!-- - -->
+#:
+#:      fn_bs_test_is_deque_like
+#:
+#: _ARGUMENTS_
+#: <!-- -- -->
+#:
+#: None.
+#:
+#_______________________________________________________________________________
+fn_bs_test_is_deque_like() { ## cSpell:Ignore BS_LDTS_IDL_
+  #=========================================================
+  # deque-like value
+  #=========================================================
+  {
+    BS_LDTS_IDL_Deque=; unset 'BS_LDTS_IDL_Deque'
+    test_run_expect_success     \
+      ${LINENO:+"@${LINENO}"}   \
+      deque_push_back           \
+        'BS_LDTS_IDL_Deque'     \
+        "${c_BS_LDTS__Value_1}" || return $?
+
+    test_run_expect_success ${LINENO:+"@${LINENO}"} deque_is_deque_like 'BS_LDTS_IDL_Deque' || return $?
+    test_run_expect_success ${LINENO:+"@${LINENO}"} queue_is_queue_like 'BS_LDTS_IDL_Deque' || return $?
+    test_run_expect_success ${LINENO:+"@${LINENO}"} stack_is_stack_like 'BS_LDTS_IDL_Deque' || return $?
+  }
+
+  #=========================================================
+  # non-deque-like value
+  #=========================================================
+  {
+    BS_LDTS_IDL_Deque='not a deque'
+
+    test_run_expect_failure ${LINENO:+"@${LINENO}"} deque_is_deque_like 'BS_LDTS_IDL_Deque' || return $?
+    test_run_expect_failure ${LINENO:+"@${LINENO}"} queue_is_queue_like 'BS_LDTS_IDL_Deque' || return $?
+    test_run_expect_failure ${LINENO:+"@${LINENO}"} stack_is_stack_like 'BS_LDTS_IDL_Deque' || return $?
+  }
+
+  #=========================================================
+  # empty/unset value
+  #=========================================================
+  {
+    BS_LDTS_IDL_Deque=; unset 'BS_LDTS_IDL_Deque'
+
+    test_run_expect_failure ${LINENO:+"@${LINENO}"} deque_is_deque_like 'BS_LDTS_IDL_Deque' || return $?
+    test_run_expect_failure ${LINENO:+"@${LINENO}"} queue_is_queue_like 'BS_LDTS_IDL_Deque' || return $?
+    test_run_expect_failure ${LINENO:+"@${LINENO}"} stack_is_stack_like 'BS_LDTS_IDL_Deque' || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#: ---------------------------------------------------------
+#:
+#: ### `fn_bs_test_deque_aliases`
+#:
+#: Tests for the `deque_push`/`deque_pop`/`deque_unshift`/`deque_shift`/
+#: `deque_back`/`deque_front` aliases of `deque_push_back`/`deque_pop_back`/
+#: `deque_push_front`/`deque_pop_front`/`deque_peek_back`/`deque_peek_front`.
+#:
+#: _TESTED COMMANDS_
+#: <!-- -------- -->
+#:
+#: - `deque_push`
+#: - `deque_pop`
+#: - `deque_unshift`
+#: - `deque_shift`
+#: - `deque_back`
+#: - `deque_front`
+#:
+#: _SYNOPSIS_
+#: <!-- - -->
+#:
+#:      fn_bs_test_deque_aliases
+#:
+#: _ARGUMENTS_
+#: <!-- -- -->
+#:
+#: None.
+#:
+#_______________________________________________________________________________
+fn_bs_test_deque_aliases() { ## cSpell:Ignore BS_LDTS_DA_
+  #=========================================================
+  # deque_push (== deque_push_back) / deque_back / deque_pop (== deque_pop_back)
+  #=========================================================
+  {
+    BS_LDTS_DA_Deque=; unset 'BS_LDTS_DA_Deque'
+    test_run_expect_success     \
+      ${LINENO:+"@${LINENO}"}   \
+      deque_push                \
+        'BS_LDTS_DA_Deque'      \
+        "${c_BS_LDTS__Value_1}" \
+        "${c_BS_LDTS__Value_2}" || return $?
+
+    { # `deque_back` == "${c_BS_LDTS__Value_2}"
+      BS_LDTS_DA_Value=; unset 'BS_LDTS_DA_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_back 'BS_LDTS_DA_Deque' 'BS_LDTS_DA_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DA_Value-}" = "_${c_BS_LDTS__Value_2}" || return $?
+    }
+
+    { # `deque_pop` == "${c_BS_LDTS__Value_2}"
+      BS_LDTS_DA_Value=; unset 'BS_LDTS_DA_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop 'BS_LDTS_DA_Deque' 'BS_LDTS_DA_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DA_Value-}" = "_${c_BS_LDTS__Value_2}" || return $?
+    }
+
+    { # `deque_pop` == "${c_BS_LDTS__Value_1}"
+      BS_LDTS_DA_Value=; unset 'BS_LDTS_DA_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_pop 'BS_LDTS_DA_Deque' 'BS_LDTS_DA_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DA_Value-}" = "_${c_BS_LDTS__Value_1}" || return $?
+    }
+
+    # empty
+    test_assert ${LINENO:+"@${LINENO}"} -z "${BS_LDTS_DA_Deque}" || return $?
+  }
+
+  #=========================================================
+  # deque_unshift (== deque_push_front) / deque_front / deque_shift (== deque_pop_front)
+  #=========================================================
+  {
+    BS_LDTS_DA_Deque=; unset 'BS_LDTS_DA_Deque'
+    test_run_expect_success     \
+      ${LINENO:+"@${LINENO}"}   \
+      deque_unshift              \
+        'BS_LDTS_DA_Deque'      \
+        "${c_BS_LDTS__Value_1}" \
+        "${c_BS_LDTS__Value_2}" || return $?
+
+    { # `deque_front` == "${c_BS_LDTS__Value_2}"
+      BS_LDTS_DA_Value=; unset 'BS_LDTS_DA_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_front 'BS_LDTS_DA_Deque' 'BS_LDTS_DA_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DA_Value-}" = "_${c_BS_LDTS__Value_2}" || return $?
+    }
+
+    { # `deque_shift` == "${c_BS_LDTS__Value_2}"
+      BS_LDTS_DA_Value=; unset 'BS_LDTS_DA_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_shift 'BS_LDTS_DA_Deque' 'BS_LDTS_DA_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DA_Value-}" = "_${c_BS_LDTS__Value_2}" || return $?
+    }
+
+    { # `deque_shift` == "${c_BS_LDTS__Value_1}"
+      BS_LDTS_DA_Value=; unset 'BS_LDTS_DA_Value'
+      test_run_expect_success ${LINENO:+"@${LINENO}"} deque_shift 'BS_LDTS_DA_Deque' 'BS_LDTS_DA_Value' || return $?
+      test_assert ${LINENO:+"@${LINENO}"} "_${BS_LDTS_DA_Value-}" = "_${c_BS_LDTS__Value_1}" || return $?
+    }
+
+    # empty
+    test_assert ${LINENO:+"@${LINENO}"} -z "${BS_LDTS_DA_Deque}" || return $?
   }
 }
 
@@ -1085,62 +1333,83 @@ fn_bs_test_stack_push_pop() { ## cSpell:Ignore BS_LQTS_SPP_
 #===============================================================================
 
 #_______________________________________________________________________________
-#  fn_bs_lqts_run_units
+#  fn_bs_ldts_run_units
 #  ----------------
 #
 #  Run all individual tests
 #_______________________________________________________________________________
-fn_bs_lqts_run_units() {
+fn_bs_ldts_run_units() {
   #  Ensure always at least one argument so no issues with "$@"
   case $# in 0) set 'BS_DUMMY_PARAM' '--' && shift ;; esac
 
   #-------------------------------------
   #  deque_push_back
   test_run_unit                    \
-    -u 'libqueue: deque_push_back' \
+    -u 'libdeque: deque_push_back' \
     'fn_bs_test_deque_push_back'   \
       ${1+"$@"}
 
   #-------------------------------------
   #  deque_push_front
   test_run_unit                     \
-    -u 'libqueue: deque_push_front' \
+    -u 'libdeque: deque_push_front' \
     'fn_bs_test_deque_push_front'   \
       ${1+"$@"}
 
   #-------------------------------------
   #  deque_push_front
   test_run_unit                            \
-    -u 'libqueue: deque push - pop - push' \
+    -u 'libdeque: deque push - pop - push' \
     'fn_bs_test_deque_push_pop_push'       \
       ${1+"$@"}
 
   #-------------------------------------
   #  fn_bs_test_deque_peek_front
   test_run_unit                     \
-    -u 'libqueue: deque_peek_front' \
+    -u 'libdeque: deque_peek_front' \
     'fn_bs_test_deque_peek_front'   \
       ${1+"$@"}
 
   #-------------------------------------
   #  fn_bs_test_deque_peek_back
   test_run_unit                    \
-    -u 'libqueue: deque_peek_back' \
+    -u 'libdeque: deque_peek_back' \
     'fn_bs_test_deque_peek_back'   \
       ${1+"$@"}
 
   #-------------------------------------
   #  fn_bs_test_queue_push_pop
   test_run_unit                         \
-    -u 'libqueue: queue_push/queue_pop' \
+    -u 'libdeque: queue_push/queue_pop' \
     'fn_bs_test_queue_push_pop'         \
       ${1+"$@"}
 
   #-------------------------------------
   #  deque_push_front
   test_run_unit                         \
-    -u 'libqueue: stack_push/stack_pop' \
+    -u 'libdeque: stack_push/stack_pop' \
     'fn_bs_test_stack_push_pop'         \
+      ${1+"$@"}
+
+  #-------------------------------------
+  #  fn_bs_test_deque_pop_peek_empty
+  test_run_unit                                           \
+    -u 'libdeque: pop/peek on an empty deque/queue/stack' \
+    'fn_bs_test_deque_pop_peek_empty'                     \
+      ${1+"$@"}
+
+  #-------------------------------------
+  #  fn_bs_test_is_deque_like
+  test_run_unit                \
+    -u 'libdeque: is_*_like'   \
+    'fn_bs_test_is_deque_like' \
+      ${1+"$@"}
+
+  #-------------------------------------
+  #  fn_bs_test_deque_aliases
+  test_run_unit                                                       \
+    -u 'libdeque: deque aliases (push/pop/unshift/shift/back/front)'  \
+    'fn_bs_test_deque_aliases'                                        \
       ${1+"$@"}
 }
 
@@ -1152,7 +1421,7 @@ fn_bs_lqts_run_units() {
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #  FRIENDLY NAME
-BS_TEST_NAME='[libqueue] Test Success'
+BS_TEST_NAME='libdeque/success'
 export BS_TEST_NAME
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1161,63 +1430,165 @@ BS_TEST_CONFIG_COUNT=2
 export BS_TEST_CONFIG_COUNT
 
 #_______________________________________________________________________________
-#  test_run_config
-#  --------
+#  test_set_config
+#  ---------------
 #
-#  Run the tests for a given configuration
+#  Run tests for a specific library configuration.
 #
-# ----------------------------------------------------------
-# SC2034: foo appears unused. Verify it or export it.
-# EXCEPT: It is checked by the sourced tool and is unset
-#+        here to ensure the state is as expected
-# shellcheck disable=SC2034
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
 #_______________________________________________________________________________
-test_run_config() { ## cSpell:Ignore BS_TRC_
-  #.....................................
-  #  Ensure none of the config variables
-  #+ are already set
-  BS_LIBQUEUE_CONFIG_USE_SAFER_DEQUE=;
-  unset BS_LIBQUEUE_CONFIG_USE_SAFER_DEQUE
+test_set_config() { ## cSpell:Ignore BS_TRC_
+  BS_TRC_Config=${1:?'[libdeque::success::test_run_config]: Error: expected a configuration index'}
 
   #---------------------------------------------------------
-  #  Get Library File & Config ID
-  BS_TRC_Library="${1:?'[libqueue::success::test_run_config]: Error: expected a library to source'}"
-  shift
-  BS_TRC_Config="${1:?'[libqueue::success::test_run_config]: Error: expected a configuration index'}"
-  shift
+  case ${BS_LIBDEQUE_CONFIG_ALLOW_UNSAFE_DATA_FORMAT:+1} in
+  1) unset BS_LIBDEQUE_CONFIG_ALLOW_UNSAFE_DATA_FORMAT ;;
+  esac
+  #---------------------------------------------------------
 
-  #.....................................
-  #  Configure the tool
+  #---------------------------------------------------------
+  #  Set Configuration Accordingly
   case ${BS_TRC_Config} in
     #...................................
     #  CONFIG: DEFAULT
-    1)  test_print_config_info   \
-          'Config: DEFAULT'      \
-          'Type:   NORMAL USAGE' ;;
+    1)  test_print_config_info 'Config: DEFAULT' ;;
 
     #...................................
     #  CONFIG: ONE-BASED INDEXES
-    2)  BS_LIBQUEUE_CONFIG_USE_SAFER_DEQUE=1
-        export BS_LIBQUEUE_CONFIG_USE_SAFER_DEQUE
+    2)  BS_LIBDEQUE_CONFIG_ALLOW_UNSAFE_DATA_FORMAT=1
+        export BS_LIBDEQUE_CONFIG_ALLOW_UNSAFE_DATA_FORMAT
 
-        test_print_config_info      \
-          'Config: USE_SAFER_DEQUE' \
-          'Type:   NORMAL USAGE'    ;;
+        test_print_config_info 'Config: ALLOW_UNSAFE_DATA_FORMAT' ;;
 
-    *)  return 1 ;;                       #< No such config
+    #...................................
+    #  CONFIG: UNKNOWN
+    *)  return 1 ;;
   esac
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  NUMBER OF AVAILABLE CONFIGURATIONS
+BS_TEST_PLATFORM_CONFIG_COUNT=2
+export BS_TEST_PLATFORM_CONFIG_COUNT
+
+#_______________________________________________________________________________
+#  test_set_platform_config
+#  ---------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_set_platform_config() { ## cSpell:Ignore BS_TRC_
+  BS_TRC_PlatformConfig=${1:?'[libdeque::success::test_run_config]: Error: expected a configuration index'}
+
+  #---------------------------------------------------------
+  #  Set Configuration Accordingly
+  case ${BS_TRC_PlatformConfig} in
+    #...................................
+    #
+    0) ;;
+
+    #...................................
+    #  CONFIG: ONLY ALLOW `$1`-`$9`
+    1)
+      : "${BS_LIBDEQUE_CONFIG_NO_GREP_F:=1}"
+      export BS_LIBDEQUE_CONFIG_NO_GREP_F
+
+      test_print_config_info 'Platform Config: CONFIG_NO_GREP_F (fgrep)' ;;
+
+    #...................................
+    #  CONFIG: EXPLICIT `grep -F`
+    2)
+      : "${BS_LIBDEQUE_CONFIG_NO_GREP_F:=0}"
+      export BS_LIBDEQUE_CONFIG_NO_GREP_F
+
+      test_print_config_info 'Platform Config: CONFIG_NO_GREP_F (grep -F)' ;;
+
+    #...................................
+    #  CONFIG: UNKNOWN
+    *)  return 1 ;;
+  esac
+}
+
+#_______________________________________________________________________________
+#  test_check_config
+#  ---------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_check_config() { ## cSpell:Ignore BS_TCC_
+  #---------------------------------------------------------
+  #  Get Library File
+  BS_TCC_Library=${1:?'[libdeque::success::test_check_config]: Error: expected a library to source'}
+  shift
+
+  return
+}
+
+#_______________________________________________________________________________
+#  test_run_all
+#  ------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_run_all() { ## cSpell:Ignore BS_TRC_
+  #---------------------------------------------------------
+  #  Get Library File
+  BS_TRC_Library=${1:?'[libdeque::success::test_run_all]: Error: expected a library to source'}
+  shift
+
+  #---------------------------------------------------------
+  test_print_config_info 'Type: NORMAL USAGE'
+  #---------------------------------------------------------
 
   #---------------------------------------------------------
   # Source the tool
-  # shellcheck source=/dev/null
-  . "${BS_TRC_Library}" || return $?
+  # shellcheck source=SCRIPTDIR/../../libdeque.sh
+  . "${BS_TRC_Library:?}" || return $?
   #---------------------------------------------------------
 
   #---------------------------------------------------------
   #  Run the tests
-  case $# in
-  0) fn_bs_lqts_run_units      ;;
-  *) fn_bs_lqts_run_units "$@" ;;
-  esac
+  fn_bs_ldts_run_units ${1+"$@"}
   #---------------------------------------------------------
 }
+
+############################ DOCUMENTATION CONTINUED ###########################
+#. <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+#.
+#. ## VERSIONS
+#.
+#. v2.0.0       - \[CHANGE] Large rewrite of much of the library, and a minor
+#.                rewrite of the test harness means a lot of changes here.
+#.              - \[CHANGE] Platform configuration is now separate from other
+#.                configuration and not tested by default.
+#.              - \[NEW] Added more tests to improve coverage/deal with new
+#.                library functionality.
+#.              - \[NEW] Added version information.
+#.
+#. v1.0.0       - First Release
+#.
+################################################################################
+
+################################################################################
+################################################################################
+# END
+################################################################################
+################################################################################

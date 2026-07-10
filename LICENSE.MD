@@ -3,10 +3,10 @@
 <!--                                                                         -->
 <!-- BetterScripts 'LICENSE.MD': License clarification and FAQs.             -->
 <!--                                                                         -->
-<!-- Copyright (c) 2022 BetterScripts ( better.scripts@proton.me,            -->
-<!--                                    https://github.com/BetterScripts )   -->
+<!-- Copyright (c) 2022-2026 BetterScripts (better.scripts@proton.me,        -->
+<!--                         https://github.com/BetterScripts )              -->
 <!--                                                                         -->
-<!-- This file is part of the BetterScripts POSIX Suite.                     -->
+<!-- This file is part of the BetterScripts `shtoolkit` (aka _the suite_).   -->
 <!--                                                                         -->
 <!-- This Source Code Form is subject to the terms of the Mozilla Public     -->
 <!-- License, v. 2.0. If a copy of the MPL was not distributed with this     -->
@@ -25,7 +25,7 @@
 <!-- and conditions from the Mozilla Public License v2.0 shall apply.        -->
 <!--                                                                         -->
 <!-- If a copy of LICENSE.MD was not provided it can be obtained from        -->
-<!-- https://github.com/BetterScripts/posix/LICENSE.MD.                      -->
+<!-- https://github.com/BetterScripts/shtoolkit/LICENSE.MD.                  -->
 <!--                                                                         -->
 <!-- NOTE:                                                                   -->
 <!--                                                                         -->
@@ -40,26 +40,26 @@
 
 ----
 
-_The _BetterScripts POSIX Suite_ is distributed under the_
+_The BetterScripts `shtoolkit` (aka _the suite_) is distributed under the_
 _[**Mozilla Public License v. 2.0**][mpl_v2]_
 _(hereinafter "**MPLv2**" or simply "**MPL**")._
 
-_Copyright (c) 2024 BetterScripts (<better.scripts@proton.me>,_
+_Copyright (c) 2022 BetterScripts (<better.scripts@proton.me>,_
 _<https://github.com/BetterScripts>)_
 
 ----
 
 EXCEPT and UNLESS _explicitly_ noted the _Mozilla Public License v. 2.0_ AND
-above copyright notice apply to the entirety of the _BetterScripts POSIX Suite_,
-including, but not limited to, all files distributed as part of the suite and
-all files in the official BetterScripts repository.
+above copyright notice apply to the entirety of `shtoolkit`, including, but
+not limited to, all files distributed as part of the suite and all files in the
+official BetterScripts `shtoolkit` repository.
 
 This document extends, modifies, and clarifies _MPLv2_ in so far as it pertains
-to the _BetterScripts POSIX Suite_ and does not replace any part of that
-license. Should there be any apparent ambiguity (implied or otherwise) the terms
-and conditions from the _MPLv2_ shall apply. This document shall also apply to
-any additional licenses as applied to the _BetterScripts POSIX Suite_ EXCEPT
-where this would cause ambiguity or conflict with those licenses.
+to `shtoolkit` and does not replace any part of that license. Should there be
+any apparent ambiguity (implied or otherwise) the terms and conditions from the
+_MPLv2_ shall apply. This document shall also apply to any additional licenses
+as applied to `shtoolkit` EXCEPT where this would cause ambiguity or conflict
+with those licenses.
 
 In _ALL_ circumstances, without exception, Section 6 ("Disclaimer of Warranty")
 and Section 7 ("Limitation of Liability") of the _MPLv2_ shall apply.
@@ -72,8 +72,8 @@ it can also be obtained at <https://mozilla.org/MPL/2.0/>.
 In addition to those definitions in the _MPLv2_, the following definitions
 apply to this document:
 
-- "_The Suite_": The _BetterScripts POSIX Suite_ (in whole or in part) as
-  provided from the official BetterScripts repository.
+- "_The Suite_": `shtoolkit` (in whole or in part) as provided from the
+  official BetterScripts `shtoolkit` repository.
 
 - "_The License_": The terms and conditions as applied to _the Suite_, including
   those written in this document when applicable.
@@ -143,8 +143,8 @@ that is not omitted. If documentation can be generated from another file in the
 distribution, all documentation can be omitted for those specific parts that can
 be generated provided a way to generate the documentation is then provided.
 
-In all cases _the license_ and conditions as iterated here and in the main license
-MUST be made available for any distribution of _the Suite_.
+In all cases _the license_ and conditions as iterated here and in the main
+license MUST be made available for any distribution of _the Suite_.
 
 ## MODIFICATIONS
 
@@ -157,7 +157,7 @@ accordingly; this applies ONLY to _the Suite_ itself.
 
 Any updates (including, but not limited to, modifications, changes, or edits) to
 this document or _the main license_ will apply to _the Suite_ from the moment
-those updates are made available with the official _BetterScripts POSIX Suite_.
+those updates are made available with the official _BetterScripts `shtoolkit`_.
 This does NOT affect any version of _the Suite_ obtained prior to these updates,
 for which the appropriate previous version, or as an option any newer version,
 of this document and _the main license_ will apply.
@@ -179,7 +179,7 @@ guidance only, but SHOULD be understood to be intent of the original document.
 
 ### BASICS
 
-- The _BetterScripts POSIX Suite_ is licensed under the
+- The entirety of `shtoolkit` is licensed under the
   [**Mozilla Public License v. 2.0** (_MPLv2_)][mpl_v2], this applies to the
   entire suite EXCEPT if otherwise stated. (This includes any files that do
   not explicitly contain license information.)
@@ -264,7 +264,7 @@ provided resolves any previous ambiguity, then any previous version should use
 this resolution as the original intent, but this applied as guidance only and
 does **not** alter the previous terms and conditions.
 
-#### DO I HAVE TO DISTRIBUTED EVERYTHING FROM _THE SUITE_?
+#### DO I HAVE TO DISTRIBUTE EVERYTHING FROM _THE SUITE_?
 
 Not at all, any part of _the Suite_ may be distributed alone, provided it
 includes everything required for all functionality of that part of _the Suite_.
@@ -304,5 +304,4 @@ license. Thankfully, that's not how it is actually licensed.
 
 [posix]:              <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition>                               "POSIX.1-2008 \[pubs.opengroup.org\]"
 [posix_shell_utils]:  <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/idx/xcu.html>                  "POSIX: Shell & Utilities \[pubs.opengroup.org\]"
-[posix_shell_lang]:   <https://pubs.opengroup.org/onlinepubs/9699919799/idx/shell.html>                            "POSIX: Shell Command Language \[pubs.opengroup.org\]"
 [posix_dot]:          <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/utilities/V3_chap02.html#dot>  "POSIX: Special Built-In Utilities: dot \[pubs.opengroup.org\]"

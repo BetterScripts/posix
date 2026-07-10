@@ -3,14 +3,13 @@
 #################################### LICENSE ###################################
 #******************************************************************************#
 #*                                                                            *#
-#* BetterScripts '.testwrapper': Wrapper for BetterScripts POSIX Suite        *#
-#*                               library tests, providing common              *#
-#*                               functionality.                               *#
+#* BetterScripts '.testwrapper': Wrapper for BetterScripts `shtoolkit` tests, *#
+#*                               providing common functionality.              *#
 #*                                                                            *#
-#* Copyright (c) 2022 BetterScripts ( better.scripts@proton.me,               *#
-#*                                    https://github.com/BetterScripts )      *#
+#* Copyright (c) 2022-2026 BetterScripts ( better.scripts@proton.me,          *#
+#*                         https://github.com/BetterScripts )                 *#
 #*                                                                            *#
-#* This file is part of the BetterScripts POSIX Suite.                        *#
+#* This file is part of the BetterScripts `shtoolkit` (aka _the suite_).      *#
 #*                                                                            *#
 #* This Source Code Form is subject to the terms of the Mozilla Public        *#
 #* License, v. 2.0. If a copy of the MPL was not distributed with this        *#
@@ -21,14 +20,14 @@
 #* ADDENDUM:                                                                  *#
 #*                                                                            *#
 #* In addition to the Mozilla Public License a copy of LICENSE.MD should have *#
-#* been be provided alongside this file; LICENSE.MD clarifies how the Mozilla *#
+#* been provided alongside this file; LICENSE.MD clarifies how the Mozilla    *#
 #* Public License v2.0 applies to this file and MAY confer additional rights. *#
 #*                                                                            *#
 #* Should there be any apparent ambiguity (implied or otherwise) the terms    *#
 #* and conditions from the Mozilla Public License v2.0 shall apply.           *#
 #*                                                                            *#
 #* If a copy of LICENSE.MD was not provided it can be obtained from           *#
-#* https://github.com/BetterScripts/posix/LICENSE.MD.                         *#
+#* https://github.com/BetterScripts/shtoolkit/LICENSE.MD.                     *#
 #*                                                                            *#
 #* NOTE:                                                                      *#
 #*                                                                            *#
@@ -41,8 +40,8 @@
 ################################## TESTWRAPPER #################################
 #
 # Documentation is written inline formatted as [`Markdown`][markdown], this is
-# in addition to the suite wide documentation which includes details common to
-# multiple suite libraries that may not be detailed here.
+# in addition to `shtoolkit` general documentation which includes details
+# common to multiple libraries that may not be noted here.
 #
 # The included `Makefile` can be used to generate standalone documentation in
 # various formats with various verbosity settings. The `Makefile` can also be
@@ -50,15 +49,17 @@
 #
 # As far as possible, terminology and conventions follow those of the
 # [_POSIX.1-2008_ Standard][posix_2008].
+#
 #===============================================================================
 ## cSpell:Ignore testrunner testwrapper
 ################################ DOCUMENTATION #################################
 #
-#% % testwrapper(7) BetterScripts | Test wrapper for BetterScripts POSIX Suite.
+#% % testwrapper(7) BetterScripts .testwrapper.sh v1.1.0 | Test wrapper for BetterScripts `shtoolkit`.
 #% % BetterScripts (better.scripts@proton.me)
+#% % July 2026
 #
 #: <!-- #################################################################### -->
-#: <!-- ########### THIS FILE WAS GENERATED FROM 'testwrapper.sh' ########## -->
+#: <!-- ########### THIS FILE WAS GENERATED FROM '.testwrapper.sh' ########## -->
 #: <!-- #################################################################### -->
 #: <!-- ########################### DO NOT EDIT! ########################### -->
 #: <!-- #################################################################### -->
@@ -156,7 +157,7 @@
 #:   etc, (a numerical suffix may also be appended).
 #:
   BS_TESTWRAPPER_VERSION_MAJOR=1
-  BS_TESTWRAPPER_VERSION_MINOR=0
+  BS_TESTWRAPPER_VERSION_MINOR=1
   BS_TESTWRAPPER_VERSION_PATCH=0
 BS_TESTWRAPPER_VERSION_RELEASE=
 
@@ -227,6 +228,18 @@ readonly 'BS_TESTWRAPPER_VERSION'
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #. ---------------------------------------------------------
 #.
+#. #### `c_BS_TW__newline`
+#.
+#. - ...
+#.
+c_BS_TW__newline='
+'
+
+readonly 'c_BS_TW__newline'
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#. ---------------------------------------------------------
+#.
 #. #### `c_BS_TW__Param0`
 #.
 #. - Value of `$0`.
@@ -235,7 +248,7 @@ readonly 'BS_TESTWRAPPER_VERSION'
 #.   save `$0` here as then it's certain to contain the
 #.   expected value.
 #.
-c_BS_TW__Param0="${0:-<unknown>}";
+c_BS_TW__Param0=${0:-<unknown>};
 
 readonly 'c_BS_TW__Param0'
 
@@ -298,7 +311,7 @@ g_BS_TESTWRAPPER__Test=;
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #  ID used for output
-g_BS_TESTWRAPPER__ID="${c_BS_TW__Param0##*/}"
+g_BS_TESTWRAPPER__ID=${c_BS_TW__Param0##*/}
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #  Number of iterations to run
@@ -306,7 +319,7 @@ g_BS_TESTWRAPPER_Iterations=;
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-     g_BS_TW_CFG__Quiet="${BS_TESTWRAPPER_CONFIG_QUIET:-0}"
+     g_BS_TW_CFG__Quiet=${BS_TESTWRAPPER_CONFIG_QUIET:-0}
      g_BS_TW_CFG__Trace=0
 g_BS_TW_CFG__ExitOnFail=0
     g_BS_TW_CFG__Assert=1
@@ -334,7 +347,7 @@ g_BS_TW_CFG__setfRED=;
 #    NONE.
 #_______________________________________________________________________________
 fn_bs_tw_display_usage() { ## cSpell:Ignore BS_TWDU_ risation sourcable colour
-  BS_TWDU_Name="${c_BS_TW__Param0##*/}";
+  BS_TWDU_Name=${c_BS_TW__Param0##*/};
 
   cat <<EndOfUsageText
 Usage:
@@ -439,7 +452,7 @@ EndOfUsageText
 #;
 #_______________________________________________________________________________
 fn_bs_tw_diagnostic() { ## cSpell:Ignore BS_TWDiag_
-  BS_TWDiag_Type="${1:?'[testwrapper::fn_bs_tw_diagnostic]: Internal Error: a diagnostic category is required'}"
+  BS_TWDiag_Type=${1:?'[testwrapper::fn_bs_tw_diagnostic]: Internal Error: a diagnostic category is required'}
   shift
 
   {
@@ -566,9 +579,6 @@ fn_bs_tw_usage_error() { ## cSpell:Ignore BS_TWUE_
   fn_bs_tw_display_usage >&2
 }
 
-
-
-
 #===============================================================================
 #===============================================================================
 #  OUTPUT HELPERS
@@ -595,20 +605,14 @@ fn_bs_tw_indent_dec() { g_BS_TESTWRAPPER_Indent="${g_BS_TESTWRAPPER_Indent%??} "
 #
 #_______________________________________________________________________________
 fn_bs_tw_printf_indent() { ## cSpell:Ignore BS_TWPI_
-  BS_TWPI_format="${1:?'[testwrapper::fn_bs_tw_printf_indent]: Internal Error: a print format is required'}"
-  shift
-
-  case $# in
-  0) set 'BS_TW_DUMMY_PARAM' "${g_BS_TESTWRAPPER_Indent-}"      ;;
-  *) set 'BS_TW_DUMMY_PARAM' "${g_BS_TESTWRAPPER_Indent-}" "$@" ;;
-  esac
+  BS_TWPI_format=${1:?'[testwrapper::fn_bs_tw_printf_indent]: Internal Error: a print format is required'}
   shift
 
   # SC2059: Don't use variables in the printf format
   #+        string. Use printf "..%s.." "$foo".
   # EXCEPT: This is a wrapper round `printf`
   # shellcheck disable=SC2059
-  printf "%s${BS_TWPI_format}" "$@"
+  printf "%s${BS_TWPI_format}" "${g_BS_TESTWRAPPER_Indent-}" ${1+"$@"}
 }
 
 #_______________________________________________________________________________
@@ -617,7 +621,7 @@ fn_bs_tw_printf_indent() { ## cSpell:Ignore BS_TWPI_
 #
 #_______________________________________________________________________________
 fn_bs_tw_print_color() { ## cSpell:Ignore BS_TWPC_
-  BS_TWPC_Color="${1?'[testwrapper::fn_bs_tw_print_color]: Internal Error: a color is required'}"
+  BS_TWPC_Color=${1?'[testwrapper::fn_bs_tw_print_color]: Internal Error: a color is required'}
   shift
 
   case $#:${g_BS_TW_CFG__Color:-0} in
@@ -642,45 +646,55 @@ fn_bs_tw_print_grn() { fn_bs_tw_print_color "${g_BS_TW_CFG__setfGRN-}" ${1+"$@"}
 #===============================================================================
 
 #_______________________________________________________________________________
-#  fn_bs_tw_escape_glob
+#  fn_bs_tw_match_bre
 #  --------------------
 #
 #_______________________________________________________________________________
-fn_bs_tw_escape_glob() { ## cSpell:Ignore BS_TWEG_
-  BS_TWEG_refGlob="${1:?'[testwrapper::fn_bs_tw_escape_glob]: Internal Error: a glob variable is required'}"
+fn_bs_tw_match_bre() { ## cSpell:Ignore BS_TW_MBRE_
+  BS_TW_MBRE_Value=${1?'[testwrapper::fn_bs_tw_match_bre]: Internal Error: a value is required'}
+    BS_TW_MBRE_BRE=${2?'[testwrapper::fn_bs_tw_match_bre]: Internal Error: a BRE is required'}
 
-  eval "BS_TWEG_Glob=\"\${${BS_TWEG_refGlob}-}\""
+  #---------------------------------------------------------
+  #
+  #---------------------------------------------------------
+  case ${BS_TW_MBRE_BRE} in
+    *'/'*|*"${c_BS_TW__newline}"*)
+      BS_TW_MBRE_BRE=$(
+          {
+            printf '%s\n' "${BS_TW_MBRE_BRE}"
+          } | {
+            sed -e \
+              ' :LOOP
+                  $!N
+                  $!b LOOP
+                s/\//\\\//g
+                s/\n/\\n/g'
+          }
+        ) || return $? ;;
+  esac
 
-  #  Avoid escaping if possible (the performance advantage
-  #+ is worth it)
-  case ${BS_TWEG_Glob} in
-  *[!-*?[_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\\]*)
-    #  Escape the pattern
-    #
-    #  NOTE:
-    #   - the set of characters NOT escaped is
-    #+    deliberately very limited; there is no
-    #+    performance gain from using a larger set and
-    #+    there is more potential for unsafe characters
-    #+    to be missed
-    #
-    #   - there are two sequences that need special
-    #+    attention: the character ']', and the sequence
-    #+    '[!'; both are difficult to exclude from the
-    #+    `sed` escape sequence. The easiest solution is
-    #+    to let them get escaped, then unescape them
-    #+    immediately afterwards.
-    BS_TWEG_Glob="$(
-        {
-          printf '%s\n' "${BS_TWEG_Glob}"
-        } | {
-          sed -e 's/[^-*?[_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\\]/\\&/g
-                  s/\\]/]/g
-                  s/\[\\!/[!/g'
-        }
-      )"
+  #---------------------------------------------------------
+  #
+  #---------------------------------------------------------
+  BS_TW_MBRE_Match=$(
+      {
+        printf '%s\n' "${BS_TW_MBRE_Value}"
+      } | {
+        sed -n -e \
+          ' :LOOP
+              $!N
+              $!b LOOP
+            /^'"${BS_TW_MBRE_BRE}"'/i\
+Matched'
+      }
+    ) || return $?
 
-    eval "${BS_TWEG_refGlob}=\"\${BS_TWEG_Glob}\"" ;;
+  #---------------------------------------------------------
+  #
+  #---------------------------------------------------------
+  case ${BS_TW_MBRE_Match:+1} in
+  1) return 0 ;;
+  *) return 1 ;;
   esac
 }
 
@@ -695,7 +709,7 @@ fn_bs_tw_escape_glob() { ## cSpell:Ignore BS_TWEG_
 #  -----------
 #
 #_______________________________________________________________________________
-test_assert() { ## cSpell:Ignore BS_TWTA_ notlike
+test_assert() { ## cSpell:Ignore BS_TWTA_ matchbre bre notmatch notmatchbre notbre
   #---------------------------------------------------------
   #
   #---------------------------------------------------------
@@ -729,25 +743,32 @@ test_assert() { ## cSpell:Ignore BS_TWTA_ notlike
   # NOTE: additional operators do not handle complex expressions
   ec_test_assert=0
   case $#:${2-} in
-  3:'-like')
-    BS_TWTA_Value="$1"
-    BS_TWTA_Glob="$3"
-    fn_bs_tw_escape_glob 'BS_TWTA_Glob' || return $?
-    eval "case \${BS_TWTA_Value} in
-          ${BS_TWTA_Glob:-''}) ec_test_assert=0 ;;
-                            *) ec_test_assert=1 ;;
-          esac" ;;
+    #-----------------------------------
+    #
+    #-----------------------------------
+    3:'-match'|3:'-matchbre'|3:'-bre')
+      if fn_bs_tw_match_bre "$1" "$3"
+      then
+        ec_test_assert=0
+      else
+        ec_test_assert=1
+      fi ;;
 
-  3:'-notlike')
-    BS_TWTA_Value="$1"
-    BS_TWTA_Glob="$3"
-    fn_bs_tw_escape_glob 'BS_TWTA_Glob' || return $?
-    eval "case \${BS_TWTA_Value} in
-          ${BS_TWTA_Glob:-''}) ec_test_assert=1 ;;
-                            *) ec_test_assert=0 ;;
-          esac" ;;
+    #-----------------------------------
+    #
+    #-----------------------------------
+    3:'-notmatch'|3:'-notmatchbre'|3:'-notbre')
+      if fn_bs_tw_match_bre "$1" "$3"
+      then
+        ec_test_assert=1
+      else
+        ec_test_assert=0
+      fi ;;
 
-  *) test "$@" || ec_test_assert=1 ;;
+    #-----------------------------------
+    #
+    #-----------------------------------
+    *) test "$@" || ec_test_assert=1 ;;
   esac
 
   #---------------------------------------------------------
@@ -757,7 +778,7 @@ test_assert() { ## cSpell:Ignore BS_TWTA_ notlike
   0)  return 0 ;;
   1)  {
         printf 'Test Assert Failed%s: [' "${BS_TWTA_AssertInfo-}"
-        printf ' "%s"' "$@"
+        printf " '%s'" "$@"
         echo ']'
       } >&2
       return 1 ;;
@@ -838,9 +859,9 @@ test_run_expect_success() { ## cSpell:ignore BS_TRES_
     #: ------------------------
 
     case ${1-} in
-    '--output'  |'-o'     ) BS_TRES_refOutput="${2-}"         ; shift ;;
-    '--output='*|'-o='*   ) BS_TRES_refOutput="${1#-*=}"              ;;
-                 '-o'[!=]*) BS_TRES_refOutput="${1#-?}"               ;;
+    '--output'  |'-o'     ) BS_TRES_refOutput=${2-}         ; shift ;;
+    '--output='*|'-o='*   ) BS_TRES_refOutput=${1#-*=}              ;;
+                 '-o'[!=]*) BS_TRES_refOutput=${1#-?}               ;;
 
     '--line'    |'-l'     ) BS_TRES_AssertInfo=" (@ ${2-}"    ; shift ;;
     '--line='*  |'-l='*   ) BS_TRES_AssertInfo=" (@ ${1#-*=}"         ;;
@@ -863,13 +884,13 @@ test_run_expect_success() { ## cSpell:ignore BS_TRES_
   #---------------------------------------------------------
   ec_test_run_expect_success=0
   case ${BS_TRES_refOutput:+1} in
-  1)  BS_TRES_Output="$("$@" 2>&1)" || {
+  1)  BS_TRES_Output=$("$@" 2>&1) || {
         ec_test_run_expect_success=$?
         case ${BS_TRES_Output:+1} in
         1) printf '%s\n' "${BS_TRES_Output}" >&2 ;;
         esac
       }
-      eval "${BS_TRES_refOutput}=\"\${BS_TRES_Output-}\"" ;;
+      eval "${BS_TRES_refOutput}=\${BS_TRES_Output-}" ;;
   *)  "$@" || ec_test_run_expect_success=$? ;;
   esac
 
@@ -910,19 +931,19 @@ test_run_expect_failure() { ## cSpell:ignore BS_TREF_
     #: ------------------------
 
     case ${1-} in
-    '--output'  |'-o'     )  BS_TREF_refOutput="${2-}"          ; shift ;;
-    '--output='*|'-o='*   )  BS_TREF_refOutput="${1#-*=}"               ;;
-                 '-o'[!=]*)  BS_TREF_refOutput="${1#-?}"                ;;
+    '--output'  |'-o'     )  BS_TREF_refOutput=${2-}          ; shift ;;
+    '--output='*|'-o='*   )  BS_TREF_refOutput=${1#-*=}               ;;
+                 '-o'[!=]*)  BS_TREF_refOutput=${1#-?}                ;;
 
     '--line'    |'-l'     ) BS_TREF_AssertInfo=" (@ ${2-})"     ; shift ;;
     '--line='*  |'-l='*   ) BS_TREF_AssertInfo=" (@ ${1#-*=})"          ;;
                  '-l'[!=]*) BS_TREF_AssertInfo=" (@ ${1#-?})"           ;;
-                      '@'*) BS_TRES_AssertInfo=" (@ ${1#?})"            ;;
+                      '@'*) BS_TREF_AssertInfo=" (@ ${1#?})"            ;;
 
     '--info'    |'-i'     ) BS_TREF_AssertInfo=" (${2-})"       ; shift ;;
     '--info='*  |'-i='*   ) BS_TREF_AssertInfo=" (${1#-*=})"            ;;
                  '-i'[!=]*) BS_TREF_AssertInfo=" (${1#-?})"             ;;
-                      '#'*) BS_TRES_AssertInfo=" (${1#?})"              ;;
+                      '#'*) BS_TREF_AssertInfo=" (${1#?})"              ;;
 
     --) shift; break ;;
      *) break ;;
@@ -935,7 +956,7 @@ test_run_expect_failure() { ## cSpell:ignore BS_TREF_
   #---------------------------------------------------------
   ec_test_run_expect_failure=0
   case ${BS_TREF_refOutput:+1} in
-  1)  BS_TREF_Output="$("$@" 2>&1)" || ec_test_run_expect_failure=$?
+  1)  BS_TREF_Output=$("$@" 2>&1) || ec_test_run_expect_failure=$?
       case ${BS_TREF_Output:+1} in
       1)  case ${ec_test_run_expect_failure} in
           0) printf '%s\n' "${BS_TREF_Output}" >&2 ;;
@@ -971,9 +992,9 @@ test_run_unit() { ## cSpell:Ignore BS_TRU_
   #---------------------------------------------------------
   BS_TRU_Name=;
   case ${1-} in
-  '--name'  |'--unit'  |'-n'  |'-u'  ) BS_TRU_Name="${2-}"    ; shift ; shift ;;
-  '--name='*|'--unit='*|'-n='*|'-u='*) BS_TRU_Name="${1#-*=}" ; shift         ;;
-  '-n'[!=]* |'-u'[!=]*               ) BS_TRU_Name="${1#-?}"  ; shift         ;;
+  '--name'  |'--unit'  |'-n'  |'-u'  ) BS_TRU_Name=${2-}    ; shift ; shift ;;
+  '--name='*|'--unit='*|'-n='*|'-u='*) BS_TRU_Name=${1#-*=} ; shift         ;;
+  '-n'[!=]* |'-u'[!=]*               ) BS_TRU_Name=${1#-?}  ; shift         ;;
   esac
 
   #---------------------------------------------------------
@@ -987,7 +1008,7 @@ test_run_unit() { ## cSpell:Ignore BS_TRU_
   fn_bs_tw_printf_indent '%s......' "${BS_TRU_Name:-<unknown>}"
 
   # Run test (output captured)
-  if BS_TRU_Output="$("$@" 2>&1)"; then
+  if BS_TRU_Output=$("$@" 2>&1); then
     i_BS_TESTWRAPPER_BatchSuccessCount=$(( i_BS_TESTWRAPPER_BatchSuccessCount + 1 ))
     fn_bs_tw_print_grn 'SUCCESS'
   else
@@ -1030,13 +1051,12 @@ test_print_config_info() { ## cSpell:Ignore BS_TPH_
 #_______________________________________________________________________________
 fn_bs_tw_run_config() { ## cSpell:Ignore BS_TWRB_
   #---------------------------------------------------------
-  BS_TWRB_refBatchFailureCount="${1:?'[testwrapper::fn_bs_tw_run_config] Internal error: a failure count variable is required'}"
+  BS_TWRB_refBatchFailureCount=${1:?'[testwrapper::fn_bs_tw_run_config] Internal error: a failure count variable is required'}
   shift
-  #---------------------------------------------------------
-
-  #---------------------------------------------------------
-  #  Print header
-  fn_bs_tw_printf_indent 'RUNNING CONFIGURATION %d:\n' "$1"
+  BS_TWRB_PlatformConfig=${1:?'[testwrapper::fn_bs_tw_run_config] Internal error: a failure count variable is required'}
+  shift
+  BS_TWRB_Config=${1:?'[testwrapper::fn_bs_tw_run_config] Internal error: a failure count variable is required'}
+  shift
   #---------------------------------------------------------
 
   set 'BS_TW_DUMMY_PARAM' "${g_BS_TESTWRAPPER__Tool}" "$@" && shift
@@ -1049,28 +1069,29 @@ fn_bs_tw_run_config() { ## cSpell:Ignore BS_TWRB_
     i_BS_TESTWRAPPER_BatchSuccessCount=0; i_BS_TESTWRAPPER_BatchFailureCount=0
     case ${g_BS_TESTWRAPPER_Iterations} in
     1)  {
-          test_run_config "$@"
+          test_set_platform_config "${BS_TWRB_PlatformConfig}"
+          test_set_config "${BS_TWRB_Config}"
+          test_check_config "$@"
+          test_run_all "$@"
         } || {
-          fn_bs_tw_error "unexpected exit status '$?' from 'test_run_config'" "$@"
+          fn_bs_tw_error "unexpected exit status '$?' from 'test_run_all'" "$@"
         }
         echo ;;
     *)  BS_TRB_Iteration=1
-        while : #< [ "${BS_TRB_Iteration}" -le "${g_BS_TESTWRAPPER_Iterations}" ]
+        while [ "${BS_TRB_Iteration}" -le "${g_BS_TESTWRAPPER_Iterations}" ]
         do
-          #: LOOP TEST --------------
-          case $(( g_BS_TESTWRAPPER_Iterations - BS_TRB_Iteration )) in -*) break ;; esac #< [ "${BS_TRB_Iteration}" -le "${g_BS_TESTWRAPPER_Iterations}" ]
-          #: ------------------------
-
           fn_bs_tw_printf_indent  \
             'RUN: %d of %d\n'     \
             "${BS_TRB_Iteration}" \
             "${g_BS_TESTWRAPPER_Iterations}"
 
           {
-            test_run_config "$@"
+            test_set_platform_config "${BS_TWRB_PlatformConfig}"
+            test_set_config "${BS_TWRB_Config}"
+            test_run_all "$@"
           } || {
             ec_test_run_config=$?
-            fn_bs_tw_error "unexpected exit status '$?' from 'test_run_config'" "$@"
+            fn_bs_tw_error "unexpected exit status '$?' from 'test_run_all'" "$@"
           }
 
           echo
@@ -1080,7 +1101,6 @@ fn_bs_tw_run_config() { ## cSpell:Ignore BS_TWRB_
   }
   fn_bs_tw_indent_dec
   #---------------------------------------------------------
-
 
   #---------------------------------------------------------
   eval "${BS_TWRB_refBatchFailureCount}=\"\${i_BS_TESTWRAPPER_BatchFailureCount}\""
@@ -1114,16 +1134,15 @@ fn_bs_tw_main() { ## cSpell:Ignore BS_TWM_
   #---------------------------------------------------------
   #  Initialize Variables
   opt_ConfigID=;
+  opt_PlatformConfigID=;
   opt_GetConfigCount=0;
+  opt_GetPlatformConfigCount=0;
+  opt_TestPlatformConfig=0;
 
   #---------------------------------------------------------
   #  Process command line arguments
-  while : #< [ $# -gt 0 ]
+  while [ $# -gt 0 ]
   do
-    #: LOOP TEST --------------
-    case $# in 0) break ;; esac #< [ $# -gt 0 ]
-    #: ------------------------
-
     case $1 in
       #.................................
       # End of arguments
@@ -1154,7 +1173,12 @@ fn_bs_tw_main() { ## cSpell:Ignore BS_TWM_
          '--assert') g_BS_TW_CFG__Assert=1 ;;
       '--no-assert') g_BS_TW_CFG__Assert=0 ;;
 
-      '--config-count') opt_GetConfigCount=1 ;;
+         '--test-platform-config') opt_TestPlatformConfig=1 ;;
+      '--no-test-platform-config') opt_TestPlatformConfig=0 ;;
+
+               '--config-count') opt_GetConfigCount=1 ;;
+      '--platform-config-count') opt_GetPlatformConfigCount=1 ;;
+
 
          '--color'|   '--colour') g_BS_TW_CFG__Color=1 ;;
       '--no-color'|'--no-colour') g_BS_TW_CFG__Color=0 ;;
@@ -1166,9 +1190,9 @@ fn_bs_tw_main() { ## cSpell:Ignore BS_TWM_
         1)  fn_bs_tw_invalid_args "'${1%%=*}' specified multiple times"
             return "${c_BS_TW__EX_USAGE}" ;;
         esac
-        g_BS_TESTWRAPPER__Tool="${1#-*=}"
+        g_BS_TESTWRAPPER__Tool=${1#-*=}
         case ${g_BS_TESTWRAPPER__Tool:+1} in
-        1) ;; *) fn_bs_lga_invalid_args "a value is required with '$1'"
+        1) ;; *) fn_bs_tw_invalid_args "a value is required with '$1'"
                  return "${c_BS_TW__EX_USAGE}" ;;
         esac ;;
 
@@ -1177,7 +1201,7 @@ fn_bs_tw_main() { ## cSpell:Ignore BS_TWM_
         1)  fn_bs_tw_usage_error "'${1%%=*}' specified multiple times"
             return "${c_BS_TW__EX_USAGE}" ;;
         esac
-        g_BS_TESTWRAPPER__Tool="${1#-?}" ;;
+        g_BS_TESTWRAPPER__Tool=${1#-?} ;;
 
       '--tool'|'-t')
         case ${g_BS_TESTWRAPPER__Tool:+1} in
@@ -1185,9 +1209,9 @@ fn_bs_tw_main() { ## cSpell:Ignore BS_TWM_
             return "${c_BS_TW__EX_USAGE}" ;;
         esac
         case ${2:+1} in
-        1)  g_BS_TESTWRAPPER__Tool="$2"
+        1)  g_BS_TESTWRAPPER__Tool=$2
             shift ;;
-        *)  fn_bs_lga_invalid_args "a value is required with '$1'"
+        *)  fn_bs_tw_invalid_args "a value is required with '$1'"
             return "${c_BS_TW__EX_USAGE}" ;;
         esac ;;
 
@@ -1198,9 +1222,9 @@ fn_bs_tw_main() { ## cSpell:Ignore BS_TWM_
         1)  fn_bs_tw_invalid_args "'${1%%=*}' specified multiple times"
             return "${c_BS_TW__EX_USAGE}" ;;
         esac
-        g_BS_TESTWRAPPER__Test="${1#-*=}"
+        g_BS_TESTWRAPPER__Test=${1#-*=}
         case ${g_BS_TESTWRAPPER__Test:+1} in
-        1) ;; *) fn_bs_lga_invalid_args "a value is required with '$1'"
+        1) ;; *) fn_bs_tw_invalid_args "a value is required with '$1'"
                  return "${c_BS_TW__EX_USAGE}" ;;
         esac ;;
 
@@ -1209,7 +1233,7 @@ fn_bs_tw_main() { ## cSpell:Ignore BS_TWM_
         1)  fn_bs_tw_usage_error "'${1%%=*}' specified multiple times"
             return "${c_BS_TW__EX_USAGE}" ;;
         esac
-        g_BS_TESTWRAPPER__Test="${1#-?}" ;;
+        g_BS_TESTWRAPPER__Test=${1#-?} ;;
 
       '--test'|'-u')
         case ${g_BS_TESTWRAPPER__Test:+1} in
@@ -1217,9 +1241,9 @@ fn_bs_tw_main() { ## cSpell:Ignore BS_TWM_
             return "${c_BS_TW__EX_USAGE}" ;;
         esac
         case ${2:+1} in
-        1)  g_BS_TESTWRAPPER__Test="$2"
+        1)  g_BS_TESTWRAPPER__Test=$2
             shift ;;
-        *)  fn_bs_lga_invalid_args "a value is required with '$1'"
+        *)  fn_bs_tw_invalid_args "a value is required with '$1'"
             return "${c_BS_TW__EX_USAGE}" ;;
         esac ;;
 
@@ -1230,9 +1254,9 @@ fn_bs_tw_main() { ## cSpell:Ignore BS_TWM_
         1)  fn_bs_tw_invalid_args "'${1%%=*}' specified multiple times"
             return "${c_BS_TW__EX_USAGE}" ;;
         esac
-        opt_ConfigID="${1#-*=}"
+        opt_ConfigID=${1#-*=}
         case ${opt_ConfigID:+1} in
-        1) ;; *) fn_bs_lga_invalid_args "a value is required with '$1'"
+        1) ;; *) fn_bs_tw_invalid_args "a value is required with '$1'"
                  return "${c_BS_TW__EX_USAGE}" ;;
         esac ;;
 
@@ -1241,7 +1265,7 @@ fn_bs_tw_main() { ## cSpell:Ignore BS_TWM_
         1)  fn_bs_tw_usage_error "'${1%%=*}' specified multiple times"
             return "${c_BS_TW__EX_USAGE}" ;;
         esac
-        opt_ConfigID="${1#-?}" ;;
+        opt_ConfigID=${1#-?} ;;
 
       '--config-id'|'--config'|'-c')
         case ${opt_ConfigID:+1} in
@@ -1249,9 +1273,41 @@ fn_bs_tw_main() { ## cSpell:Ignore BS_TWM_
             return "${c_BS_TW__EX_USAGE}" ;;
         esac
         case ${2:+1} in
-        1)  opt_ConfigID="$2"
+        1)  opt_ConfigID=$2
             shift ;;
-        *)  fn_bs_lga_invalid_args "a value is required with '$1'"
+        *)  fn_bs_tw_invalid_args "a value is required with '$1'"
+            return "${c_BS_TW__EX_USAGE}" ;;
+        esac ;;
+
+      #.....................................................
+      #  Config ID
+      '--platform-config-id='*|'--platform-config='*|'-p='*)
+        case ${opt_PlatformConfigID:+1} in
+        1)  fn_bs_tw_invalid_args "'${1%%=*}' specified multiple times"
+            return "${c_BS_TW__EX_USAGE}" ;;
+        esac
+        opt_PlatformConfigID=${1#-*=}
+        case ${opt_PlatformConfigID:+1} in
+        1) ;; *) fn_bs_tw_invalid_args "a value is required with '$1'"
+                 return "${c_BS_TW__EX_USAGE}" ;;
+        esac ;;
+
+      '-c'[!=]*)
+        case ${opt_PlatformConfigID:+1} in
+        1)  fn_bs_tw_usage_error "'${1%%=*}' specified multiple times"
+            return "${c_BS_TW__EX_USAGE}" ;;
+        esac
+        opt_PlatformConfigID=${1#-?} ;;
+
+      '--platform-config-id'|'--platform-config'|'-p')
+        case ${opt_PlatformConfigID:+1} in
+        1)  fn_bs_tw_invalid_args "'${1%%=*}' specified multiple times"
+            return "${c_BS_TW__EX_USAGE}" ;;
+        esac
+        case ${2:+1} in
+        1)  opt_PlatformConfigID=$2
+            shift ;;
+        *)  fn_bs_tw_invalid_args "a value is required with '$1'"
             return "${c_BS_TW__EX_USAGE}" ;;
         esac ;;
 
@@ -1262,9 +1318,9 @@ fn_bs_tw_main() { ## cSpell:Ignore BS_TWM_
         1)  fn_bs_tw_invalid_args "'${1%%=*}' specified multiple times"
             return "${c_BS_TW__EX_USAGE}" ;;
         esac
-        g_BS_TESTWRAPPER_Iterations="${1#-*=}"
+        g_BS_TESTWRAPPER_Iterations=${1#-*=}
         case ${g_BS_TESTWRAPPER_Iterations:+1} in
-        1) ;; *) fn_bs_lga_invalid_args "a value is required with '$1'"
+        1) ;; *) fn_bs_tw_invalid_args "a value is required with '$1'"
                  return "${c_BS_TW__EX_USAGE}" ;;
         esac ;;
 
@@ -1273,7 +1329,7 @@ fn_bs_tw_main() { ## cSpell:Ignore BS_TWM_
         1)  fn_bs_tw_usage_error "'${1%%=*}' specified multiple times"
             return "${c_BS_TW__EX_USAGE}" ;;
         esac
-        g_BS_TESTWRAPPER_Iterations="${1#-?}" ;;
+        g_BS_TESTWRAPPER_Iterations=${1#-?} ;;
 
       '--iterations'|'-i')
         case ${g_BS_TESTWRAPPER_Iterations:+1} in
@@ -1281,9 +1337,9 @@ fn_bs_tw_main() { ## cSpell:Ignore BS_TWM_
             return "${c_BS_TW__EX_USAGE}" ;;
         esac
         case ${2:+1} in
-        1)  g_BS_TESTWRAPPER_Iterations="$2"
+        1)  g_BS_TESTWRAPPER_Iterations=$2
             shift ;;
-        *)  fn_bs_lga_invalid_args "a value is required with '$1'"
+        *)  fn_bs_tw_invalid_args "a value is required with '$1'"
             return "${c_BS_TW__EX_USAGE}" ;;
         esac ;;
 
@@ -1298,19 +1354,19 @@ fn_bs_tw_main() { ## cSpell:Ignore BS_TWM_
   #---------------------------------------------------------
   #
   case ${g_BS_TW_CFG__Color:-0} in ## cSpell:Ignore setaf
-  1)  if test -t 1 && test -t 2 && BS_TWInit_sgr0="$(tput 'sgr0' 2>&1)"; then
-        g_BS_TW_CFG__sgr0="${BS_TWInit_sgr0}"
+  1)  if test -t 1 && test -t 2 && BS_TWInit_sgr0=$(tput 'sgr0' 2>&1); then
+        g_BS_TW_CFG__sgr0=${BS_TWInit_sgr0}
         {
           {
-            g_BS_TW_CFG__setfGRN="$(tput 'setaf' 2 2>&1)"
+            g_BS_TW_CFG__setfGRN=$(tput 'setaf' 2 2>&1)
           } && {
-            g_BS_TW_CFG__setfRED="$(tput 'setaf' 1 2>&1)"
+            g_BS_TW_CFG__setfRED=$(tput 'setaf' 1 2>&1)
           }
         } || {
           {
-            g_BS_TW_CFG__setfGRN="$(tput 'setf' 2 2>&1)"
+            g_BS_TW_CFG__setfGRN=$(tput 'setf' 2 2>&1)
           } && {
-            g_BS_TW_CFG__setfRED="$(tput 'setf' 4 2>&1)"
+            g_BS_TW_CFG__setfRED=$(tput 'setf' 4 2>&1)
           }
         } || {
             g_BS_TW_CFG__Color=0
@@ -1344,6 +1400,14 @@ fn_bs_tw_main() { ## cSpell:Ignore BS_TWM_
   esac
 
   #---------------------------------------------------------
+  # ConfigID
+  case ${opt_PlatformConfigID:+1}${opt_PlatformConfigID-} in
+  1*[!0123456789]*)
+    fn_bs_tw_usage_error "invalid platform config ID '${opt_PlatformConfigID}'"
+    return "${c_BS_TW__EX_USAGE}" ;;
+  esac
+
+  #---------------------------------------------------------
   # Iterations
   case ${g_BS_TESTWRAPPER_Iterations:+1}${g_BS_TESTWRAPPER_Iterations-} in
   1*[!0123456789]*)
@@ -1362,16 +1426,22 @@ fn_bs_tw_main() { ## cSpell:Ignore BS_TWM_
 
   #---------------------------------------------------------
   # Validate TEST file
-  case ${BS_TEST_CONFIG_COUNT:+S}${BS_TEST_CONFIG_COUNT-} in
-  S*[!0123456789]*)
+  case ${BS_TEST_NAME:+N}:${BS_TEST_CONFIG_COUNT:+C}:${BS_TEST_PLATFORM_CONFIG_COUNT:+P} in
+  N:C:P) ;;
+  :C:*|N::*|::*)
+    fn_bs_tw_error "Invalid test '${g_BS_TESTWRAPPER__Test}', 'BS_TEST_NAME', 'BS_TEST_CONFIG_COUNT' and 'BS_TEST_PLATFORM_CONFIG_COUNT' must be set."
+    return "${c_BS_TW__EX_DATAERR}" ;;
+  esac
+
+  case ${BS_TEST_CONFIG_COUNT-} in
+  *[!0123456789]*)
     fn_bs_tw_error "Invalid test '${g_BS_TESTWRAPPER__Test}', invalid config count '${BS_TEST_CONFIG_COUNT}'."
     return "${c_BS_TW__EX_DATAERR}" ;;
-  S0)
-    fn_bs_tw_warning "SKIPPING '${BS_TWM_TestName}'; Test has no configurations."
-    return ;;
-  S?*) ;;
-  *)
-    fn_bs_tw_error "Invalid test '${g_BS_TESTWRAPPER__Test}', 'BS_TEST_CONFIG_COUNT' not set."
+  esac
+
+  case ${BS_TEST_PLATFORM_CONFIG_COUNT-} in
+  *[!0123456789]*)
+    fn_bs_tw_error "Invalid test '${g_BS_TESTWRAPPER__Test}', invalid platform config count '${BS_TEST_PLATFORM_CONFIG_COUNT}'."
     return "${c_BS_TW__EX_DATAERR}" ;;
   esac
 
@@ -1379,7 +1449,22 @@ fn_bs_tw_main() { ## cSpell:Ignore BS_TWM_
   # Deal with request for "Config Count"
   #=========================================================
   case ${opt_GetConfigCount:-0} in
-  1) printf '%d\n' "${BS_TEST_CONFIG_COUNT}"; return ;;
+  1) printf '%d\n' "${BS_TEST_CONFIG_COUNT:-0}"; return ;;
+  esac
+
+  case ${opt_GetPlatformConfigCount:-0} in
+  1) printf '%d\n' "${BS_TEST_PLATFORM_CONFIG_COUNT:-0}"; return ;;
+  esac
+
+  #=========================================================
+  #
+  #=========================================================
+  case ${opt_TestPlatformConfig}:${BS_TEST_CONFIG_COUNT:-0}:${BS_TEST_PLATFORM_CONFIG_COUNT:-0} in
+  ?:0:0|0:0:*)
+    fn_bs_tw_warning "SKIPPING '${BS_TWM_TestName}'; Test has no configurations."
+    return ;;
+  1:*:0)
+    opt_TestPlatformConfig=0 ;;
   esac
 
   #=========================================================
@@ -1388,20 +1473,39 @@ fn_bs_tw_main() { ## cSpell:Ignore BS_TWM_
   g_BS_TESTWRAPPER__ID="${g_BS_TESTWRAPPER__Tool##*/}:${g_BS_TESTWRAPPER__Test##*/}"
   BS_TWM_TestName="${BS_TEST_NAME:-${g_BS_TESTWRAPPER__ID}}"
 
+  case ${LC_ALL:-${LC_CTYPE:-${LANG:-C}}} in
+  C|POSIX) ;;
+        *) BS_TWM_TestName="${BS_TWM_TestName} [locale = ${LC_ALL:-${LC_CTYPE:-${LANG}}}]" ;;
+  esac
+
   #=========================================================
   #  Process and validate configuration ID
   #=========================================================
   BS_TWM_ConfigID_Current=; BS_TWM_ConfigID_Last=;
   case ${opt_ConfigID:+1} in
-  1)  case $(( BS_TEST_CONFIG_COUNT - opt_ConfigID )) in
-      -*) fn_bs_tw_usage_error "configuration ID '${opt_ConfigID}' out of range (configuration count '${BS_TEST_CONFIG_COUNT}')"
-          return "${c_BS_TW__EX_USAGE}" ;;
-      esac
-      BS_TWM_ConfigID_Current="${opt_ConfigID}"
-         BS_TWM_ConfigID_Last="${opt_ConfigID}"
+  1)  if [ "${BS_TEST_CONFIG_COUNT}" -gt "${opt_ConfigID}" ]
+      then
+        fn_bs_tw_usage_error "configuration ID '${opt_ConfigID}' out of range (configuration count '${BS_TEST_CONFIG_COUNT}')"
+        return "${c_BS_TW__EX_USAGE}"
+      fi
+      BS_TWM_ConfigID_Current=${opt_ConfigID}
+         BS_TWM_ConfigID_Last=${opt_ConfigID}
               BS_TWM_TestName="${BS_TWM_TestName} [Config ${opt_ConfigID}]" ;;
   *)  BS_TWM_ConfigID_Current=1
-         BS_TWM_ConfigID_Last="${BS_TEST_CONFIG_COUNT}" ;;
+         BS_TWM_ConfigID_Last=${BS_TEST_CONFIG_COUNT} ;;
+  esac
+
+  case ${opt_PlatformConfigID:+1} in
+  1)  if [ "${BS_TEST_PLATFORM_CONFIG_COUNT}" -gt "${opt_PlatformConfigID}" ]
+      then
+        fn_bs_tw_usage_error "platform configuration ID '${opt_PlatformConfigID}' out of range (configuration count '${BS_TEST_PLATFORM_CONFIG_COUNT}')"
+        return "${c_BS_TW__EX_USAGE}"
+      fi
+      BS_TWM_PlatformConfigID_Current=${opt_PlatformConfigID}
+         BS_TWM_PlatformConfigID_Last=${opt_PlatformConfigID}
+              BS_TWM_TestName="${BS_TWM_TestName} [Platform Config ${opt_ConfigID}]" ;;
+  *)  BS_TWM_PlatformConfigID_Current=0
+         BS_TWM_PlatformConfigID_Last=${BS_TEST_PLATFORM_CONFIG_COUNT} ;;
   esac
 
   #=========================================================
@@ -1426,28 +1530,46 @@ fn_bs_tw_main() { ## cSpell:Ignore BS_TWM_
     fn_bs_tw_indent_inc
     {
       BS_TWM_TotalFailureCount=0
-      while : #< [ "${BS_TWM_ConfigID_Current}" -le "${BS_TWM_ConfigID_Last}" ]
+      while [ "${BS_TWM_PlatformConfigID_Current}" -le "${BS_TWM_PlatformConfigID_Last}" ]
       do
-        #: LOOP TEST ---------------------
-        case $(( BS_TWM_ConfigID_Last - BS_TWM_ConfigID_Current )) in -*) break ;; esac
-        #: -------------------------------
+        while [ "${BS_TWM_ConfigID_Current}" -le "${BS_TWM_ConfigID_Last}" ]
+        do
+          #-------------------------------------------------
+          #  Print header
+          #-------------------------------------------------
+          case ${opt_TestPlatformConfig} in
+            0)  fn_bs_tw_printf_indent        \
+                  'RUNNING USER CONFIG %d:\n' \
+                  "${BS_TWM_ConfigID_Current}" ;;
+            1)  fn_bs_tw_printf_indent                             \
+                  'RUNNING USER CONFIG %d [PLATFORM CONFIG %d]:\n' \
+                  "${BS_TWM_ConfigID_Current}"                     \
+                  "${BS_TWM_PlatformConfigID_Current}" ;;
+          esac
 
-        (
           BS_TWM_CFG_ConfigFailureCount=0
-          fn_bs_tw_run_config               \
-            'BS_TWM_CFG_ConfigFailureCount' \
-            "${BS_TWM_ConfigID_Current}"    \
-            "$@"
-          exit "${BS_TWM_CFG_ConfigFailureCount}"
-        ) || {
-          BS_TWM_TotalFailureCount=$(( BS_TWM_TotalFailureCount + $? ))
-        }
+          (
+            #-----------------------------------------------
+            #  Run test
+            #-----------------------------------------------
+            fn_bs_tw_run_config                    \
+              'BS_TWM_CFG_ConfigFailureCount'      \
+              "${BS_TWM_PlatformConfigID_Current}" \
+              "${BS_TWM_ConfigID_Current}"         \
+              "$@"
+            exit "${BS_TWM_CFG_ConfigFailureCount}"
+          ) || {
+            BS_TWM_TotalFailureCount=$(( BS_TWM_TotalFailureCount + $? ))
+            case ${g_BS_TW_CFG__ExitOnFail:-0} in 1) break ;; esac
+          }
 
-        case ${g_BS_TW_CFG__ExitOnFail:-0}:${BS_TWM_TotalFailureCount} in
-        0:*|*:0) ;; *) break ;;
-        esac
+          BS_TWM_ConfigID_Current=$(( BS_TWM_ConfigID_Current + 1 ))
+        done
 
-        BS_TWM_ConfigID_Current=$(( BS_TWM_ConfigID_Current + 1 ))
+        case ${opt_TestPlatformConfig} in 0) break;; esac
+
+        BS_TWM_ConfigID_Current=${opt_ConfigID:-1}
+        BS_TWM_PlatformConfigID_Current=$(( BS_TWM_PlatformConfigID_Current + 1 ))
       done
     }
     fn_bs_tw_indent_dec
@@ -1488,6 +1610,31 @@ case $# in
 0) fn_bs_tw_main      ;;
 *) fn_bs_tw_main "$@" ;;
 esac
+
+############################ DOCUMENTATION CONTINUED ###########################
+#. <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+#.
+#. ## VERSIONS
+#.
+#. v2.0.0       - \[NEW] Added version information documentation.
+#.              - \[CHANGE] Minor reworking of the test harness in a number
+#.                of ways, but particularly related to pattern matching which
+#.                has been made more robust.
+#.              - \[CHANGE] Test files are now expected to define functions
+#.                to handle setting config outside of the functions called to
+#.                run tests. This allows each different set of configuration
+#.                options to be tested with all tests without needed the test
+#.                file to handle this manually. Individual test configurations
+#.                can also be run via various command line arguments. Also,
+#.                library configuration options are now separated from
+#.                platform configuration options with both set via different
+#.                functions - all library configurations will be run with all
+#.                platform configurations across all tests (unless overridden
+#.                on the command line).
+#.
+#. v1.0.0       - First Release
+#.
+################################################################################
 
 ################################################################################
 ################################################################################

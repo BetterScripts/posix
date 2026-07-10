@@ -2,12 +2,12 @@
 <!-- ############################### LICENSE ############################### -->
 <!--                                                                         -->
 <!-- BetterScripts 'CONTRIBUTING.MD': Information concerning making          -->
-<!--                                  contributions to the Suite.            -->
+<!--                                  contributions to `shtoolkit`.          -->
 <!--                                                                         -->
-<!-- Copyright (c) 2022 BetterScripts ( better.scripts@proton.me,            -->
-<!--                                    https://github.com/BetterScripts )   -->
+<!-- Copyright (c) 2022-2026 BetterScripts (better.scripts@proton.me,        -->
+<!--                         https://github.com/BetterScripts )              -->
 <!--                                                                         -->
-<!-- This file is part of the BetterScripts POSIX Suite.                     -->
+<!-- This file is part of the BetterScripts `shtoolkit` (aka _the suite_).   -->
 <!--                                                                         -->
 <!-- This Source Code Form is subject to the terms of the Mozilla Public     -->
 <!-- License, v. 2.0. If a copy of the MPL was not distributed with this     -->
@@ -26,7 +26,7 @@
 <!-- and conditions from the Mozilla Public License v2.0 shall apply.        -->
 <!--                                                                         -->
 <!-- If a copy of LICENSE.MD was not provided it can be obtained from        -->
-<!-- https://github.com/BetterScripts/posix/LICENSE.MD.                      -->
+<!-- https://github.com/BetterScripts/shtoolkit/LICENSE.MD.                  -->
 <!--                                                                         -->
 <!-- NOTE:                                                                   -->
 <!--                                                                         -->
@@ -40,12 +40,12 @@
 Contributions are encouraged!
 
 Submissions should be made to the primary
-[_BetterScripts POSIX Suite_ repository][betterscripts_git].
+[`shtoolkit` repository][betterscripts_git].
 
 ## LICENSE
 
-All contributions will be distributed with the _BetterScripts POSIX Suite_ under
-the same [terms and conditions](./LICENSE.MD) as the suite itself; submitting a
+All accepted contributions will be distributed with `shtoolkit` under the
+same [terms and conditions](./LICENSE.MD) as the suite itself; submitting a
 contribution is an implicit acceptance of the contribution being licensed as
 such.
 
@@ -62,7 +62,7 @@ contribution is not _necessarily_ required to strictly adhere to all guidelines.
 
 ### PORTABILITY
 
-The _BetterScripts POSIX Suite_ aims to be portable to any environment that is
+The `shtoolkit` libraries aim to be portable to any environment that is
 compliant with [_POSIX.1-2008_][posix] (at a minimum). Wherever possible this
 means the suite is written entirely as specified by the standard. Where this is
 not possible (e.g. implementation issues, performance, etc.) multiple code paths
@@ -132,9 +132,8 @@ which are more complex (e.g. `awk`, `grep`, `sed`, etc.). Therefore it is
 often not sufficient to test under multiple shell implementations, but will in
 addition requires multiple implementations of other utilities.
 
-Tools like [`busybox`][busybox] are useful for
-testing, as they offer unique implementations of many of the utilities in a
-single package.
+Tools like [`busybox`][busybox] are useful for testing, as they offer unique
+implementations of many of the utilities in a single package.
 
 ### BUGFIXES
 
@@ -159,8 +158,8 @@ It is unlikely that domain specific functionality will be accepted.
 <!-- REFERENCES -->
 <!-- ----------------------------------------------------------------------- -->
 
-[betterscripts_git]:      <https://github.com/BetterScripts/posix>                        "BetterScripts POSIX Suite \[github.com\]"
-[betterscripts_issues]:   <https://github.com/BetterScripts/posix/issues>                 "BetterScripts POSIX Suite \[github.com\]"
+[betterscripts_git]:      <https://github.com/BetterScripts/shtoolkit>                  "shtoolkit \[github.com\]"
+[betterscripts_issues]:   <https://github.com/BetterScripts/shtoolkit/issues>           "shtoolkit \[github.com\]"
 
 [posix]:                  <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition>  "POSIX.1-2008 \[pubs.opengroup.org\]"
 

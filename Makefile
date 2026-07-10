@@ -2,13 +2,13 @@
 #################################### LICENSE ###################################
 #******************************************************************************#
 #*                                                                            *#
-#* BetterScripts 'Makefile': Generate/Install BetterScript POSIX Suite        *#
-#*                           Libraries and Documentation.                     *#
+#* BetterScripts 'Makefile': Generate/Install `shtoolkit` Libraries and       *#
+#*                           Documentation.                                   *#
 #*                                                                            *#
-#* Copyright (c) 2022 BetterScripts ( better.scripts@proton.me,               *#
-#*                                    https://github.com/BetterScripts )      *#
+#* Copyright (c) 2022-2026 BetterScripts ( better.scripts@proton.me,          *#
+#*                         https://github.com/BetterScripts )                 *#
 #*                                                                            *#
-#* This file is part of the BetterScripts POSIX Suite.                        *#
+#* This file is part of the BetterScripts `shtoolkit` (aka _the suite_).      *#
 #*                                                                            *#
 #* This Source Code Form is subject to the terms of the Mozilla Public        *#
 #* License, v. 2.0. If a copy of the MPL was not distributed with this        *#
@@ -19,14 +19,14 @@
 #* ADDENDUM:                                                                  *#
 #*                                                                            *#
 #* In addition to the Mozilla Public License a copy of LICENSE.MD should have *#
-#* been be provided alongside this file; LICENSE.MD clarifies how the Mozilla *#
+#* been provided alongside this file; LICENSE.MD clarifies how the Mozilla    *#
 #* Public License v2.0 applies to this file and MAY confer additional rights. *#
 #*                                                                            *#
 #* Should there be any apparent ambiguity (implied or otherwise) the terms    *#
 #* and conditions from the Mozilla Public License v2.0 shall apply.           *#
 #*                                                                            *#
 #* If a copy of LICENSE.MD was not provided it can be obtained from           *#
-#* https://github.com/BetterScripts/posix/LICENSE.MD.                         *#
+#* https://github.com/BetterScripts/shtoolkit/LICENSE.MD.                     *#
 #*                                                                            *#
 #* NOTE:                                                                      *#
 #*                                                                            *#
@@ -54,8 +54,8 @@
 #:
 #: ## DESCRIPTION
 #:
-#: _BetterScripts POSIX Suite_ makefile that provides operations for installing
-#: and documentation generation for all suite library files.
+#: `shtoolkit` makefile that provides operations for installing and
+#: documentation generation for all library files.
 #:
 #: Although written in _POSIX.1_ standard `make`, this file follows many of the
 #: conventions of other projects (at least in terms of the available targets and
@@ -101,8 +101,8 @@
 #: `man` pages. (`pandoc` can also be used to generate other documentation
 #: formats, but these are not directly supported here.)
 #:
-#: The main _BetterScripts POSIX Suite_ repository contains the latest version
-#: of the documentation as generated from the library files, however these can
+#: The main `shtoolkit` repository contains the latest version of the
+#: documentation as generated from the library files, however these can
 #: be replaced with versions generated from this makefile if desired.
 #:
 ################################ DOCUMENTATION #################################
@@ -121,6 +121,9 @@
 
 #. - Delete predefined suffixes.
 .SUFFIXES:
+
+#. - Disable parallel execution. (Non-POSIX, but likely portable.)
+.NOTPARALLEL:
 
 ################################################################################
 ################################################################################
@@ -360,7 +363,7 @@ bindir		= $(exec_prefix)/bin
 #-----------------------------------------------------------
 datarootdir	= $(prefix)/share
 
-docdir		= $(datarootdir)/doc/betterscripts
+docdir		= $(datarootdir)/doc/shtoolkit
 
 mandir		= $(datarootdir)/man
 
@@ -439,20 +442,31 @@ man8ext		= .8
 ## cSpell:Ignore libgetargs getargs getarg libarray libdeque
 ## cSpell:Ignore libarray
 ## cSpell:Ignore libdeque
+## cSpell:Ignore libmap
+## cSpell:Ignore libpath mktmp
+## cSpell:Ignore libstring
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-__list__LIBRARY_FILES	= libgetargs.sh	libarray.sh	\
-						  libdeque.sh
-__list__BINARY_FILES	= getarg
+__list__LIBRARY_FILES	= libarray.sh \
+						  libdeque.sh \
+						  libgetargs.sh \
+						  libmap.sh \
+						  libpath.sh \
+						  libstring.sh
+
+__list__BINARY_FILES	= getarg mktmp
 
 __list__MAN_FILES		= $(__list__LIBRARY_FILES:.sh=.7) \
-						  betterscripts.7 getarg.1
+						  shtoolkit.7 getarg.1 mktmp.1
 
 __list__MD_FILES		= $(__list__LIBRARY_FILES:.sh=.md) \
-						  README.MD getarg.md
+						  README.MD getarg.md mktmp.md
 
-__list__TESTS			= tests/test_libgetargs.sh \
-						  tests/test_libarray.sh \
-						  tests/test_libdeque.sh
+__list__TESTS			= tests/test_libarray.sh \
+						  tests/test_libdeque.sh \
+						  tests/test_libgetargs.sh \
+						  tests/test_libmap.sh \
+						  tests/test_libpath.sh \
+						  tests/test_libstring.sh
 
 #===========================================================
 #. <!-- ------------------------------------------------ -->
@@ -925,11 +939,11 @@ help:
 	@echo ''
 	@echo '  md, markdown      Generate `markdown` format documentation.'
 	@echo '  man               Generate `man` format documentation.'
-	@echo '  doc               Generate documentation in all formats.'
+	@echo '  doc[s]            Generate documentation in all formats.'
 	@echo ''
 	@echo '  [un]installmd     Uninstall/Install `markdown` documentation.'
 	@echo '  [un]installman    Uninstall/Install `man` documentation.'
-	@echo '  [un]installdoc    Uninstall/Install all documentation.'
+	@echo '  [un]installdoc[s] Uninstall/Install all documentation.'
 	@echo ''
 	@echo '  [un]installlib    Uninstall/Install library files.'
 	@echo '  [un]installbin    Uninstall/Install binary files.'
@@ -938,7 +952,7 @@ help:
 	@echo ''
 	@echo '  [un]install       Uninstall/Install everything.'
 	@echo ''
-	@echo '  check, test       Run available tests for all libraries.'
+	@echo '  check, test[s]    Run available tests for all libraries.'
 	@echo '                    (Macro TESTFLAGS can be used.)'
 	@echo ''
 	@echo 'Macros'
@@ -992,7 +1006,6 @@ md	markdown:	__validate__DOC_LEVEL	$(__list__MD_FILES)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #: `man`
 #:
-#: : Aliased as `markdown`.
 #: : Generate documentation in `man` format as required.
 #: : See also [`DOC_LEVEL`](#doc_level).
 #: : Requires [`pandoc`][pandoc]
@@ -1003,10 +1016,11 @@ man:	__validate__DOC_LEVEL	$(__list__MAN_FILES)
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #: `doc`
 #:
+#: : Aliased as `docs`
 #: : Generate all documentation.
 #:
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-doc:	md	man
+doc	docs:	md	man
 
 #===========================================================
 #: <!-- ------------------------------------------------ -->
@@ -1174,10 +1188,11 @@ installman:	installmandirs	man
 #-----------------------------------------------------------
 #: `installdoc`
 #:
+#: : Aliased as `installdocs`
 #: : Install all documentation files.
 #:
 #-----------------------------------------------------------
-installdoc:	installmd	installman
+installdoc	installdocs:	installmd	installman
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #: _COMMON_
@@ -1294,10 +1309,11 @@ uninstallman:
 #-----------------------------------------------------------
 #: `uninstalldoc`
 #:
+#: : Aliased as `uninstalldocs`
 #: : Uninstall all installed documentation files.
 #:
 #-----------------------------------------------------------
-uninstalldoc:	uninstallmd	uninstallman
+uninstalldoc	uninstalldocs:	uninstallmd	uninstallman
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #: _COMMON_
@@ -1323,12 +1339,12 @@ uninstall:	uninstallbin	uninstalllib	uninstalldoc
 #-----------------------------------------------------------
 #: `check`
 #:
-#: : Aliased as `test`
+#: : Aliased as `test` & `tests`
 #: : Run all library test files.
 #: : Does not require libraries are installed.
 #:
 #-----------------------------------------------------------
-check test:
+check	test	tests:
 	@for _TEST in $(__list__TESTS); do $(SHELL) "$${_TEST:?}" $(TESTFLAGS); done
 
 #===========================================================
@@ -1355,6 +1371,7 @@ __validate__DOC_LEVEL:
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #. `getarg.md`/`getarg.1`
+#. `mktmp.md`/`mktmp.1`
 #.
 #. : Binary file documentation special targets.
 #. : Required since the binary file has no suffix.
@@ -1372,8 +1389,16 @@ getarg.md: getarg
 getarg.1: getarg
 	@$(_cmd__SH_TO_MAN)
 
+# Markdown
+mktmp.md: mktmp
+	@$(_cmd__SH_TO_MD)
+
+# Man Page
+mktmp.1: mktmp
+	@$(_cmd__SH_TO_MAN)
+
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#. `betterscripts.7`
+#. `shtoolkit.7`
 #.
 #. : Common documentation special target.
 #. : If the source file and target file do not have the same
@@ -1383,7 +1408,7 @@ getarg.1: getarg
 #.   allowing `make -t` to work as expected.
 #.
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-betterscripts.7: README.MD
+shtoolkit.7: README.MD
 	@$(_cmd__MD_TO_MAN)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1517,7 +1542,12 @@ betterscripts.7: README.MD
 #.
 #. ## VERSIONS
 #.
-#. v1.0.0          First Release
+#. v1.1.0       - \[NEW] Added `libpath.sh` and `mktmp`, `libstring.sh` and
+#.                `libmap.sh`.
+#.              - \[CHANGE] Added additional aliases for some targets (e.g.
+#.                `docs`).
+#.
+#. v1.0.0       - First Release
 #.
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:

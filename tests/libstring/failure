@@ -1,0 +1,960 @@
+#!/usr/bin/env false
+# SPDX-License-Identifier: MPL-2.0
+#################################### LICENSE ###################################
+#******************************************************************************#
+#*                                                                            *#
+#* BetterScripts 'libstring/success': Tests for 'libstring' success           *#
+#* conditions.                                                                *#
+#*                                                                            *#
+#* Copyright (c) 2026 BetterScripts ( better.scripts@proton.me,               *#
+#*                                    https://github.com/BetterScripts )      *#
+#*                                                                            *#
+#* This file is part of the BetterScripts `shtoolkit` (aka _the suite_).      *#
+#*                                                                            *#
+#* This Source Code Form is subject to the terms of the Mozilla Public        *#
+#* License, v. 2.0. If a copy of the MPL was not distributed with this        *#
+#* file, You can obtain one at https://mozilla.org/MPL/2.0/.                  *#
+#*                                                                            *#
+#* -------------------------------------------------------------------------- *#
+#*                                                                            *#
+#* ADDENDUM:                                                                  *#
+#*                                                                            *#
+#* In addition to the Mozilla Public License a copy of LICENSE.MD should have *#
+#* been provided alongside this file; LICENSE.MD clarifies how the Mozilla    *#
+#* Public License v2.0 applies to this file and MAY confer additional rights. *#
+#*                                                                            *#
+#* Should there be any apparent ambiguity (implied or otherwise) the terms    *#
+#* and conditions from the Mozilla Public License v2.0 shall apply.           *#
+#*                                                                            *#
+#* If a copy of LICENSE.MD was not provided it can be obtained from           *#
+#* https://github.com/BetterScripts/shtoolkit/LICENSE.MD.                     *#
+#*                                                                            *#
+#* NOTE:                                                                      *#
+#*                                                                            *#
+#* The Mozilla Public License v2.0 is compatible with the GNU General Public  *#
+#* License v2.0.                                                              *#
+#*                                                                            *#
+#******************************************************************************#
+################################################################################
+
+############################### LIBSTRING/FAILURE ###############################
+#
+# Documentation is written inline formatted as [`Markdown`][markdown], this is
+# in addition to `shtoolkit` general documentation which includes details
+# common to multiple libraries that may not be noted here.
+#
+# The included `Makefile` can be used to generate standalone documentation in
+# various formats with various verbosity settings. The `Makefile` can also be
+# used to install scripts and documentation in appropriate locations.
+#
+# As far as possible, terminology and conventions follow those of the
+# [_POSIX.1-2008_ Standard][posix_2008].
+#
+#===============================================================================
+## cSpell:Ignore libstring testrunner testwrapper LSTF toupper tolower
+################################ DOCUMENTATION #################################
+#
+#% % libstring-failure(7) BetterScripts | Tests for 'libstring' failure conditions.
+#% % BetterScripts (better.scripts@proton.me)
+#
+#: # LIBSTRING/FAILURE
+#:
+#  `libstring` Test Failure (LSTF)
+#  ===============================
+#
+#  Tests for `libstring` checking failure conditions.
+#
+################################################################################
+
+############################## SHELLCHECK: GLOBAL ##############################
+# shellcheck shell=sh
+# shellcheck enable=avoid-nullary-conditions
+# shellcheck enable=check-extra-masked-returns
+# shellcheck enable=deprecate-which
+# shellcheck enable=require-variable-braces
+################################################################################
+
+#===============================================================================
+#===============================================================================
+#  TESTS
+#===============================================================================
+#===============================================================================
+
+#_______________________________________________________________________________
+#  fn_bs_lstf_string_length_usage
+#  --------------------
+#
+#  TESTS:   `string_length` (usage errors)
+#_______________________________________________________________________________
+fn_bs_lstf_string_length_usage() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (too many arguments)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_length           \
+        'A' 'B' 'C'           || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_length.*expected.*text to measure.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_length           \
+        'Bad::Name'           \
+        'a string'            || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_length.*invalid variable name.*' || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lstf_string_quote_usage
+#  --------------------
+#
+#  TESTS:   `string_quote` (usage errors)
+#_______________________________________________________________________________
+fn_bs_lstf_string_quote_usage() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (too many arguments)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_quote            \
+        'A' 'B' 'C'           || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_quote.*expected.*a value to quote.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_quote            \
+        'Bad::Name'           \
+        'a string'            || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_quote.*invalid variable name.*' || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lstf_string_join_usage
+#  --------------------
+#
+#  TESTS:   `string_join` (usage errors)
+#_______________________________________________________________________________
+fn_bs_lstf_string_join_usage() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (missing arguments entirely)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_join             || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_join.*expected.*zero or more values.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name (explicit `OUTPUT`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_join             \
+        'Bad::Name'           \
+        'a string'            || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_join.*invalid variable name.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name (implicit `OUTPUT`, `--` omitted per documented CAVEAT)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_join             \
+        'a string'            || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_join.*invalid variable name.*' || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lstf_string_toupper_tolower_usage
+#  --------------------
+#
+#  TESTS:   `string_toupper`/`string_tolower` (usage errors)
+#_______________________________________________________________________________
+fn_bs_lstf_string_toupper_tolower_usage() { ## cSpell:Ignore toupper tolower
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  for TestCommand in string_toupper string_tolower
+  do
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #  Invalid Argument Count (too many arguments)
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure   \
+        ${LINENO:+"@${LINENO}"} \
+        --output=TestOutput     \
+        "${TestCommand}"        \
+          'A' 'B' 'C'           || return $?
+
+      test_assert "@${LINENO-?} [${TestCommand}]" "${TestOutput-}" -match ".*${TestCommand}.*expected.*a string.*" || return $?
+    }
+
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #  Invalid Variable Name
+    {
+      TestOutput=; unset 'TestOutput'
+      test_run_expect_failure   \
+        ${LINENO:+"@${LINENO}"} \
+        --output=TestOutput     \
+        "${TestCommand}"        \
+          'Bad::Name'           \
+          'a string'            || return $?
+
+      test_assert "@${LINENO-?} [${TestCommand}]" "${TestOutput-}" -match ".*${TestCommand}.*invalid variable name.*" || return $?
+    }
+  done
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lstf_string_trim_usage
+#  --------------------
+#
+#  TESTS:   `string_trim` (usage errors)
+#_______________________________________________________________________________
+fn_bs_lstf_string_trim_usage() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (missing `STRING`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_trim              || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_trim.*expected.*a value to trim.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (too many arguments)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_trim             \
+        'A' 'B' 'C'           || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_trim.*expected.*a value to trim.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_trim             \
+        'Bad::Name'           \
+        'a string'            || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_trim.*invalid variable name.*' || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lstf_string_index_usage
+#  --------------------
+#
+#  TESTS:   `string_index` (usage errors)
+#_______________________________________________________________________________
+fn_bs_lstf_string_index_usage() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (missing `EXPRESSION`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_index            \
+        'a string'            || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_index.*expected.*an expression to search for.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (too many arguments)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_index            \
+        'A' 'B' 'C' 'D'       || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_index.*expected.*an expression to search for.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_index            \
+        'Bad::Name'           \
+        'a string'            \
+        'an expression'       || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_index.*invalid variable name.*' || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lstf_string_match_usage
+#  --------------------
+#
+#  TESTS:   `string_match` (usage errors)
+#_______________________________________________________________________________
+fn_bs_lstf_string_match_usage() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (missing `EXPRESSION`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_match            \
+        'a string'            || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_match.*expected.*an expression to search for.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (too many arguments)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_match            \
+        'A' 'B' 'C'           || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_match.*expected.*an expression to search for.*' || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lstf_string_substr_usage
+#  --------------------
+#
+#  TESTS:   `string_substr` (usage errors)
+#_______________________________________________________________________________
+fn_bs_lstf_string_substr_usage() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (missing `OFFSET`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_substr           \
+        'TestVar'             \
+        'a string'            || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_substr.*expected.*an offset.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (too many arguments)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_substr           \
+        'A' 'B' 'C' 'D' 'E'   || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_substr.*expected.*an offset.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_substr           \
+        'Bad::Name'           \
+        'a string'            \
+        '1'                   || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_substr.*invalid variable name.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Non-Numeric Offset
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_substr           \
+        'TestVar'             \
+        'a string'            \
+        'not-a-number'        || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match ".*string_substr.*expected a whole number for offset ('not-a-number').*" || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Non-Numeric Length
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_substr           \
+        'TestVar'             \
+        'a string'            \
+        '1'                   \
+        'not-a-number'        || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match ".*string_substr.*and a whole number for length ('not-a-number').*" || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  `OFFSET` of `0` (only invalid under the ONE-BASED-INDEX config)
+  case ${BS_LIBSTRING_CONFIG_INDEX_ONE_BASED:+1} in
+  1)
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_substr           \
+        'TestVar'             \
+        'a string'            \
+        '0'                   || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match ".*string_substr.*expected a whole number greater than 0 for offset ('0').*" || return $? ;;
+  esac
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lstf_string_truncate_usage
+#  --------------------
+#
+#  TESTS:   `string_truncate` (usage errors)
+#_______________________________________________________________________________
+fn_bs_lstf_string_truncate_usage() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (missing `LENGTH`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_truncate         \
+        'a string'            || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_truncate.*expected.*a length to truncate to.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (too many arguments)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_truncate         \
+        'A' 'B' 'C' 'D'       || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_truncate.*expected.*a length to truncate to.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_truncate         \
+        'Bad::Name'           \
+        'a string'            \
+        '3'                   || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_truncate.*invalid variable name.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Non-Numeric Length
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_truncate         \
+        'TestVar'             \
+        'a string'            \
+        'not-a-number'        || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match ".*string_truncate.*invalid truncation length.*got 'not-a-number'.*" || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Length Of `0`
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_truncate         \
+        'TestVar'             \
+        'a string'            \
+        '0'                   || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match ".*string_truncate.*invalid truncation length.*got '0'.*" || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lstf_string_sub_usage
+#  --------------------
+#
+#  TESTS:   `string_sub` (usage errors)
+#_______________________________________________________________________________
+fn_bs_lstf_string_sub_usage() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (missing `REPLACEMENT`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_sub              \
+        'a string'            \
+        'an expression'       || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_sub.*expected.*replacement text.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (too many arguments)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_sub              \
+        'A' 'B' 'C' 'D' 'E'   || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_sub.*expected.*replacement text.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_sub              \
+        'Bad::Name'           \
+        'a string'            \
+        'an expression'       \
+        'a replacement'       || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_sub.*invalid variable name.*' || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lstf_string_gsub_usage
+#  --------------------
+#
+#  TESTS:   `string_gsub` (usage errors)
+#_______________________________________________________________________________
+fn_bs_lstf_string_gsub_usage() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (missing `REPLACEMENT`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_gsub             \
+        'a string'            \
+        'an expression'       || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_gsub.*expected.*replacement text.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (too many arguments)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_gsub             \
+        'A' 'B' 'C' 'D' 'E'   || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_gsub.*expected.*replacement text.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure   \
+      ${LINENO:+"@${LINENO}"} \
+      --output=TestOutput     \
+      string_gsub             \
+        'Bad::Name'           \
+        'a string'            \
+        'an expression'       \
+        'a replacement'       || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*string_gsub.*invalid variable name.*' || return $?
+  }
+}
+
+#===============================================================================
+#===============================================================================
+#  TEST MAIN
+#===============================================================================
+#===============================================================================
+
+#_______________________________________________________________________________
+#  fn_bs_lstf_run_units
+#  --------------------
+#
+#  Run all test units for the library
+#_______________________________________________________________________________
+fn_bs_lstf_run_units() {
+  #  Ensure always at least one argument so no issues with "$@"
+  case $# in 0) set 'BS_DUMMY_PARAM' '--' && shift ;; esac
+
+  #-------------------------------------
+  #  `string_length`
+  test_run_unit                                  \
+    -u 'libstring: string_length (usage errors)' \
+    'fn_bs_lstf_string_length_usage'             \
+      "$@"
+
+  #-------------------------------------
+  #  `string_quote`
+  test_run_unit                                 \
+    -u 'libstring: string_quote (usage errors)' \
+    'fn_bs_lstf_string_quote_usage'             \
+      "$@"
+
+  #-------------------------------------
+  #  `string_join`
+  test_run_unit                                \
+    -u 'libstring: string_join (usage errors)' \
+    'fn_bs_lstf_string_join_usage'             \
+      "$@"
+
+  #-------------------------------------
+  #  `string_toupper`/`string_tolower`
+  test_run_unit                                                   \
+    -u 'libstring: string_toupper/string_tolower (usage errors)'  \
+    'fn_bs_lstf_string_toupper_tolower_usage'                     \
+      "$@"
+
+  #-------------------------------------
+  #  `string_trim`
+  test_run_unit                                \
+    -u 'libstring: string_trim (usage errors)' \
+    'fn_bs_lstf_string_trim_usage'             \
+      "$@"
+
+  #-------------------------------------
+  #  `string_index`
+  test_run_unit                                 \
+    -u 'libstring: string_index (usage errors)' \
+    'fn_bs_lstf_string_index_usage'             \
+      "$@"
+
+  #-------------------------------------
+  #  `string_match`
+  test_run_unit                                 \
+    -u 'libstring: string_match (usage errors)' \
+    'fn_bs_lstf_string_match_usage'             \
+      "$@"
+
+  #-------------------------------------
+  #  `string_substr`
+  test_run_unit                                  \
+    -u 'libstring: string_substr (usage errors)' \
+    'fn_bs_lstf_string_substr_usage'             \
+      "$@"
+
+  #-------------------------------------
+  #  `string_truncate`
+  test_run_unit                                    \
+    -u 'libstring: string_truncate (usage errors)' \
+    'fn_bs_lstf_string_truncate_usage'             \
+      "$@"
+
+  #-------------------------------------
+  #  `string_sub`
+  test_run_unit                               \
+    -u 'libstring: string_sub (usage errors)' \
+    'fn_bs_lstf_string_sub_usage'             \
+      "$@"
+
+  #-------------------------------------
+  #  `string_gsub`
+  test_run_unit                                \
+    -u 'libstring: string_gsub (usage errors)' \
+    'fn_bs_lstf_string_gsub_usage'             \
+      "$@"
+}
+
+################################################################################
+#  TESTWRAPPER Values & Commands
+################################################################################
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  FRIENDLY NAME
+BS_TEST_NAME='libstring/failure'
+export BS_TEST_NAME
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  NUMBER OF AVAILABLE CONFIGURATIONS
+BS_TEST_CONFIG_COUNT=2
+export BS_TEST_CONFIG_COUNT
+
+#_______________________________________________________________________________
+#  test_set_config
+#  ---------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_set_config() { ## cSpell:Ignore BS_TRC_
+  BS_TRC_Config=${1:?'[libstring::failure::test_run_config]: Error: expected a configuration index'}
+
+  #---------------------------------------------------------
+  case ${BS_LIBSTRING_CONFIG_INDEX_ONE_BASED:+1} in
+  1) unset BS_LIBSTRING_CONFIG_INDEX_ONE_BASED ;;
+  esac
+  #---------------------------------------------------------
+
+  #---------------------------------------------------------
+  #  Set Configuration Accordingly
+  case ${BS_TRC_Config} in
+    #...................................
+    #  CONFIG: DEFAULT
+    1)  test_print_config_info 'Config: DEFAULT' ;;
+
+    #...................................
+    #  CONFIG: ONE-BASED INDEXES
+    2)  BS_LIBSTRING_CONFIG_INDEX_ONE_BASED=1
+        export BS_LIBSTRING_CONFIG_INDEX_ONE_BASED
+
+        test_print_config_info 'Config: STRING_INDEX_ONE_BASED' ;;
+
+    #...................................
+    #  CONFIG: UNKNOWN
+    *)  return 1 ;;
+  esac
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  NUMBER OF AVAILABLE CONFIGURATIONS
+BS_TEST_PLATFORM_CONFIG_COUNT=6
+export BS_TEST_PLATFORM_CONFIG_COUNT
+
+#_______________________________________________________________________________
+#  test_set_platform_config
+#  ---------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_set_platform_config() { ## cSpell:Ignore BS_TRC_
+  BS_TRC_PlatformConfig=${1:?'[libstring::failure::test_run_config]: Error: expected a configuration index'}
+
+  #---------------------------------------------------------
+  #  Set Configuration Accordingly
+  case ${BS_TRC_PlatformConfig} in
+    #...................................
+    #
+    0) ;;
+
+    #...................................
+    #  CONFIG: No `tr` case classes
+    1)
+      : "${BS_LIBSTRING_CONFIG_NO_TR_CASE_CLASS:=1}"
+      export BS_LIBSTRING_CONFIG_NO_TR_CASE_CLASS
+
+      test_print_config_info 'Platform Config: NO_TR_CASE_CLASS' ;;
+
+    #...................................
+    #  CONFIG: ONLY ALLOW `$1`-`$9`
+    2)
+      : "${BS_LIBSTRING_CONFIG_NO_CASE_CHAR_CLASS:=1}"
+      export BS_LIBSTRING_CONFIG_NO_CASE_CHAR_CLASS
+
+      test_print_config_info 'Platform Config: NO_CASE_CHAR_CLASS' ;;
+
+    #...................................
+    #  CONFIG:
+    3)
+      : "${BS_LIBSTRING_CONFIG_NO_PARAM_EXPANSION_CHAR_CLASS:=1}"
+      export BS_LIBSTRING_CONFIG_NO_PARAM_EXPANSION_CHAR_CLASS
+
+      test_print_config_info 'Platform Config: NO_PARAM_EXPANSION_CHAR_CLASS' ;;
+
+    #...................................
+    #  CONFIG:
+    4)
+      : "${BS_LIBSTRING_CONFIG_ALLOW_STRING_OPTIMIZATIONS:=1}"
+      export BS_LIBSTRING_CONFIG_ALLOW_STRING_OPTIMIZATIONS
+
+      test_print_config_info 'Platform Config: ALLOW_STRING_OPTIMIZATIONS' ;;
+
+    #...................................
+    #  CONFIG:
+    5)
+      : "${BS_LIBSTRING_CONFIG_ALLOW_EXPR:=1}"
+      export BS_LIBSTRING_CONFIG_ALLOW_EXPR
+
+      test_print_config_info 'Platform Config: ALLOW_EXPR' ;;
+
+    #...................................
+    #  CONFIG:
+    6)
+      : "${BS_LIBSTRING_CONFIG_NO_AWK_ARGV:=1}"
+      export BS_LIBSTRING_CONFIG_NO_AWK_ARGV
+
+      test_print_config_info 'Platform Config: NO_AWK_ARGV' ;;
+
+    #...................................
+    #  CONFIG: UNKNOWN
+    *)  return 1 ;;
+  esac
+}
+
+#_______________________________________________________________________________
+#  test_check_config
+#  ---------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_check_config() { ## cSpell:Ignore BS_TCC_
+  #---------------------------------------------------------
+  #  Get Library File
+  BS_TCC_Library=${1:?'[libstring::failure::test_check_config]: Error: expected a library to source'}
+  shift
+
+  return
+}
+
+#_______________________________________________________________________________
+#  test_run_all
+#  ------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_run_all() { ## cSpell:Ignore BS_TRC_
+  #---------------------------------------------------------
+  #  Get Library File
+  BS_TRC_Library=${1:?'[libstring::failure::test_run_config]: Error: expected a library to source'}
+  shift
+
+  #---------------------------------------------------------
+  test_print_config_info 'Type: INVALID USAGE'
+  #---------------------------------------------------------
+
+  #---------------------------------------------------------
+  # Source the tool
+  # shellcheck source=SCRIPTDIR/../../libstring.sh
+  . "${BS_TRC_Library:?}" || return $?
+  #---------------------------------------------------------
+
+  #---------------------------------------------------------
+  #  Run the tests
+  fn_bs_lstf_run_units ${1+"$@"}
+  #---------------------------------------------------------
+}
+
+############################ DOCUMENTATION CONTINUED ###########################
+#. <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+#.
+#. ## VERSIONS
+#.
+#. v1.0.0       - First Release
+#.
+################################################################################
+
+################################################################################
+# END
+################################################################################

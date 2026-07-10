@@ -3,11 +3,11 @@
 #################################### LICENSE ###################################
 #******************************************************************************#
 #*                                                                            *#
-#* BetterScripts 'getarg': Wrapper for 'libgetargs.sh' to allow standalone    *#
-#*                         usage.                                             *#
+#* BetterScripts 'mktmp': Wrapper for `path_mktemp` from 'libpath.sh' to      *#
+#*                         allow standalone usage.                            *#
 #*                                                                            *#
-#* Copyright (c) 2022-2026 BetterScripts ( better.scripts@proton.me,          *#
-#*                         https://github.com/BetterScripts )                 *#
+#* Copyright (c) 2026 BetterScripts ( better.scripts@proton.me,               *#
+#*                                    https://github.com/BetterScripts )      *#
 #*                                                                            *#
 #* This file is part of the BetterScripts `shtoolkit` (aka _the suite_).      *#
 #*                                                                            *#
@@ -58,7 +58,7 @@
 #                                                                              #
 ################################################################################
 
-#################################### GETARG ####################################
+#################################### MKTMP #####################################
 #
 # Documentation is written inline formatted as [`Markdown`][markdown], this is
 # in addition to `shtoolkit` general documentation which includes details
@@ -72,66 +72,118 @@
 # [_POSIX.1-2008_ Standard][posix_2008].
 #
 #===============================================================================
-## cSpell:Ignore libgetargs getargs getarg
+## cSpell:Ignore libpath mktemp mktmp
 ################################ DOCUMENTATION #################################
 #
-#% % getarg(1) BetterScripts getarg v1.0.0 | Argument processing for POSIX.1 shell scripts.
+#% % mktmp(1) BetterScripts mktmp v1.0.0 | mktemp replacement written entirely in POSIX.1.
 #% % BetterScripts (better.scripts@proton.me)
 #% % July 2026
 #
 #: <!-- #################################################################### -->
-#: <!-- ############### THIS FILE WAS GENERATED FROM 'getarg' ############## -->
+#: <!-- ############### THIS FILE WAS GENERATED FROM 'mktmp' ############### -->
 #: <!-- #################################################################### -->
 #: <!-- ########################### DO NOT EDIT! ########################### -->
 #: <!-- #################################################################### -->
 #:
-#: # GETARGS
+#: # MKTMP
 #:
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
 #: ## SYNOPSIS
 #:
-#:     MyArgs=$(getarg <SPECIFICATION>... [--] <ARGUMENT>...)
-#:     ...
-#:     eval "$MyArgs"
+#:     mktmp <ARGUMENT>...
 #:
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
 #: ## DESCRIPTION
 #:
-#: Command argument processing for scripts and script functions.
+#: The command 'mktmp' is a wrapper for functionality provided by 'libpath.sh',
+#: offering a portable, POSIX-compliant alternative to 'mktemp(1)'.
 #:
-#: Parses all `<ARGUMENT>`s according to the configuration from `<SPECIFICATION>`.
-#:
-#: The command 'getarg' is a wrapper script that allows 'libgetargs' to be
-#: invoked directly.
-#:
-#: [Documentation for 'libgetargs' applies](./libgetargs.md) (and is not
+#: [Documentation for `libpath.sh` applies](./libpath.md) (and is not
 #: replicated here).
 #:
 #% <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #%
 #% ## SEE ALSO
 #%
-#% libgetargs(7), shtoolkit(7)
+#% libpath(7), shtoolkit(7)
 #%
 ################################################################################
 
-# shellcheck source=SCRIPTDIR/libgetargs.sh
-. libgetargs.sh
+# shellcheck source=SCRIPTDIR/libpath.sh
+. libpath.sh
 
-case $# in
-0) getargs 'getarg' --help             ;;
-*) getargs 'getarg' --script ${1+"$@"} ;;
-esac
+#_______________________________________________________________________________
+#. Avoid errors being written out automatically (they will be edited prior to
+#. output).
+#_______________________________________________________________________________
+: "${BS_LIBPATH_CONFIG_QUIET_ERRORS:=1}"
+
+#_______________________________________________________________________________
+#. ---------------------------------------------------------
+#.
+#. ### `fn_bs_main`
+#.
+#. Wrapper function so that it's easier to avoid issues around `return`/`exit`.
+#.
+#. It's necessary to process any errors before output so that they have a
+#. suitable prefix (i.e. do not reference the library itself), and append
+#. details for usage. While these could be handled by the library, they make
+#. more sense here, however, that means the error code needs propagated which
+#. requires the use of `return` or `exit`.
+#.
+#. The specified behavior of `return`/`exit` in _POSIX.1_ changes depending on
+#. circumstances with `return` causing undefined behavior if invoked at a
+#. global scope in an executed script, while `exit` will apply to the parent
+#. script if the file is sourced. Although this file is never intended to be
+#. sourced (and so could use `exit`), if it ever _is_ sourced the use of `exit`
+#. becomes confusing to end users (it can even terminate an interactive shell).
+#.
+#. For additional safety, then, the code is wrapped in a function which means
+#. `return` works as expected in all circumstances and the appropriate code is
+#. propagated correctly.
+#.
+#. Note that an alternative approach would be to use a subshell, but that is
+#. less performant.
+#.
+#_______________________________________________________________________________
+fn_bs_main() {
+  {
+    fn_bs_libpath_mktemp 'S' ${1+"$@"}
+  } || {
+    BS_mktmp_ec=$?
+
+    # Note: don't use `: "${<param>:=<word>}"` here as it
+    # requires quoting both the whole parameter expansion
+    # in addition to `<word>` - this double quoting can
+    # cause issues for some shells.
+    case ${BS_LIBPATH_LAST_ERROR:+1} in
+    1) ;; *) BS_LIBPATH_LAST_ERROR='ERROR: no further details available' ;;
+    esac
+
+    # Output the error with a custom prefix and additional
+    # info where applicable.
+    {
+      printf "mktmp: %s\n" "${BS_LIBPATH_LAST_ERROR:?}"
+
+      case ${BS_mktmp_ec:?} in
+      "${c_BS_LIBPATH__EX_USAGE:?}")
+        echo "Try 'mktmp --help' for more information."
+      ;;
+      esac
+    } >&2
+
+    return ${BS_mktmp_ec:?}
+  }
+}
+
+fn_bs_main ${1+"$@"}
 
 ############################ DOCUMENTATION CONTINUED ###########################
 #. <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #.
 #. ## VERSIONS
-#.
-#. v1.1.0       - \[FIX] Changed shebang to `#!/usr/bin/env sh` from
-#.                the less useful `#!/usr/bin/sh`
 #.
 #. v1.0.0       - First Release
 #.

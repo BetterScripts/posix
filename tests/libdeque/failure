@@ -1,0 +1,707 @@
+#!/usr/bin/env false
+# SPDX-License-Identifier: MPL-2.0
+#################################### LICENSE ###################################
+#******************************************************************************#
+#*                                                                            *#
+#* BetterScripts 'libdeque/failure': Tests for 'libdeque' failure conditions. *#
+#*                                                                            *#
+#* Copyright (c) 2026 BetterScripts ( better.scripts@proton.me,               *#
+#*                                    https://github.com/BetterScripts )      *#
+#*                                                                            *#
+#* This file is part of the BetterScripts `shtoolkit` (aka _the suite_).      *#
+#*                                                                            *#
+#* This Source Code Form is subject to the terms of the Mozilla Public        *#
+#* License, v. 2.0. If a copy of the MPL was not distributed with this        *#
+#* file, You can obtain one at https://mozilla.org/MPL/2.0/.                  *#
+#*                                                                            *#
+#* -------------------------------------------------------------------------- *#
+#*                                                                            *#
+#* ADDENDUM:                                                                  *#
+#*                                                                            *#
+#* In addition to the Mozilla Public License a copy of LICENSE.MD should have *#
+#* been provided alongside this file; LICENSE.MD clarifies how the Mozilla    *#
+#* Public License v2.0 applies to this file and MAY confer additional rights. *#
+#*                                                                            *#
+#* Should there be any apparent ambiguity (implied or otherwise) the terms    *#
+#* and conditions from the Mozilla Public License v2.0 shall apply.           *#
+#*                                                                            *#
+#* If a copy of LICENSE.MD was not provided it can be obtained from           *#
+#* https://github.com/BetterScripts/shtoolkit/LICENSE.MD.                     *#
+#*                                                                            *#
+#* NOTE:                                                                      *#
+#*                                                                            *#
+#* The Mozilla Public License v2.0 is compatible with the GNU General Public  *#
+#* License v2.0.                                                              *#
+#*                                                                            *#
+#******************************************************************************#
+################################################################################
+
+############################### LIBDEQUE/FAILURE ###############################
+#
+# Documentation is written inline formatted as [`Markdown`][markdown], this is
+# in addition to `shtoolkit` general documentation which includes details
+# common to multiple libraries that may not be noted here.
+#
+# The included `Makefile` can be used to generate standalone documentation in
+# various formats with various verbosity settings. The `Makefile` can also be
+# used to install scripts and documentation in appropriate locations.
+#
+# As far as possible, terminology and conventions follow those of the
+# [_POSIX.1-2008_ Standard][posix_2008].
+#
+#===============================================================================
+## cSpell:Ignore libdeque testrunner testwrapper LDTF
+################################ DOCUMENTATION #################################
+#
+#% % libdeque-failure(7) BetterScripts | Tests for 'libdeque' failure conditions.
+#% % BetterScripts (better.scripts@proton.me)
+#
+#: <!-- #################################################################### -->
+#: <!-- ########## THIS FILE WAS GENERATED FROM 'libdeque/failure' ######### -->
+#: <!-- #################################################################### -->
+#: <!-- ########################### DO NOT EDIT! ########################### -->
+#: <!-- #################################################################### -->
+#:
+#: # LIBDEQUE/FAILURE
+#:
+#: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+#:
+#: ## DESCRIPTION
+#:
+#: > `libdeque` Test Failure (LDTF)
+#:
+#: Tests for `libdeque` checking failure conditions.
+#:
+################################################################################
+
+############################## SHELLCHECK: GLOBAL ##############################
+# shellcheck shell=sh                                                          #
+#                                                                              #
+# Enable some optional checks:                                                 #
+#                                                                              #
+# shellcheck enable=avoid-nullary-conditions                                   #
+# shellcheck enable=check-extra-masked-returns                                 #
+# shellcheck enable=deprecate-which                                            #
+# shellcheck enable=require-variable-braces                                    #
+#                                                                              #
+################################################################################
+
+#===============================================================================
+#===============================================================================
+#  TESTS
+#===============================================================================
+#===============================================================================
+
+#_______________________________________________________________________________
+#: ---------------------------------------------------------
+#:
+#: ### `fn_bs_test_deque_push_usage`
+#:
+#: Tests invalid usage of `deque_push_back`/`deque_push_front`/`queue_push`/
+#: `stack_push`.
+#:
+#: _TESTED COMMANDS_
+#: <!-- -------- -->
+#:
+#: - `deque_push_back`
+#: - `deque_push_front`
+#: - `queue_push`
+#: - `stack_push`
+#:
+#: _SYNOPSIS_
+#: <!-- - -->
+#:
+#:      fn_bs_test_deque_push_usage
+#:
+#: _ARGUMENTS_
+#: <!-- -- -->
+#:
+#: None.
+#:
+#_______________________________________________________________________________
+fn_bs_test_deque_push_usage() { ## cSpell:Ignore BS_LDTF_
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (missing `DEQUE`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure         \
+      ${LINENO:+"--line=${LINENO}"} \
+      --output=TestOutput           \
+      deque_push_back              || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*deque_push_back.*expected a deque variable.*values to add.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure         \
+      ${LINENO:+"--line=${LINENO}"} \
+      --output=TestOutput           \
+      deque_push_front             \
+        'Bad::Name'                \
+        1                         || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*deque_push_front.*invalid variable name.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name (`queue_push`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure         \
+      ${LINENO:+"--line=${LINENO}"} \
+      --output=TestOutput           \
+      queue_push                    \
+        '1BadName'                  \
+        1                          || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*queue_push.*invalid variable name.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (missing `STACK`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure         \
+      ${LINENO:+"--line=${LINENO}"} \
+      --output=TestOutput           \
+      stack_push                   || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*stack_push.*expected a stack variable.*values to add.*' || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#: ---------------------------------------------------------
+#:
+#: ### `fn_bs_test_deque_pop_usage`
+#:
+#: Tests invalid usage of `deque_pop_back`/`deque_pop_front`/`queue_pop`/
+#: `stack_pop`.
+#:
+#: _TESTED COMMANDS_
+#: <!-- -------- -->
+#:
+#: - `deque_pop_back`
+#: - `deque_pop_front`
+#: - `queue_pop`
+#: - `stack_pop`
+#:
+#: _SYNOPSIS_
+#: <!-- - -->
+#:
+#:      fn_bs_test_deque_pop_usage
+#:
+#: _ARGUMENTS_
+#: <!-- -- -->
+#:
+#: None.
+#:
+#_______________________________________________________________________________
+fn_bs_test_deque_pop_usage() { ## cSpell:Ignore BS_LDTF_
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (missing `DEQUE`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure         \
+      ${LINENO:+"--line=${LINENO}"} \
+      --output=TestOutput           \
+      deque_pop_back                || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*deque_pop_back.*expected a deque variable.*output variable.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (too many arguments)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure         \
+      ${LINENO:+"--line=${LINENO}"} \
+      --output=TestOutput           \
+      deque_pop_front               \
+        'BS_LDTF_Deque'             \
+        'BS_LDTF_Value'             \
+        'BS_LDTF_Extra'            || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*deque_pop_front.*expected a deque variable.*output variable.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name (`DEQUE`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure         \
+      ${LINENO:+"--line=${LINENO}"} \
+      --output=TestOutput           \
+      queue_pop                     \
+        'Bad::Name'                || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*queue_pop.*invalid variable name.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name (`OUTPUT`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure         \
+      ${LINENO:+"--line=${LINENO}"} \
+      --output=TestOutput           \
+      stack_pop                     \
+        'BS_LDTF_Stack'             \
+        '1BadName'                 || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*stack_pop.*invalid variable name.*' || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#: ---------------------------------------------------------
+#:
+#: ### `fn_bs_test_deque_peek_usage`
+#:
+#: Tests invalid usage of `deque_peek_back`/`deque_peek_front`/`queue_peek`/
+#: `stack_peek`.
+#:
+#: _TESTED COMMANDS_
+#: <!-- -------- -->
+#:
+#: - `deque_peek_back`
+#: - `deque_peek_front`
+#: - `queue_peek`
+#: - `stack_peek`
+#:
+#: _SYNOPSIS_
+#: <!-- - -->
+#:
+#:      fn_bs_test_deque_peek_usage
+#:
+#: _ARGUMENTS_
+#: <!-- -- -->
+#:
+#: None.
+#:
+#_______________________________________________________________________________
+fn_bs_test_deque_peek_usage() { ## cSpell:Ignore BS_LDTF_
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (too many arguments)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure         \
+      ${LINENO:+"--line=${LINENO}"} \
+      --output=TestOutput           \
+      deque_peek_back               \
+        'BS_LDTF_Deque'             \
+        'BS_LDTF_Value'             \
+        'BS_LDTF_Extra'            || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*deque_peek_back.*expected a deque variable.*output variable.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name (`DEQUE`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure         \
+      ${LINENO:+"--line=${LINENO}"} \
+      --output=TestOutput           \
+      deque_peek_front              \
+        '1BadName'                 || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*deque_peek_front.*invalid variable name.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name (`OUTPUT`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure         \
+      ${LINENO:+"--line=${LINENO}"} \
+      --output=TestOutput           \
+      queue_peek                    \
+        'BS_LDTF_Queue'             \
+        'Bad::Name'                || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*queue_peek.*invalid variable name.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (missing `STACK`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure         \
+      ${LINENO:+"--line=${LINENO}"} \
+      --output=TestOutput           \
+      stack_peek                   || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*stack_peek.*expected a stack variable.*output variable.*' || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#: ---------------------------------------------------------
+#:
+#: ### `fn_bs_test_deque_size_usage`
+#:
+#: Tests invalid usage of `deque_size`/`queue_size`/`stack_size`.
+#:
+#: _TESTED COMMANDS_
+#: <!-- -------- -->
+#:
+#: - `deque_size`
+#: - `queue_size`
+#: - `stack_size`
+#:
+#: _SYNOPSIS_
+#: <!-- - -->
+#:
+#:      fn_bs_test_deque_size_usage
+#:
+#: _ARGUMENTS_
+#: <!-- -- -->
+#:
+#: None.
+#:
+#_______________________________________________________________________________
+fn_bs_test_deque_size_usage() { ## cSpell:Ignore BS_LDTF_
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (missing `DEQUE`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure         \
+      ${LINENO:+"--line=${LINENO}"} \
+      --output=TestOutput           \
+      deque_size                   || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*deque_size.*expected a deque variable.*output variable.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name (`DEQUE`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure         \
+      ${LINENO:+"--line=${LINENO}"} \
+      --output=TestOutput           \
+      queue_size                    \
+        'Bad::Name'                || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*queue_size.*invalid variable name.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name (`OUTPUT`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure         \
+      ${LINENO:+"--line=${LINENO}"} \
+      --output=TestOutput           \
+      stack_size                    \
+        'BS_LDTF_Stack'             \
+        '1BadName'                 || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*stack_size.*invalid variable name.*' || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#: ---------------------------------------------------------
+#:
+#: ### `fn_bs_test_is_deque_like_usage`
+#:
+#: Tests invalid usage of `deque_is_deque_like`/`queue_is_queue_like`/
+#: `stack_is_stack_like`.
+#:
+#: _TESTED COMMANDS_
+#: <!-- -------- -->
+#:
+#: - `deque_is_deque_like`
+#: - `queue_is_queue_like`
+#: - `stack_is_stack_like`
+#:
+#: _SYNOPSIS_
+#: <!-- - -->
+#:
+#:      fn_bs_test_is_deque_like_usage
+#:
+#: _ARGUMENTS_
+#: <!-- -- -->
+#:
+#: None.
+#:
+#_______________________________________________________________________________
+fn_bs_test_is_deque_like_usage() { ## cSpell:Ignore BS_LDTF_
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (missing `DEQUE`)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure         \
+      ${LINENO:+"--line=${LINENO}"} \
+      --output=TestOutput           \
+      deque_is_deque_like          || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*deque_is_deque_like.*expected a deque variable.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Argument Count (too many arguments)
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure         \
+      ${LINENO:+"--line=${LINENO}"} \
+      --output=TestOutput           \
+      queue_is_queue_like            \
+        'BS_LDTF_Queue'              \
+        'BS_LDTF_Extra'             || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*queue_is_queue_like.*expected a queue variable.*' || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Invalid Variable Name
+  {
+    TestOutput=; unset 'TestOutput'
+    test_run_expect_failure         \
+      ${LINENO:+"--line=${LINENO}"} \
+      --output=TestOutput           \
+      stack_is_stack_like           \
+        'Bad::Name'                || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput-}" -match '.*stack_is_stack_like.*invalid variable name.*' || return $?
+  }
+}
+
+#===============================================================================
+#===============================================================================
+#  TEST MAIN
+#===============================================================================
+#===============================================================================
+
+#_______________________________________________________________________________
+#  fn_bs_ldtf_run_units
+#  ----------------
+#
+#  Run all individual tests
+#_______________________________________________________________________________
+fn_bs_ldtf_run_units() {
+  #  Ensure always at least one argument so no issues with "$@"
+  case $# in 0) set 'BS_DUMMY_PARAM' '--' && shift ;; esac
+
+  #-------------------------------------
+  #  deque_push_back/deque_push_front/queue_push/stack_push
+  test_run_unit                        \
+    -u 'libdeque: push (usage errors)' \
+    'fn_bs_test_deque_push_usage'      \
+      ${1+"$@"}
+
+  #-------------------------------------
+  #  deque_pop_back/deque_pop_front/queue_pop/stack_pop
+  test_run_unit                       \
+    -u 'libdeque: pop (usage errors)' \
+    'fn_bs_test_deque_pop_usage'      \
+      ${1+"$@"}
+
+  #-------------------------------------
+  #  deque_peek_back/deque_peek_front/queue_peek/stack_peek
+  test_run_unit                        \
+    -u 'libdeque: peek (usage errors)' \
+    'fn_bs_test_deque_peek_usage'      \
+      ${1+"$@"}
+
+  #-------------------------------------
+  #  deque_size/queue_size/stack_size
+  test_run_unit                        \
+    -u 'libdeque: size (usage errors)' \
+    'fn_bs_test_deque_size_usage'      \
+      ${1+"$@"}
+
+  #-------------------------------------
+  #  deque_is_deque_like/queue_is_queue_like/stack_is_stack_like
+  test_run_unit                             \
+    -u 'libdeque: is_*_like (usage errors)' \
+    'fn_bs_test_is_deque_like_usage'        \
+      ${1+"$@"}
+}
+
+################################################################################
+################################################################################
+#  TESTWRAPPER Values & Commands
+################################################################################
+################################################################################
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  FRIENDLY NAME
+BS_TEST_NAME='libdeque/failure'
+export BS_TEST_NAME
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  NUMBER OF AVAILABLE CONFIGURATIONS
+BS_TEST_CONFIG_COUNT=2
+export BS_TEST_CONFIG_COUNT
+
+#_______________________________________________________________________________
+#  test_set_config
+#  ---------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_set_config() { ## cSpell:Ignore BS_TRC_
+  BS_TRC_Config=${1:?'[libdeque::failure::test_run_config]: Error: expected a configuration index'}
+
+  #---------------------------------------------------------
+  case ${BS_LIBDEQUE_CONFIG_ALLOW_UNSAFE_DATA_FORMAT:+1} in
+  1) unset BS_LIBDEQUE_CONFIG_ALLOW_UNSAFE_DATA_FORMAT ;;
+  esac
+  #---------------------------------------------------------
+
+  #---------------------------------------------------------
+  #  Set Configuration Accordingly
+  case ${BS_TRC_Config} in
+    #...................................
+    #  CONFIG: DEFAULT
+    1)  test_print_config_info 'Config: DEFAULT' ;;
+
+    #...................................
+    #  CONFIG: ONE-BASED INDEXES
+    2)  BS_LIBDEQUE_CONFIG_ALLOW_UNSAFE_DATA_FORMAT=1
+        export BS_LIBDEQUE_CONFIG_ALLOW_UNSAFE_DATA_FORMAT
+
+        test_print_config_info 'Config: ALLOW_UNSAFE_DATA_FORMAT' ;;
+
+    #...................................
+    #  CONFIG: UNKNOWN
+    *)  return 1 ;;
+  esac
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  NUMBER OF AVAILABLE CONFIGURATIONS
+BS_TEST_PLATFORM_CONFIG_COUNT=2
+export BS_TEST_PLATFORM_CONFIG_COUNT
+
+#_______________________________________________________________________________
+#  test_set_platform_config
+#  ---------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_set_platform_config() { ## cSpell:Ignore BS_TRC_
+  BS_TRC_PlatformConfig=${1:?'[libdeque::failure::test_run_config]: Error: expected a configuration index'}
+
+  #---------------------------------------------------------
+  #  Set Configuration Accordingly
+  case ${BS_TRC_PlatformConfig} in
+    #...................................
+    #
+    0) ;;
+
+    #...................................
+    #  CONFIG: ONLY ALLOW `$1`-`$9`
+    1)
+      : "${BS_LIBDEQUE_CONFIG_NO_GREP_F:=1}"
+      export BS_LIBDEQUE_CONFIG_NO_GREP_F
+
+      test_print_config_info 'Platform Config: CONFIG_NO_GREP_F (fgrep)' ;;
+
+    #...................................
+    #  CONFIG: EXPLICIT `grep -F`
+    2)
+      : "${BS_LIBDEQUE_CONFIG_NO_GREP_F:=0}"
+      export BS_LIBDEQUE_CONFIG_NO_GREP_F
+
+      test_print_config_info 'Platform Config: CONFIG_NO_GREP_F (grep -F)' ;;
+
+    #...................................
+    #  CONFIG: UNKNOWN
+    *)  return 1 ;;
+  esac
+}
+
+#_______________________________________________________________________________
+#  test_check_config
+#  ---------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_check_config() { ## cSpell:Ignore BS_TCC_
+  #---------------------------------------------------------
+  #  Get Library File
+  BS_TCC_Library=${1:?'[libdeque::failure::test_check_config]: Error: expected a library to source'}
+  shift
+
+  return
+}
+
+#_______________________________________________________________________________
+#  test_run_all
+#  ------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_run_all() { ## cSpell:Ignore BS_TRC_
+  #---------------------------------------------------------
+  #  Get Library File
+  BS_TRC_Library=${1:?'[libdeque::failure::test_run_all]: Error: expected a library to source'}
+  shift
+
+  #---------------------------------------------------------
+  test_print_config_info 'Type: INVALID USAGE'
+  #---------------------------------------------------------
+
+  #---------------------------------------------------------
+  # Source the tool
+  # shellcheck source=SCRIPTDIR/../../libdeque.sh
+  . "${BS_TRC_Library:?}" || return $?
+  #---------------------------------------------------------
+
+  #---------------------------------------------------------
+  #  Run the tests
+  fn_bs_ldtf_run_units ${1+"$@"}
+  #---------------------------------------------------------
+}
+
+############################ DOCUMENTATION CONTINUED ###########################
+#. <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+#.
+#. ## VERSIONS
+#.
+#. v1.0.0       - First Release
+#.
+################################################################################
+
+################################################################################
+################################################################################
+# END
+################################################################################
+################################################################################

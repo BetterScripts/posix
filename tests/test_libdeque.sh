@@ -5,10 +5,10 @@
 #*                                                                            *#
 #* BetterScripts 'libdeque' Test Runner: Run all 'libdeque' tests.            *#
 #*                                                                            *#
-#* Copyright (c) 2022 BetterScripts ( better.scripts@proton.me,               *#
-#*                                    https://github.com/BetterScripts )      *#
+#* Copyright (c) 2022-2026 BetterScripts ( better.scripts@proton.me,          *#
+#*                         https://github.com/BetterScripts )                 *#
 #*                                                                            *#
-#* This file is part of the BetterScripts POSIX Suite.                        *#
+#* This file is part of the BetterScripts `shtoolkit` (aka _the suite_).      *#
 #*                                                                            *#
 #* This Source Code Form is subject to the terms of the Mozilla Public        *#
 #* License, v. 2.0. If a copy of the MPL was not distributed with this        *#
@@ -19,14 +19,14 @@
 #* ADDENDUM:                                                                  *#
 #*                                                                            *#
 #* In addition to the Mozilla Public License a copy of LICENSE.MD should have *#
-#* been be provided alongside this file; LICENSE.MD clarifies how the Mozilla *#
+#* been provided alongside this file; LICENSE.MD clarifies how the Mozilla    *#
 #* Public License v2.0 applies to this file and MAY confer additional rights. *#
 #*                                                                            *#
 #* Should there be any apparent ambiguity (implied or otherwise) the terms    *#
 #* and conditions from the Mozilla Public License v2.0 shall apply.           *#
 #*                                                                            *#
 #* If a copy of LICENSE.MD was not provided it can be obtained from           *#
-#* https://github.com/BetterScripts/posix/LICENSE.MD.                         *#
+#* https://github.com/BetterScripts/shtoolkit/LICENSE.MD.                     *#
 #*                                                                            *#
 #* NOTE:                                                                      *#
 #*                                                                            *#
@@ -46,7 +46,7 @@
 #===============================================================================
 #===============================================================================
 case ${BETTER_SCRIPTS_PATH:+1} in
-1)  PATH="${BETTER_SCRIPTS_PATH}:${PATH:+:${PATH#:}}"
+1)  PATH="${BETTER_SCRIPTS_PATH%:}${PATH:+:${PATH#:}}"
     export PATH ;;
 esac
 
@@ -96,6 +96,19 @@ fi
 #===============================================================================
 exec "${BS_TEST_RUNNER__Script}" --tool 'libdeque.sh' ${1+"$@"}
 
+############################ DOCUMENTATION CONTINUED ###########################
+#. <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+#.
+#. ## VERSIONS
+#.
+#. v1.1.0       - \[NEW] Added version information.
+#.
+#. v1.0.0       - First Release
+#.
+################################################################################
+
+################################################################################
 ################################################################################
 # END
+################################################################################
 ################################################################################

@@ -1,31 +1,25 @@
 <!-- #################################################################### -->
-<!-- ############### THIS FILE WAS GENERATED FROM 'getarg' ############## -->
+<!-- ############### THIS FILE WAS GENERATED FROM 'mktmp' ############### -->
 <!-- #################################################################### -->
 <!-- ########################### DO NOT EDIT! ########################### -->
 <!-- #################################################################### -->
 
-# GETARGS
+# MKTMP
 
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
 ## SYNOPSIS
 
-    MyArgs=$(getarg <SPECIFICATION>... [--] <ARGUMENT>...)
-    ...
-    eval "$MyArgs"
+    mktmp <ARGUMENT>...
 
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
 ## DESCRIPTION
 
-Command argument processing for scripts and script functions.
+The command 'mktmp' is a wrapper for functionality provided by 'libpath.sh',
+offering a portable, POSIX-compliant alternative to 'mktemp(1)'.
 
-Parses all `<ARGUMENT>`s according to the configuration from `<SPECIFICATION>`.
-
-The command 'getarg' is a wrapper script that allows 'libgetargs' to be
-invoked directly.
-
-[Documentation for 'libgetargs' applies](./libgetargs.md) (and is not
+[Documentation for `libpath.sh` applies](./libpath.md) (and is not
 replicated here).
 
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->

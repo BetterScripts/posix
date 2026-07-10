@@ -1,16 +1,17 @@
-<!-- % % betterscripts-testharness(7) BetterScripts | BetterScripts POSIX Suite. -->
+<!-- % % betterscripts-testharness(7) BetterScripts | BetterScripts `shtoolkit` test harness -->
 <!-- % % BetterScripts (better.scripts@proton.me)                            -->
+<!-- % % July 2026                                                           -->
 <!-- ^^^^^^^^^^^^^^^^^^^^^^^^^^ `pandoc` metadata ^^^^^^^^^^^^^^^^^^^^^^^^^^ -->
 <!-- SPDX-License-Identifier: MPL-2.0 -->
 <!-- ############################### LICENSE ############################### -->
 <!--                                                                         -->
 <!-- BetterScripts 'tests/README.MD': Documentation about the BetterScripts  -->
-<!--                                  POSIX Suite test harness.              -->
+<!--                                  `shtoolkit` test harness.              -->
 <!--                                                                         -->
-<!-- Copyright (c) 2022 BetterScripts ( better.scripts@proton.me,            -->
-<!--                                    https://github.com/BetterScripts )   -->
+<!-- Copyright (c) 2022-2026 BetterScripts (better.scripts@proton.me,        -->
+<!--                         https://github.com/BetterScripts )              -->
 <!--                                                                         -->
-<!-- This file is part of the BetterScripts POSIX Suite.                     -->
+<!-- This file is part of the BetterScripts `shtoolkit` (aka _the suite_).   -->
 <!--                                                                         -->
 <!-- This Source Code Form is subject to the terms of the Mozilla Public     -->
 <!-- License, v. 2.0. If a copy of the MPL was not distributed with this     -->
@@ -41,7 +42,7 @@
 <!-- ####################################################################### -->
 # TEST HARNESS
 
-Test harness for the _BetterScripts POSIX Suite_ are written to run under the
+Test harness for the _BetterScripts `shtoolkit`_ are written to run under the
 test-harness available here.
 
 ## DESCRIPTION

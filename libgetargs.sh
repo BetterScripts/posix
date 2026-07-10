@@ -1,15 +1,16 @@
 #!/usr/bin/env false
 # SPDX-License-Identifier: MPL-2.0
+## cSpell:Ignore libgetargs getargs getarg shtoolkit
 #################################### LICENSE ###################################
 #******************************************************************************#
 #*                                                                            *#
 #* BetterScripts 'libgetargs': Advanced argument processing for POSIX.1       *#
 #*                             compliant shells.                              *#
 #*                                                                            *#
-#* Copyright (c) 2022 BetterScripts ( better.scripts@proton.me,               *#
-#*                                    https://github.com/BetterScripts )      *#
+#* Copyright (c) 2022-2026 BetterScripts ( better.scripts@proton.me,          *#
+#*                         https://github.com/BetterScripts )                 *#
 #*                                                                            *#
-#* This file is part of the BetterScripts POSIX Suite.                        *#
+#* This file is part of the BetterScripts `shtoolkit` (aka _the suite_).      *#
 #*                                                                            *#
 #* This Source Code Form is subject to the terms of the Mozilla Public        *#
 #* License, v. 2.0. If a copy of the MPL was not distributed with this        *#
@@ -20,14 +21,14 @@
 #* ADDENDUM:                                                                  *#
 #*                                                                            *#
 #* In addition to the Mozilla Public License a copy of LICENSE.MD should have *#
-#* been be provided alongside this file; LICENSE.MD clarifies how the Mozilla *#
+#* been provided alongside this file; LICENSE.MD clarifies how the Mozilla    *#
 #* Public License v2.0 applies to this file and MAY confer additional rights. *#
 #*                                                                            *#
 #* Should there be any apparent ambiguity (implied or otherwise) the terms    *#
 #* and conditions from the Mozilla Public License v2.0 shall apply.           *#
 #*                                                                            *#
 #* If a copy of LICENSE.MD was not provided it can be obtained from           *#
-#* https://github.com/BetterScripts/posix/LICENSE.MD.                         *#
+#* https://github.com/BetterScripts/shtoolkit/LICENSE.MD.                     *#
 #*                                                                            *#
 #* NOTE:                                                                      *#
 #*                                                                            *#
@@ -40,8 +41,8 @@
 ################################# LIBGETARGS ###################################
 #
 # Documentation is written inline formatted as [`Markdown`][markdown], this is
-# in addition to the suite wide documentation which includes details common to
-# multiple suite libraries that may not be detailed here.
+# in addition to `shtoolkit` general documentation which includes details
+# common to multiple libraries that may not be noted here.
 #
 # The included `Makefile` can be used to generate standalone documentation in
 # various formats with various verbosity settings. The `Makefile` can also be
@@ -50,12 +51,13 @@
 # As far as possible, terminology and conventions follow those of the
 # [_POSIX.1-2008_ Standard][posix_2008].
 #
-#===============================================================================
-## cSpell:Ignore libgetargs getargs getarg
+################################################################################
+
 ################################ DOCUMENTATION #################################
 #
-#% % libgetargs(7) BetterScripts | Argument processing for POSIX.1 shell scripts.
+#% % libgetargs(7) BetterScripts libgetargs v1.3.1 | Argument processing for POSIX.1 shell scripts.
 #% % BetterScripts (better.scripts@proton.me)
+#% % July 2026
 #
 #: <!-- #################################################################### -->
 #: <!-- ########### THIS FILE WAS GENERATED FROM 'libgetargs.sh' ########### -->
@@ -63,7 +65,7 @@
 #: <!-- ########################### DO NOT EDIT! ########################### -->
 #: <!-- #################################################################### -->
 #:
-#: # LIBGETARGS
+#: # `libgetargs.sh`
 #:
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
@@ -249,11 +251,12 @@
 #:
 #: : Enable/\[Disable] matching an unrecognized OPTION as an OPERAND.
 #: : Overrides [`BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED`](#bs_libgetargs_config_allow_unmatched).
-#: : If `VARIABLE` **is not** specified: implies `--interleaved`; **all** unrecognized ARGUMENTs
-#:   will be treated as OPERANDs. Using an OPERAND type other than `[+]` is not likely to be useful.
-#: : If `VARIABLE` **is** specified: implies `--strict`; unrecognized ARGUMENTs before `--` are
-#:   stored in `VARIABLE`, while ARGUMENTs following `--` are treated as normal OPERANDs. This mode
-#:   can _not_ be set using
+#: : If `VARIABLE` **is not** specified: implies `--interleaved`; **all**
+#:   unrecognized ARGUMENTs will be treated as OPERANDs. Using an OPERAND type
+#:   other than `[+]` is not likely to be useful.
+#: : If `VARIABLE` **is** specified: implies `--strict`; unrecognized ARGUMENTs
+#:   before `--` are stored in `VARIABLE`, while ARGUMENTs following `--` are
+#:   treated as normal OPERANDs. This mode can _not_ be set using
 #:   [`BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED`](#bs_libgetargs_config_allow_unmatched).
 #:
 #: _NOTES_
@@ -549,10 +552,10 @@
 #:
 #: Formatting for `<HELP-TEXT>` will _not_ be retained:
 #:
-#:  - whitespace _after_ the `#` (`<number-sign>`) will be removed
-#:  - after a `\n` (`<newline>`) any whitespace _before_ the `#`
-#:    (`<number-sign>`) will be removed
-#:  - additional whitespace may be removed to facilitate text wrapping
+#: - whitespace _after_ the `#` (`<number-sign>`) will be removed
+#: - after a `\n` (`<newline>`) any whitespace _before_ the `#`
+#:   (`<number-sign>`) will be removed
+#: - additional whitespace may be removed to facilitate text wrapping
 #:
 #: _CONFIGURATION_
 #: <!-- ------- -->
@@ -624,11 +627,10 @@
 #:   signal to the caller that auto-help was triggered and, in general, should
 #:   _not_ be propagated any further (i.e. normally `--help` is a successful
 #:   operation).
-#: - An unexpected exit status from an external command will be propagated to
-#:   the caller. (This is unlikely to occur, and would normally indicate a
-#:   command that is not _POSIX.1_ compliant.)
-#: - Otherwise the exit status is one of values taken from
-#:   [FreeBSD `SYSEXITS(3)`][sysexits]:
+#: - An exit status that is _NOT_ `0` (`<zero>`) from an external command will
+#:   be propagated to the caller where relevant (and possible).
+#: - Exit status' not covered by any of the above use values as described in
+#:   [FreeBSD `SYSEXITS(3)`][sysexits] - including:
 #:   - `EX_USAGE` for invalid SPECIFICATION usage
 #:     (e.g. a missing OPTION-ARGUMENT)
 #:   - `EX_CONFIG` for an invalid SPECIFICATION configuration
@@ -636,6 +638,7 @@
 #:   - `EX_DATAERR` for invalid user ARGUMENTs (e.g. an OPTION that is meant to
 #:     be should be set once - i.e. of type `[:]` - is set twice), this is the
 #:     only error exit status normally generated for user ARGUMENT errors.
+#: - Exit status is configuration agnostic.
 #:
 ################################################################################
 
@@ -665,15 +668,28 @@
 ################################################################################
 
 #===============================================================================
-# SOURCE GUARD
-case ${BS_LIBGETARGS_SOURCED:+1} in 1) return ;; esac
 #===============================================================================
+# SOURCE GUARD
+#===============================================================================
+#===============================================================================
+case ${BS_LIBGETARGS_SOURCED:+1} in 1) return ;; esac
+
+#===============================================================================
+#===============================================================================
+# DEFAULTS
+#===============================================================================
+#===============================================================================
+: "${BS_LIBGETARGS_DEBUG:=${BS_DEBUG:-${DEBUG:-0}}}"
+: "${BS_LIBGETARGS_CONFIG_DEBUG:=${BS_CONFIG_DEBUG:-${BS_LIBGETARGS_DEBUG:-0}}}"
+: "${BS_LIBGETARGS_DEBUG_FD:=${BS_DEBUG_FD:-2}}"
 
 #===============================================================================
 #===============================================================================
 #. <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #.
-#. ## INTERNAL CONSTANT HELPER
+#. ## INTERNAL HELPERS
+#.
+#. Low level commands required to implement other parts of the library.
 #.
 #===============================================================================
 #===============================================================================
@@ -705,7 +721,153 @@ case ${BS_LIBGETARGS_SOURCED:+1} in 1) return ;; esac
 #.
 #_______________________________________________________________________________
 fn_bs_lga_readonly() { ## cSpell:Ignore BS_LA_readonly_
-  case ${c_BS_LGA_CFG_USE__zsh_setopt} in
+  case ${c_BS_LGA_CFG__use_zsh_setopt} in
+  1) setopt 'LOCAL_OPTIONS' 'POSIX_BUILTINS' ;;
+  esac
+  readonly "$@" || true
+}
+
+#_______________________________________________________________________________
+#. ---------------------------------------------------------
+#.
+#. ### `fn_bs_lga_dbg_printf_to_fd`
+#.
+#. Debug output command.
+#.
+#. _SYNOPSIS_
+#. <!-- - -->
+#.
+#.     fn_bs_lga_dbg_printf_to_fd <ARGS>...
+#.
+#. _ARGUMENTS_
+#. <!-- -- -->
+#.
+#. `ARGS` \[in]
+#.
+#. : Arguments to `printf`.
+#.
+#. _NOTES_
+#. <!-- -->
+#.
+#. - Output is written to the file descriptor stored in
+#.   [`BS_LIBGETARGS_DEBUG_FD`](#bs_libgetargs_debug_fd).
+#.
+#_______________________________________________________________________________
+fn_bs_lga_dbg_printf_to_fd() { ## cSpell:Ignore BS_LA_DPTFD_
+  # SC2059: Don't use variables in the printf format string.
+  #         Use printf "..%s.." "$foo".
+  # EXCEPT: This is a printf wrapper.
+  # SC2086: Double quote to prevent globbing and word
+  #+        splitting.
+  # EXCEPT: Quoting changes the meaning (under POSIX rules
+  #+        the descriptor will be considered a file)
+  # shellcheck disable=SC2059,SC2086
+  case ${BS_LIBGETARGS_DEBUG_FD:-2} in
+  [123456789]) printf "$@" >&  ${BS_LIBGETARGS_DEBUG_FD}      ;;
+         '&'*) printf "$@" >&  ${BS_LIBGETARGS_DEBUG_FD#'&'}  ;;
+            *) printf "$@" >> "${BS_LIBGETARGS_DEBUG_FD#'>'}" ;;
+  esac || true
+}
+
+#_______________________________________________________________________________
+#. ---------------------------------------------------------
+#.
+#. ### `fn_bs_lga_dbg_msg`
+#.
+#. Debug output command.
+#.
+#. _SYNOPSIS_
+#. <!-- - -->
+#.
+#.     fn_bs_lga_dbg_msg <CALLER> <MESSAGE>...
+#.
+#. _ARGUMENTS_
+#. <!-- -- -->
+#.
+#. `CALLER` \[in]
+#.
+#. : Name of the calling command.
+#. : Added to the output message.
+#.
+#. `MESSAGE` \[in]
+#.
+#. : Debug message.
+#. : Multiple message values may be specified and
+#.   will be joined into a single string delimited
+#.   by `<space>` characters.
+#.
+#. _NOTES_
+#. <!-- -->
+#.
+#. - A no-op unless debugging is enabled.
+#. - Output is written to the file descriptor stored in
+#.   [`BS_LIBGETARGS_DEBUG_FD`](#bs_libgetargs_debug_fd).
+#.
+#. _IMPLEMENTATION NOTES_
+#. <!-- ------------- -->
+#.
+#. - Avoids using `$*` since `IFS` may not be set appropriately.
+#. - Written for simplicity and not performance.
+#.
+#_______________________________________________________________________________
+fn_bs_lga_dbg_msg() { ## cSpell:Ignore BS_LA_DM_
+  case ${BS_LIBGETARGS_DEBUG:-0} in 0) return ;; esac
+
+  BS_LA_DM_Caller=$1
+  shift
+
+  fn_bs_lga_dbg_printf_to_fd                       \
+    "[libgetargs::${BS_LA_DM_Caller}]: DEBUG:%s\n" \
+    "$(printf ' %s' "$@")"
+}
+
+#_______________________________________________________________________________
+#. ---------------------------------------------------------
+#.
+#. ### `fn_bs_lga_config_constant`
+#.
+#. Helper to set configuration variables and report the set value when in
+#. debug mode.
+#.
+#. In non-debug mode, identical to
+#. [`fn_bs_lga_readonly`](#fn_bs_lga_readonly).
+#.
+#. _SYNOPSIS_
+#. <!-- - -->
+#.
+#.     fn_bs_lga_config_constant <VAR>...
+#.
+#. _ARGUMENTS_
+#. <!-- -- -->
+#.
+#. `VAR` \[in]
+#.
+#. : Can be any value accepted by `readonly`.
+#. : Can be specified multiple times.
+#.
+#. _NOTES_
+#. <!-- -->
+#.
+#. - Output is in form `[libgetargs::config]: DEBUG: <NAME>: <VALUE>` where
+#.   `NAME` is the constant name and `VALUE` its value.
+#. - Output is written to the file descriptor stored in
+#.   [`BS_LIBGETARGS_DEBUG_FD`](#bs_libgetargs_debug_fd).
+#.
+#_______________________________________________________________________________
+fn_bs_lga_config_constant() { ## cSpell:Ignore BS_LA_CFGCST_
+  case ${BS_LIBGETARGS_CONFIG_DEBUG:-0} in
+  0)  ;;
+  *)  for BS_LA_CFGCST_Name
+      do
+        eval "BS_LA_CFGCST_Value=\${${BS_LA_CFGCST_Name}-}" || BS_LA_CFGCST_Value=;
+        fn_bs_lga_dbg_printf_to_fd                \
+          "[libgetargs::config]: DEBUG: %s: %s\n" \
+          "${BS_LA_CFGCST_Name#c_BS_LGA_CFG__}"   \
+          "${BS_LA_CFGCST_Value}"                 || true
+      done ;;
+  esac
+
+  case ${c_BS_LGA_CFG__use_zsh_setopt} in
   1) setopt 'LOCAL_OPTIONS' 'POSIX_BUILTINS' ;;
   esac
   readonly "$@" || true
@@ -726,18 +888,18 @@ fn_bs_lga_readonly() { ## cSpell:Ignore BS_LA_readonly_
 #: In additional to these, there are a number of variables that are set by the
 #: library to convey information outside of command invocation.
 #:
-#: If unset, some variables will take an initial value from a _BetterScripts_
-#: _POSIX Suite_ wide variable, these allow the same configuration to be used by
-#: all libraries in the suite.
+#: If unset, some variables will take an initial value from a common `shtoolkit`
+#: variable applicable to all libraries, these allow the same configuration to
+#: be used across libraries more easily.
 #:
 #: After the library has been sourced, external commands must not set library
-#: environment variables that are classified as CONSTANT. Variables may use
+#: environment variables that are classified as _CONSTANT_. Variables may use
 #: the `readonly` command to enforce this.
 #:
 #: **_If not otherwise specified, an `<unset>` variable is equivalent to the_**
 #: **_default value._**
 #:
-#: _For more details see the common suite [documentation](./README.MD#environment)._
+#: _For more details see the `shtoolkit` general [documentation](./README.MD#environment)._
 #:
 #===============================================================================
 #===============================================================================
@@ -757,579 +919,27 @@ fn_bs_lga_readonly() { ## cSpell:Ignore BS_LA_readonly_
 #: #### `BS_LIBGETARGS_CONFIG_NO_Z_SHELL_SETOPT`
 #:
 #: - Suite:    [`BETTER_SCRIPTS_CONFIG_NO_Z_SHELL_SETOPT`](./README.MD#better_scripts_config_no_z_shell_setopt)
-#: - Type:     FLAG
-#: - Class:    CONSTANT
+#: - Type:     _FLAG_
+#: - Class:    _CONSTANT_
 #: - Default:  \<automatic>
 #: - \[Disable]/Enable using `setopt` in _Z Shell_ to ensure
 #:   _POSIX.1_ like behavior.
-#: - _OFF_: Use `setopt` to set the appropriate options.
-#: - _ON_: Don't use `setopt`, even in _Z Shell_.
 #: - Automatically enabled if _Z Shell_ is detected.
 #: - Any use of `setopt` is scoped as tightly as possible
-#:   and should not affect other commands.
-#: - _Z Shell_ has some defaults that cause non-standard
-#:   behavior, however also provides `setopt` which can be
-#:   tightly scoped to set options when required without
-#:   impacting other platforms.
+#:   and SHOULD not affect other commands.
 #. - See [`fn_bs_lga_readonly`](#fn_bs_lga_readonly).
+#. - **MUST BE SET BEFORE FIRST CALL TO `fn_...readonly`**
 #:
 case ${BS_LIBGETARGS_CONFIG_NO_Z_SHELL_SETOPT:-${BETTER_SCRIPTS_CONFIG_NO_Z_SHELL_SETOPT:-A}} in
-A)  case ${ZSH_VERSION:+1} in
-    1) c_BS_LGA_CFG_USE__zsh_setopt=1 ;;
-    *) c_BS_LGA_CFG_USE__zsh_setopt=0 ;;
-    esac ;;
-0) c_BS_LGA_CFG_USE__zsh_setopt=0 ;;
-*) c_BS_LGA_CFG_USE__zsh_setopt=1 ;;
+[AD]) case ${ZSH_VERSION:+1} in
+      1) c_BS_LGA_CFG__use_zsh_setopt=1 ;;
+      *) c_BS_LGA_CFG__use_zsh_setopt=0 ;;
+      esac ;;
+   0) c_BS_LGA_CFG__use_zsh_setopt=0 ;;
+   *) c_BS_LGA_CFG__use_zsh_setopt=1 ;;
 esac
 
-fn_bs_lga_readonly 'c_BS_LGA_CFG_USE__zsh_setopt'
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBGETARGS_CONFIG_NO_EXPR_EXIT_STATUS`
-#:
-#: - Suite:    [`BETTER_SCRIPTS_CONFIG_NO_EXPR_EXIT_STATUS`](./README.MD#better_scripts_config_no_expr_exit_status)
-#: - Type:     FLAG
-#: - Class:    CONSTANT
-#: - Default:  \<automatic>
-#: - \[Disable]/Enable ignoring `expr` exit status to
-#:   indicate a match was made.
-#: - _OFF_: Use `expr` exit status to determine if a match
-#:   was made.
-#: - _ON_: Use a workaround to determine if a match was
-#:   made. (This requires a sub-shell and is therefore far
-#:   slower.)
-#: - Some versions of `expr` do not always properly set the
-#:   exit status, making it impossible to determine if a
-#:   match was actually made.
-#:
-case ${BS_LIBGETARGS_CONFIG_NO_EXPR_EXIT_STATUS:-${BETTER_SCRIPTS_CONFIG_NO_EXPR_EXIT_STATUS:-A}} in
-A)  case $(
-            {
-              i_BS_LGA_expr_match="$(expr 'Test Value' : '\(Test\)')" &&
-                printf '%s Success' "${i_BS_LGA_expr_match-}"
-            } 2>&1
-          ) in
-    'Test Success') c_BS_LGA_CFG_USE__expr_exit_status=1 ;;
-                 *) c_BS_LGA_CFG_USE__expr_exit_status=0 ;;
-    esac ;;
-0)  c_BS_LGA_CFG_USE__expr_exit_status=0 ;;
-*)  c_BS_LGA_CFG_USE__expr_exit_status=1 ;;
-esac
-
-fn_bs_lga_readonly 'c_BS_LGA_CFG_USE__expr_exit_status'
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBGETARGS_CONFIG_NO_EXPR_NESTED_CAPTURES`
-#:
-#: - Suite:    [`BETTER_SCRIPTS_CONFIG_NO_EXPR_NESTED_CAPTURES`](./README.MD#better_scripts_config_no_expr_nested_captures)
-#: - Type:     FLAG
-#: - Class:    CONSTANT
-#: - Default:  \<automatic>
-#: - Disable/\[Enable] using `expr` for any
-#:   ["Basic Regular Expression" (_BRE_)][posix_bre] that
-#:   includes nested captures.
-#: - _OFF_: Use `expr` for a _BRE_ that includes nested
-#:   captures.
-#: - _ON_: Any _BRE_ that uses nested captures will not
-#:   be used with `expr`, but will use a case specific
-#:   work-around.
-#: - Some versions of `expr` do not work well with or do not
-#:   support nested captures.
-#:
-case ${BS_LIBGETARGS_CONFIG_NO_EXPR_NESTED_CAPTURES:-${BETTER_SCRIPTS_CONFIG_NO_EXPR_NESTED_CAPTURES:-A}} in
-A)  case $(
-            {
-              i_BS_LGA_expr_match="$(expr 'Test Value' : '\(Te\(st\)\)')" &&
-                printf '%s Success\n' "${i_BS_LGA_expr_match-}"
-            } 2>&1
-          ) in
-    'Test Success') c_BS_LGA_CFG_USE__expr_nested_captures=1 ;;
-                 *) c_BS_LGA_CFG_USE__expr_nested_captures=0 ;;
-    esac ;;
-0)  c_BS_LGA_CFG_USE__expr_nested_captures=0 ;;
-*)  c_BS_LGA_CFG_USE__expr_nested_captures=1 ;;
-esac
-
-fn_bs_lga_readonly 'c_BS_LGA_CFG_USE__expr_nested_captures'
-
-#===========================================================
-#===========================================================
-#: <!-- ------------------------------------------------ -->
-#:
-#: ### USER PREFERENCE (OVERRIDABLE)
-#:
-#: Configuration that CAN be overridden by OPTIONs.
-#:
-#. _IMPLEMENTATION NOTES_
-#. <!-- ------------- -->
-#.
-#. - User set configuration options that are in the constant
-#.   CLASS are converted to internal options which are made
-#.   read-only. This happens even when the user option could
-#.   be used directly. This allows the user to reuse the
-#.   option if desired, and also avoids any manipulation of
-#.   variables set externally.
-#.
-#===========================================================
-#===========================================================
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBGETARGS_CONFIG_ALLOW_ABBREVIATIONS`
-#:
-#: - Type:     FLAG
-#: - Class:    VARIABLE
-#: - Default:  _ON_
-#: - Override: `--[no-]abbreviations`
-#: - \[Enable]/Disable LONG-OPTION abbreviations.
-#: - _ON_: any LONG-OPTION matches if the name is a
-#:   prefix of an OPTION-CONFIG name (e.g. `--debug` and
-#:   `--deb` will both match `debug`).
-#: - _OFF_: abbreviations are disabled and long options
-#:   must match exactly.
-#: - MAY cause unexpected results if combined with
-#:   [`BS_LIBGETARGS_CONFIG_ALLOW_AMBIGUOUS`](#bs_libgetargs_config_allow_ambiguous).
-#:
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBGETARGS_CONFIG_ALLOW_AMBIGUOUS`
-#:
-#: - Type:     FLAG
-#: - Class:    VARIABLE
-#: - Default:  _OFF_
-#: - Override: `--[no-]ambiguous`
-#: - \[Enable]/Disable detection of ambiguous user OPTIONs.
-#: - _OFF_: any ambiguous OPTION is an error.
-#: - _ON_: all OPTIONs use the first match found - this WILL
-#:   mask some OPTION-CONFIG errors.
-#: - OPTIONs are ambiguous when multiple OPTIONs have the
-#:   same name or, if abbreviations are enabled, when
-#:   an abbreviation matches multiple OPTIONs.
-#: - If abbreviations are also enabled (see
-#:   [`BS_LIBGETARGS_CONFIG_ALLOW_ABBREVIATIONS`](#bs_libgetargs_config_allow_abbreviations))
-#:   there is a high chance of incorrectly matching OPTIONs.
-#: - _Has a measurable impact on performance._
-#:   Prefer **_ON_** for performance.
-#:
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBGETARGS_CONFIG_CHECK_CONFIG`
-#:
-#: - Type:     FLAG
-#: - Class:    VARIABLE
-#: - Default:  _OFF_
-#: - Override: `--[no-]check-config`
-#: - Enable/\[Disable] performing basic checks on
-#:   OPTION-CONFIG and OPERAND-CONFIG before processing.
-#: - _OFF_: don't do any additional checks.
-#: - _ON_: preform extra checks to ensure that OPTION-CONFIG
-#:   and OPERAND-CONFIG match the required specification.
-#: - The currently available checks are relatively basic but
-#:   will catch errors that MAY otherwise be missed, however
-#:   some of these may be benign.
-#: - _MAY have a performance impact._
-#:   Prefer **_OFF_** for performance.
-#:
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBGETARGS_CONFIG_FATAL_ERRORS`
-#:
-#: - Suite:    [`BETTER_SCRIPTS_CONFIG_FATAL_ERRORS`](./README.MD#better_scripts_config_fatal_errors)
-#: - Type:     FLAG
-#: - Class:    VARIABLE
-#: - Default:  _OFF_
-#: - Enable/\[Disable] causing library errors to terminate
-#:   the current (sub-)shell.
-#: - _OFF_: errors stop any further processing, and cause a
-#:   non-zero exit status, but do not cause an exception.
-#: - _ON_: any library error will cause an "unset variable"
-#:   shell exception using the
-#:   [`${parameter:?[word]}`][posix_param_expansion]
-#:   parameter expansion, where `word` is set to an error
-#:   message that _should_ be displayed by the shell (this
-#:   message is NOT suppressed by
-#:   [`BS_LIBGETARGS_CONFIG_QUIET_ERRORS`](#bs_libgetargs_config_quiet_errors)).
-#: - Both the library version of this option and the
-#:   suite version can be modified between command
-#:   invocations and will affect the next command.
-#:
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS`
-#:
-#: - Type:     FLAG
-#: - Class:    VARIABLE
-#: - Default:  _OFF_
-#: - Override: `--[no-]interleaved`, `--[no-]mixed`
-#: - Enable/\[Disable] allowing matching OPTIONs _after_ an
-#:   OPERAND is matched.
-#: - _OFF_: all OPTIONs (and associated OPTION-ARGUMENTs)
-#:   MUST appear before the first OPERAND; i.e., the first
-#:   ARGUMENT that does NOT start with `-` (`<hyphen>`)
-#:   and is NOT an OPTION-ARGUMENT causes ALL remaining
-#:   OPTIONs to be assumed to be OPERANDs _even if they
-#:   start with `-` (`<hyphen>`)_.
-#: - _ON_: an ARGUMENT that does NOT start with `-`
-#:   (`<hyphen>`) and is NOT an OPTION-ARGUMENT is assumed
-#:   to be an OPERAND, but following ARGUMENTs continue to
-#:   be checked for OPTIONs.
-#: - In either mode the special ARGUMENT `--` stops OPTION
-#:   processing and any remaining ARGUMENTs are treated as
-#:   OPERANDs
-#: - Implied by
-#:   [`BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED`](#bs_libgetargs_config_allow_unmatched)
-#: - Mutually exclusive with
-#:   [`BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`](#bs_libgetargs_config_strict_operands)
-#:
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBGETARGS_CONFIG_ALLOW_POSIX_LONG`
-#:
-#: - Type:     FLAG
-#: - Class:    VARIABLE
-#: - Default:  _OFF_
-#: - Override: `--[no-]posix-long`
-#: - Enable/\[Disable] matching LONG-OPTIONs with a single
-#:   preceding `-` (`<hyphen>`) character instead of the
-#:   normally required two.
-#: - _OFF_: LONG-OPTIONs require the prefix `--`
-#: - _ON_: any multi-character OPTION following a single
-#:   `-` (`<hyphen>`) is checked to see if it matches
-#:   a LONG-OPTION before checking if it is a
-#:   COMPOUND-OPTION, meaning matching COMPOUND-OPTIONs is
-#:   slower.
-#: - _Has a measurable impact on performance._
-#:   Prefer **_OFF_** for performance.
-#:
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBGETARGS_CONFIG_QUIET_ERRORS`
-#:
-#: - Suite:    [`BETTER_SCRIPTS_CONFIG_QUIET_ERRORS`](./README.MD#better_scripts_config_quiet_errors)
-#: - Type:     FLAG
-#: - Class:    VARIABLE
-#: - Default:  _OFF_
-#: - \[Enable]/Disable library error message output.
-#: - _OFF_: error messages will be written to `STDERR` as:
-#:   `[<ID>]: ERROR: <MESSAGE>` (where `<ID>` is
-#:   set using the `--id` OPTION).
-#: - _ON_: library error messages will be suppressed.
-#: - The most recent error message is always available in
-#:   [`BS_LIBGETARGS_LAST_ERROR`](#bs_libgetargs_last_error)
-#:   even when error output is suppressed.
-#: - Both the library version of this option and the
-#:   suite version can be modified between command
-#:   invocations and will affect the next command.
-#: - Does NOT affect errors from non-library commands, which
-#:   _may_ still produce output.
-#:
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`
-#:
-#: - Type:     FLAG
-#: - Class:    VARIABLE
-#: - Default:  _OFF_
-#: - Override: `--[no-]strict`, `--[no-]separated`
-#: - Enable/\[Disable] requiring the use of `--` to separate
-#:   OPTIONs from OPERANDs.
-#: - _OFF_: the first ARGUMENT that is not and OPTION or an
-#:   OPTION-ARGUMENT is an OPERAND and causes all further
-#:   ARGUMENTs to be OPERANDs.
-#: - _ON_: an ARGUMENT that is exactly `--` must be present
-#:   after _all_ OPTIONs and before _any_ OPERANDs.
-#: - If this is enabled (_ON_), then optional
-#:   OPTION-ARGUMENTS can be specified using the ARGUMENT
-#:   _following_ the OPTION (in addition to the normal
-#:   formats).
-#: - Can help detect some usage errors.
-#: - Mutually exclusive with
-#:   [`BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS`](#bs_libgetargs_config_interleaved_operands).
-#:
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBGETARGS_CONFIG_ALLOW_UNSAFE_OPTIONS`
-#:
-#: - Type:     FLAG
-#: - Class:    VARIABLE
-#: - Default:  _OFF_
-#: - Override: `--[no-]unsafe`
-#: - \[Enable]/Disable escaping OPTION characters
-#:   to avoid any erroneous results when matching with
-#:   regular expressions. Characters in the supported set
-#:   for OPTION-NAMEs `[[:alnum:]_-]` do not need this
-#:   processing, while characters outside this range
-#:   MAY (e.g. `.` (`<period>`) is problematic).
-#: - _OFF_: OPTION-NAMEs have all characters made safe for
-#:   use in a regular expression.
-#: - _ON_: OPTION-NAMEs are used as is and may match
-#:   incorrectly if they contain specific characters.
-#: - This affects the OPTIONs being processed and NOT those
-#:   in the OPTION-CONFIG.
-#: - MAY have a performance impact.
-#:   Prefer **_ON_** for performance.
-#:
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBGETARGS_CONFIG_AUTO_UNSET`
-#:
-#: - Type:     FLAG
-#: - Class:    VARIABLE
-#: - Default:  _OFF_
-#: - Override: `--[no-]unset`
-#: - Enable/\[Disable] automatic unsetting of all
-#:   VARIABLES named in OPTION-CONFIG and OPERAND-CONFIG.
-#: - _ON_: every variable specified in OPTION-CONFIG and
-#:   OPERAND-CONFIG is automatically unset before ARGUMENTs
-#:   are processed.
-#: - _OFF_: variables need to be set to a known value or it
-#:   will not be possible to correctly determine what
-#:   OPTIONs have been matched.
-#: - Normally desirable to have enabled, but using it MAY
-#:   have performance issues, and it can not be used
-#:   alongside default values for variables (i.e. values set
-#:   before `getargs` is invoked).
-#: - MAY have a performance impact.
-#:   Prefer **_OFF_** for performance.
-#:
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED`
-#:
-#: - Type:     FLAG
-#: - Class:    VARIABLE
-#: - Default:  _OFF_
-#: - Override: `--[no-]unmatched`, `--unmatched=<VARIABLE>`
-#: - Enable/\[Disable] matching an unrecognized OPTION as an
-#:   OPERAND.
-#: - _OFF_: any unrecognized OPTION is an error.
-#: - _ON_: any unrecognized OPTION is treated as an OPERAND.
-#: - Useful for commands where most arguments are not used,
-#:   but instead forwarded to another command, where having
-#:   this enabled significantly reduces code and isolates
-#:   the command from changes in the arguments accepted by
-#:   the target command.
-#: - In either mode the special ARGUMENT `--` stops OPTION
-#:   processing and any remaining ARGUMENTs are treated as
-#:   OPERANDs.
-#: - Although still permitted, there is no practical way to
-#:   support the normal OPERAND processing when this is
-#:   enabled; the only OPERAND-CONFIG that is useful will
-#:   be one containing a single `[+]` type. If other
-#:   OPERANDs are required, these must be manually extracted
-#:   from the resulting array.
-#: - If using a VALIDATOR, any unmatched values will be
-#:   sent to the VALIDATOR as OPERANDs.
-#: - `--unmatched=<VARIABLE>` provides functionality that is
-#:   beyond that available using this variable.
-#: - Implies
-#:   [`BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS`](#bs_libgetargs_config_interleaved_operands).
-#: - Mutually exclusive with
-#:   [`BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`](#bs_libgetargs_config_strict_operands).
-#:
-
-#===========================================================
-#===========================================================
-#: <!-- ------------------------------------------------ -->
-#:
-#: ### USER PREFERENCE
-#:
-#: Configuration that can NOT be overridden by OPTIONs.
-#:
-#===========================================================
-#===========================================================
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBGETARGS_CONFIG_TRUE_VALUE`
-#:
-#: - Type:     TEXT
-#: - Class:    VARIABLE
-#: - Default:  `true`
-#: - Value used as `true` for options with the type
-#:   negatable SWITCH-OPTION (i.e. `[~]`).
-#: - The value given to a negatable SWITCH-OPTION variable
-#:   when the ARGUMENT was specified without an OPTION-TAG.
-#: - Also one of the values accepted as an OPTION-TAG for
-#:   negatable SWITCH-OPTIONs.
-#: - Can be null.
-#: - SHOULD differ from
-#:   [`BS_LIBGETARGS_CONFIG_FALSE_VALUE`](#bs_libgetargs_config_false_value)
-#:   however this is NOT enforced.
-#: - A negatable SWITCH-OPTION _only_ accepts the value here
-#:   or the value from
-#:   [`BS_LIBGETARGS_CONFIG_FALSE_VALUE`](#bs_libgetargs_config_false_value)
-#:   as an OPTION-TAG.
-#:
-: "${BS_LIBGETARGS_CONFIG_TRUE_VALUE=true}"
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBGETARGS_CONFIG_FALSE_VALUE`
-#:
-#: - Type:     TEXT
-#: - Class:    VARIABLE
-#: - Default:  `false`
-#: - Value used as `false` for options with the type
-#:   negatable SWITCH-OPTION (i.e. `[~]`).
-#: - This value can be specified as an OPTION-TAG for the
-#:   OPTION in which case the OPTION variable will receive
-#:   this value.
-#: - Can be null.
-#: - SHOULD differ from
-#:   [`BS_LIBGETARGS_CONFIG_TRUE_VALUE`](#bs_libgetargs_config_true_value)
-#:   however this is NOT enforced.
-#: - A negatable SWITCH-OPTION _only_ accepts the value here
-#:   or the value from
-#:   [`BS_LIBGETARGS_CONFIG_TRUE_VALUE`](#bs_libgetargs_config_true_value)
-#:   as an OPTION-TAG.
-#:
-: "${BS_LIBGETARGS_CONFIG_FALSE_VALUE=false}"
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBGETARGS_CONFIG_OPTIONAL_VALUE`
-#:
-#: - Type:     TEXT
-#: - Class:    VARIABLE
-#: - Default:  \<unset>
-#: - The value an OPTION variable receives if it takes an
-#:   optional OPTION-ARGUMENT and no OPTION-ARGUMENT was
-#:   specified.
-#: - It is not possible to set a value here that could not
-#:   have also been set as the OPTION-ARGUMENT for the
-#:   OPTION, e.g., the default of \<unset> is the same value
-#:   as would occur if the OPTION-ARGUMENT was an empty
-#:   string.
-#: - It is highly recommended that this be set to a more
-#:   useful value if optional OPTION-ARGUMENTs are used.
-#:
-: "${BS_LIBGETARGS_CONFIG_OPTIONAL_VALUE=}"
-
-#===========================================================
-#===========================================================
-#: <!-- ------------------------------------------------ -->
-#:
-#: ### AUTO-HELP CONFIGURATION
-#:
-#: Configuration related only to [AUTO-HELP](#auto-help)
-#: mode.
-#:
-#===========================================================
-#===========================================================
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBGETARGS_CONFIG_HELP_WRAP_COLUMNS`
-#:
-#: - Type:     TEXT
-#: - Class:    VARIABLE
-#: - Default:  Value from the `COLUMNS` environment variable
-#:             or `80` if that variable is not set.
-#: - Specifies the maximum width of the generated help text,
-#:   any lines longer than this will be wrapped.
-#: - May be set to any numeric value greater than `8`,
-#:   although small values will lead to illegible output.
-#: - If set to the empty string (aka null), wrapping is
-#:   disabled.
-#: - If set to an invalid value, the default value is used.
-#: - Help text uses an indent of `8` characters which counts
-#:   towards the length of lines for the purposes of
-#:   wrapping.
-#:
-: "${BS_LIBGETARGS_CONFIG_HELP_WRAP_COLUMNS=${COLUMNS:-80}}"
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBGETARGS_CONFIG_HELP_MULTI_OPTION`
-#:
-#: - Type:     TEXT
-#: - Class:    VARIABLE
-#: - Default:  `May be specified multiple times.`
-#: - A string added to help for OPTIONs of the `[+]` type.
-#: - Used to indicate the OPTION can be specified more than
-#:   once.
-#: - If set to the empty string (aka null), no text is
-#:   added.
-#: - WILL cause errors if it contains any `\n` (`<newline>`)
-#:   characters.
-#:
-case ${BS_LIBGETARGS_CONFIG_HELP_MULTI_OPTION+1} in
-1) ;; *) BS_LIBGETARGS_CONFIG_HELP_MULTI_OPTION='May be specified multiple times.' ;;
-esac
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBGETARGS_CONFIG_HELP_MULTI_OPERAND`
-#:
-#: - Type:     TEXT
-#: - Class:    VARIABLE
-#: - Default:  `May be specified multiple times.`
-#: - A string added to help for OPERANDs of the `[+]` type.
-#: - Used to indicate the OPERAND can be specified more than
-#:   once.
-#: - If set to the empty string (aka null), no text is
-#:   added.
-#: - WILL cause errors if it contains any `\n` (`<newline>`)
-#:   characters.
-#:
-case ${BS_LIBGETARGS_CONFIG_HELP_MULTI_OPERAND+1} in
-1) ;; *) BS_LIBGETARGS_CONFIG_HELP_MULTI_OPERAND='May be specified multiple times.' ;;
-esac
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBGETARGS_CONFIG_HELP_ALTERNATIVE_OPERAND`
-#:
-#: - Type:     TEXT
-#: - Class:    VARIABLE
-#: - Default:  `Alternative to <OPTION>.`
-#: - A string added to help for an OPERAND if there is an
-#:   OPTION that provides the same purpose. (i.e. only
-#:   OPERANDs of the type `[^]` or `[+]`).
-#: - The literal string `<OPTION>` is replaced with one of
-#:   the OPTION-NAMEs for the OPTION that can alternatively
-#:   be used.
-#: - If set to the empty string (aka null), no text is
-#:   added.
-#: - WILL cause errors if it contains any `\n` (`<newline>`)
-#:   characters.
-#:
-case ${BS_LIBGETARGS_CONFIG_HELP_ALTERNATIVE_OPERAND+1} in
-1) ;; *) BS_LIBGETARGS_CONFIG_HELP_ALTERNATIVE_OPERAND='Alternative to <OPTION>.' ;;
-esac
+fn_bs_lga_config_constant 'c_BS_LGA_CFG__use_zsh_setopt'
 
 #===========================================================
 #===========================================================
@@ -1390,7 +1000,7 @@ esac
 #:
   BS_LIBGETARGS_VERSION_MAJOR=1;
   BS_LIBGETARGS_VERSION_MINOR=3;
-  BS_LIBGETARGS_VERSION_PATCH=0;
+  BS_LIBGETARGS_VERSION_PATCH=1;
 BS_LIBGETARGS_VERSION_RELEASE=;
 
 fn_bs_lga_readonly 'BS_LIBGETARGS_VERSION_MAJOR'   \
@@ -1428,7 +1038,7 @@ fn_bs_lga_readonly 'BS_LIBGETARGS_VERSION_FULL'
 #: - Full version combining
 #:   [`BS_LIBGETARGS_VERSION_MAJOR`](#bs_libgetargs_version_major),
 #:   [`BS_LIBGETARGS_VERSION_MINOR`](#bs_libgetargs_version_minor),
-#:   [`BS_LIBARRAY_VERSION_PATCH`](#bs_libgetargs_version_patch),
+#:   [`BS_LIBGETARGS_VERSION_PATCH`](#bs_libgetargs_version_patch),
 #:   and
 #:   [`BS_LIBGETARGS_VERSION_RELEASE`](#bs_libgetargs_version_release)
 #:   as a formatted string.
@@ -1440,21 +1050,526 @@ fn_bs_lga_readonly 'BS_LIBGETARGS_VERSION_FULL'
 #: - This value is output when the `--version` OPTION is
 #:   used.
 #:
-BS_LIBGETARGS_VERSION="$(
+BS_LIBGETARGS_VERSION=$(
     printf "BetterScripts 'libgetargs' v%d.%d.%d%s\n" \
            "${BS_LIBGETARGS_VERSION_MAJOR}"           \
            "${BS_LIBGETARGS_VERSION_MINOR}"           \
            "${BS_LIBGETARGS_VERSION_PATCH}"           \
            "${BS_LIBGETARGS_VERSION_RELEASE:+-${BS_LIBGETARGS_VERSION_RELEASE}}"
-  )"
+  )
 
 fn_bs_lga_readonly 'BS_LIBGETARGS_VERSION'
 
-#===============================================================================
-#===============================================================================
-#  CONSTANTS
-#===============================================================================
-#===============================================================================
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBGETARGS_LAST_ERROR`
+#:
+#: - Stores the error message of the most recent error.
+#: - ONLY valid immediately following a command for which
+#:   the exit status is not `0` (`<zero>`).
+#: - Available even when error output is suppressed.
+#:
+BS_LIBGETARGS_LAST_ERROR=; #< CLEAR ON SOURCING
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBGETARGS_SOURCED`
+#:
+#: - Set (and non-null) once the library has been sourced.
+#: - Dependant scripts can query if this variable is set to
+#:   determine if this file has been sourced.
+#. - Used as a script guard on script sourcing.
+#. - Only set at end of script (once script is
+#.   successfully sourced).
+#:
+
+#===========================================================
+#===========================================================
+#: <!-- ------------------------------------------------ -->
+#:
+#: ### USER PREFERENCE (OVERRIDABLE)
+#:
+#: Configuration that CAN be overridden by OPTIONs.
+#:
+#. _IMPLEMENTATION NOTES_
+#. <!-- ------------- -->
+#.
+#. - User set configuration options that are in the constant
+#.   CLASS are converted to internal options which are made
+#.   read-only. This happens even when the user option could
+#.   be used directly. This allows the user to reuse the
+#.   option if desired, and also avoids any manipulation of
+#.   variables set externally.
+#.
+#===========================================================
+#===========================================================
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBGETARGS_CONFIG_ALLOW_ABBREVIATIONS`
+#:
+#: - Type:     _FLAG_
+#: - Class:    _VARIABLE_
+#: - Default:  _ON_
+#: - Override: `--[no-]abbreviations`
+#: - \[Enable]/Disable LONG-OPTION abbreviations.
+#: - _ON_: any LONG-OPTION matches if the name is a
+#:   prefix of an OPTION-CONFIG name (e.g. `--debug` and
+#:   `--deb` will both match `debug`).
+#: - _OFF_: abbreviations are disabled and long options
+#:   must match exactly.
+#: - MAY cause unexpected results if combined with
+#:   [`BS_LIBGETARGS_CONFIG_ALLOW_AMBIGUOUS`](#bs_libgetargs_config_allow_ambiguous).
+#:
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBGETARGS_CONFIG_ALLOW_AMBIGUOUS`
+#:
+#: - Type:     _FLAG_
+#: - Class:    _VARIABLE_
+#: - Default:  _OFF_
+#: - Override: `--[no-]ambiguous`
+#: - \[Enable]/Disable detection of ambiguous user OPTIONs.
+#: - _OFF_: any ambiguous OPTION is an error.
+#: - _ON_: all OPTIONs use the first match found - this WILL
+#:   mask some OPTION-CONFIG errors.
+#: - OPTIONs are ambiguous when multiple OPTIONs have the
+#:   same name or, if abbreviations are enabled, when
+#:   an abbreviation matches multiple OPTIONs.
+#: - If abbreviations are also enabled (see
+#:   [`BS_LIBGETARGS_CONFIG_ALLOW_ABBREVIATIONS`](#bs_libgetargs_config_allow_abbreviations))
+#:   there is a high chance of incorrectly matching OPTIONs.
+#: - _Has a measurable impact on performance._
+#:   Prefer **_ON_** for performance.
+#:
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBGETARGS_CONFIG_CHECK_CONFIG`
+#:
+#: - Type:     _FLAG_
+#: - Class:    _VARIABLE_
+#: - Default:  _OFF_
+#: - Override: `--[no-]check-config`
+#: - Enable/\[Disable] performing basic checks on
+#:   OPTION-CONFIG and OPERAND-CONFIG before processing.
+#: - _OFF_: don't do any additional checks.
+#: - _ON_: preform extra checks to ensure that OPTION-CONFIG
+#:   and OPERAND-CONFIG match the required specification.
+#: - The currently available checks are relatively basic but
+#:   will catch errors that MAY otherwise be missed, however
+#:   some of these may be benign.
+#: - _MAY have a performance impact._
+#:   Prefer **_OFF_** for performance.
+#:
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBGETARGS_CONFIG_FATAL_ERRORS`
+#:
+#: - Suite:    [`BETTER_SCRIPTS_CONFIG_FATAL_ERRORS`](./README.MD#better_scripts_config_fatal_errors)
+#: - Type:     _FLAG_
+#: - Class:    _VARIABLE_
+#: - Default:  _OFF_
+#: - Enable/\[Disable] causing library errors to terminate
+#:   the current (sub-)shell.
+#: - _OFF_: errors stop any further processing, and cause a
+#:   non-zero exit status, but do not cause an exception.
+#: - _ON_: any library error will cause an "unset variable"
+#:   shell exception using the
+#:   [`${parameter:?[word]}`][posix_param_expansion]
+#:   parameter expansion, where `word` is set to an error
+#:   message that _should_ be displayed by the shell (this
+#:   message is NOT suppressed by
+#:   [`BS_LIBGETARGS_CONFIG_QUIET_ERRORS`](#bs_libgetargs_config_quiet_errors)).
+#: - Both the library version of this option and the
+#:   suite version can be modified between command
+#:   invocations and will affect the next command.
+#:
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS`
+#:
+#: - Type:     _FLAG_
+#: - Class:    _VARIABLE_
+#: - Default:  _OFF_
+#: - Override: `--[no-]interleaved`, `--[no-]mixed`
+#: - Enable/\[Disable] allowing matching OPTIONs _after_ an
+#:   OPERAND is matched.
+#: - _OFF_: all OPTIONs (and associated OPTION-ARGUMENTs)
+#:   MUST appear before the first OPERAND; i.e., the first
+#:   ARGUMENT that does NOT start with `-` (`<hyphen>`)
+#:   and is NOT an OPTION-ARGUMENT causes ALL remaining
+#:   OPTIONs to be assumed to be OPERANDs _even if they
+#:   start with `-` (`<hyphen>`)_.
+#: - _ON_: an ARGUMENT that does NOT start with `-`
+#:   (`<hyphen>`) and is NOT an OPTION-ARGUMENT is assumed
+#:   to be an OPERAND, but following ARGUMENTs continue to
+#:   be checked for OPTIONs.
+#: - In either mode the special ARGUMENT `--` stops OPTION
+#:   processing and any remaining ARGUMENTs are treated as
+#:   OPERANDs
+#: - Implied by
+#:   [`BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED`](#bs_libgetargs_config_allow_unmatched)
+#: - Mutually exclusive with
+#:   [`BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`](#bs_libgetargs_config_strict_operands)
+#:
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBGETARGS_CONFIG_ALLOW_POSIX_LONG`
+#:
+#: - Type:     _FLAG_
+#: - Class:    _VARIABLE_
+#: - Default:  _OFF_
+#: - Override: `--[no-]posix-long`
+#: - Enable/\[Disable] matching LONG-OPTIONs with a single
+#:   preceding `-` (`<hyphen>`) character instead of the
+#:   normally required two.
+#: - _OFF_: LONG-OPTIONs require the prefix `--`
+#: - _ON_: any multi-character OPTION following a single
+#:   `-` (`<hyphen>`) is checked to see if it matches
+#:   a LONG-OPTION before checking if it is a
+#:   COMPOUND-OPTION, meaning matching COMPOUND-OPTIONs is
+#:   slower.
+#: - _Has a measurable impact on performance._
+#:   Prefer **_OFF_** for performance.
+#:
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBGETARGS_CONFIG_QUIET_ERRORS`
+#:
+#: - Suite:    [`BETTER_SCRIPTS_CONFIG_QUIET_ERRORS`](./README.MD#better_scripts_config_quiet_errors)
+#: - Type:     _FLAG_
+#: - Class:    _VARIABLE_
+#: - Default:  _OFF_
+#: - \[Enable]/Disable library error message output.
+#: - _OFF_: error messages will be written to `STDERR` as:
+#:   `[<ID>]: ERROR: <MESSAGE>` (where `<ID>` is
+#:   set using the `--name` OPTION).
+#: - _ON_: library error messages will be suppressed.
+#: - The most recent error message is always available in
+#:   [`BS_LIBGETARGS_LAST_ERROR`](#bs_libgetargs_last_error)
+#:   even when error output is suppressed.
+#: - Both the library version of this option and the
+#:   suite version can be modified between command
+#:   invocations and will affect the next command.
+#: - Does NOT affect errors from non-library commands, which
+#:   _may_ still produce output.
+#:
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`
+#:
+#: - Type:     _FLAG_
+#: - Class:    _VARIABLE_
+#: - Default:  _OFF_
+#: - Override: `--[no-]strict`, `--[no-]separated`
+#: - Enable/\[Disable] requiring the use of `--` to separate
+#:   OPTIONs from OPERANDs.
+#: - _OFF_: the first ARGUMENT that is not an OPTION or an
+#:   OPTION-ARGUMENT is an OPERAND and causes all further
+#:   ARGUMENTs to be OPERANDs.
+#: - _ON_: an ARGUMENT that is exactly `--` must be present
+#:   after _all_ OPTIONs and before _any_ OPERANDs.
+#: - If this is enabled (_ON_), then optional
+#:   OPTION-ARGUMENTS can be specified using the ARGUMENT
+#:   _following_ the OPTION (in addition to the normal
+#:   formats).
+#: - Can help detect some usage errors.
+#: - Mutually exclusive with
+#:   [`BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS`](#bs_libgetargs_config_interleaved_operands)
+#:   and
+#:   [`BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED`](#bs_libgetargs_config_allow_unmatched).
+#:
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBGETARGS_CONFIG_ALLOW_UNSAFE_OPTIONS`
+#:
+#: - Type:     _FLAG_
+#: - Class:    _VARIABLE_
+#: - Default:  _OFF_
+#: - Override: `--[no-]unsafe`
+#: - \[Enable]/Disable escaping OPTION characters
+#:   to avoid any erroneous results when matching with
+#:   regular expressions. Characters in the supported set
+#:   for OPTION-NAMEs `[[:alnum:]_-]` do not need this
+#:   processing, while characters outside this range
+#:   MAY (e.g. `.` (`<period>`) is problematic).
+#: - _OFF_: OPTION-NAMEs have all characters made safe for
+#:   use in a regular expression.
+#: - _ON_: OPTION-NAMEs are used as is and may match
+#:   incorrectly if they contain specific characters.
+#: - This affects the OPTIONs being processed and NOT those
+#:   in the OPTION-CONFIG.
+#: - MAY have a performance impact.
+#:   Prefer **_ON_** for performance.
+#:
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBGETARGS_CONFIG_AUTO_UNSET`
+#:
+#: - Type:     _FLAG_
+#: - Class:    _VARIABLE_
+#: - Default:  _OFF_
+#: - Override: `--[no-]unset`
+#: - Enable/\[Disable] automatic unsetting of all
+#:   VARIABLES named in OPTION-CONFIG and OPERAND-CONFIG.
+#: - _ON_: every variable specified in OPTION-CONFIG and
+#:   OPERAND-CONFIG is automatically unset before ARGUMENTs
+#:   are processed.
+#: - _OFF_: variables need to be set to a known value or it
+#:   will not be possible to correctly determine what
+#:   OPTIONs have been matched.
+#: - Normally desirable to have enabled, but using it MAY
+#:   have performance issues, and it can not be used
+#:   alongside default values for variables (i.e. values set
+#:   before `getargs` is invoked).
+#: - MAY have a performance impact.
+#:   Prefer **_OFF_** for performance.
+#:
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED`
+#:
+#: - Type:     _FLAG_
+#: - Class:    _VARIABLE_
+#: - Default:  _OFF_
+#: - Override: `--[no-]unmatched`, `--unmatched=<VARIABLE>`
+#: - Enable/\[Disable] matching an unrecognized OPTION as an
+#:   OPERAND.
+#: - _OFF_: any unrecognized OPTION is an error.
+#: - _ON_: any unrecognized OPTION is treated as an OPERAND.
+#: - Useful for commands where most arguments are not used,
+#:   but instead forwarded to another command, where having
+#:   this enabled significantly reduces code and isolates
+#:   the command from changes in the arguments accepted by
+#:   the target command.
+#: - In either mode the special ARGUMENT `--` stops OPTION
+#:   processing and any remaining ARGUMENTs are treated as
+#:   OPERANDs.
+#: - Although still permitted, there is no practical way to
+#:   support the normal OPERAND processing when this is
+#:   enabled; the only OPERAND-CONFIG that is useful will
+#:   be one containing a single `[+]` type. If other
+#:   OPERANDs are required, these must be manually extracted
+#:   from the resulting array.
+#: - If using a VALIDATOR, any unmatched values will be
+#:   sent to the VALIDATOR as OPERANDs.
+#: - `--unmatched=<VARIABLE>` provides functionality that is
+#:   beyond that available using this variable.
+#: - Implies
+#:   [`BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS`](#bs_libgetargs_config_interleaved_operands).
+#: - Mutually exclusive with
+#:   [`BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`](#bs_libgetargs_config_strict_operands).
+#:
+
+#===========================================================
+#===========================================================
+#: <!-- ------------------------------------------------ -->
+#:
+#: ### USER PREFERENCE
+#:
+#: Configuration that can NOT be overridden by OPTIONs.
+#:
+#===========================================================
+#===========================================================
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBGETARGS_CONFIG_TRUE_VALUE`
+#:
+#: - Type:     _TEXT_
+#: - Class:    _VARIABLE_
+#: - Default:  `true`
+#: - Value used as `true` for options with the type
+#:   negatable SWITCH-OPTION (i.e. `[~]`).
+#: - The value given to a negatable SWITCH-OPTION variable
+#:   when the ARGUMENT was specified without an OPTION-TAG.
+#: - Also one of the values accepted as an OPTION-TAG for
+#:   negatable SWITCH-OPTIONs.
+#: - Can be null.
+#: - SHOULD differ from
+#:   [`BS_LIBGETARGS_CONFIG_FALSE_VALUE`](#bs_libgetargs_config_false_value)
+#:   however this is NOT enforced.
+#: - A negatable SWITCH-OPTION _only_ accepts the value here
+#:   or the value from
+#:   [`BS_LIBGETARGS_CONFIG_FALSE_VALUE`](#bs_libgetargs_config_false_value)
+#:   as an OPTION-TAG.
+#:
+: "${BS_LIBGETARGS_CONFIG_TRUE_VALUE=true}"
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBGETARGS_CONFIG_FALSE_VALUE`
+#:
+#: - Type:     _TEXT_
+#: - Class:    _VARIABLE_
+#: - Default:  `false`
+#: - Value used as `false` for options with the type
+#:   negatable SWITCH-OPTION (i.e. `[~]`).
+#: - This value can be specified as an OPTION-TAG for the
+#:   OPTION in which case the OPTION variable will receive
+#:   this value.
+#: - Can be null.
+#: - SHOULD differ from
+#:   [`BS_LIBGETARGS_CONFIG_TRUE_VALUE`](#bs_libgetargs_config_true_value)
+#:   however this is NOT enforced.
+#: - A negatable SWITCH-OPTION _only_ accepts the value here
+#:   or the value from
+#:   [`BS_LIBGETARGS_CONFIG_TRUE_VALUE`](#bs_libgetargs_config_true_value)
+#:   as an OPTION-TAG.
+#:
+: "${BS_LIBGETARGS_CONFIG_FALSE_VALUE=false}"
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBGETARGS_CONFIG_OPTIONAL_VALUE`
+#:
+#: - Type:     _TEXT_
+#: - Class:    _VARIABLE_
+#: - Default:  \<unset>
+#: - The value an OPTION variable receives if it takes an
+#:   optional OPTION-ARGUMENT and no OPTION-ARGUMENT was
+#:   specified.
+#: - It is not possible to set a value here that could not
+#:   have also been set as the OPTION-ARGUMENT for the
+#:   OPTION, e.g., the default of \<unset> is the same value
+#:   as would occur if the OPTION-ARGUMENT was an empty
+#:   string.
+#: - It is highly recommended that this be set to a more
+#:   useful value if optional OPTION-ARGUMENTs are used.
+#:
+: "${BS_LIBGETARGS_CONFIG_OPTIONAL_VALUE=}"
+
+#===========================================================
+#===========================================================
+#: <!-- ------------------------------------------------ -->
+#:
+#: ### AUTO-HELP CONFIGURATION
+#:
+#: Configuration related only to [AUTO-HELP](#auto-help)
+#: mode.
+#:
+#===========================================================
+#===========================================================
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBGETARGS_CONFIG_HELP_WRAP_COLUMNS`
+#:
+#: - Type:     _TEXT_
+#: - Class:    _VARIABLE_
+#: - Default:  Value from the `COLUMNS` environment variable
+#:             or `80` if that variable is not set.
+#: - Specifies the maximum width of the generated help text,
+#:   any lines longer than this will be wrapped.
+#: - May be set to any numeric value greater than `8`,
+#:   although small values will lead to illegible output.
+#: - If set to the empty string (aka null), wrapping is
+#:   disabled.
+#: - If set to an invalid value, the default value is used.
+#: - Help text uses an indent of `8` characters which counts
+#:   towards the length of lines for the purposes of
+#:   wrapping.
+#:
+: "${BS_LIBGETARGS_CONFIG_HELP_WRAP_COLUMNS=${COLUMNS:-80}}"
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBGETARGS_CONFIG_HELP_MULTI_OPTION`
+#:
+#: - Type:     _TEXT_
+#: - Class:    _VARIABLE_
+#: - Default:  `May be specified multiple times.`
+#: - A string added to help for OPTIONs of the `[+]` type.
+#: - Used to indicate the OPTION can be specified more than
+#:   once.
+#: - If set to the empty string (aka null), no text is
+#:   added.
+#: - WILL cause errors if it contains any `\n` (`<newline>`)
+#:   characters.
+#:
+case ${BS_LIBGETARGS_CONFIG_HELP_MULTI_OPTION+1} in
+1) ;; *) BS_LIBGETARGS_CONFIG_HELP_MULTI_OPTION='May be specified multiple times.' ;;
+esac
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBGETARGS_CONFIG_HELP_MULTI_OPERAND`
+#:
+#: - Type:     _TEXT_
+#: - Class:    _VARIABLE_
+#: - Default:  `May be specified multiple times.`
+#: - A string added to help for OPERANDs of the `[+]` type.
+#: - Used to indicate the OPERAND can be specified more than
+#:   once.
+#: - If set to the empty string (aka null), no text is
+#:   added.
+#: - WILL cause errors if it contains any `\n` (`<newline>`)
+#:   characters.
+#:
+case ${BS_LIBGETARGS_CONFIG_HELP_MULTI_OPERAND+1} in
+1) ;; *) BS_LIBGETARGS_CONFIG_HELP_MULTI_OPERAND='May be specified multiple times.' ;;
+esac
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#: ---------------------------------------------------------
+#:
+#: #### `BS_LIBGETARGS_CONFIG_HELP_ALTERNATIVE_OPERAND`
+#:
+#: - Type:     _TEXT_
+#: - Class:    _VARIABLE_
+#: - Default:  `Alternative to <OPTION>.`
+#: - A string added to help for an OPERAND if there is an
+#:   OPTION that provides the same purpose. (i.e. only
+#:   OPERANDs of the type `[^]` or `[+]`).
+#: - The literal string `<OPTION>` is replaced with one of
+#:   the OPTION-NAMEs for the OPTION that can alternatively
+#:   be used.
+#: - If set to the empty string (aka null), no text is
+#:   added.
+#: - WILL cause errors if it contains any `\n` (`<newline>`)
+#:   characters.
+#:
+case ${BS_LIBGETARGS_CONFIG_HELP_ALTERNATIVE_OPERAND+1} in
+1) ;; *) BS_LIBGETARGS_CONFIG_HELP_ALTERNATIVE_OPERAND='Alternative to <OPTION>.' ;;
+esac
+
+#===========================================================
+#===========================================================
+#: <!-- ------------------------------------------------ -->
+#:
+#: ### EXTERNAL CONSTANTS
+#:
+#===========================================================
+#===========================================================
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #: ---------------------------------------------------------
@@ -1518,31 +1633,6 @@ fn_bs_lga_readonly 'BS_LIBGETARGS_TYPE_OPT_ARG'           \
                    'BS_LIBGETARGS_TYPE_OPT_ARG_AGGREGATE' \
                    'BS_LIBGETARGS_TYPE_OPT_ARG_DELIMITED' \
                    'BS_LIBGETARGS_TYPE_OPERAND'
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBGETARGS_LAST_ERROR`
-#:
-#: - Stores the error message of the most recent error.
-#: - ONLY valid immediately following a command for which
-#:   the exit status is not `0` (`<zero>`).
-#: - Available even when error output is suppressed.
-#:
-BS_LIBGETARGS_LAST_ERROR=; #< CLEAR ON SOURCING
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#: ---------------------------------------------------------
-#:
-#: #### `BS_LIBGETARGS_SOURCED`
-#:
-#: - Set (and non-null) once the library has been sourced.
-#: - Dependant scripts can query if this variable is set to
-#:   determine if this file has been sourced.
-#. - Used as a script guard on script sourcing.
-#. - Only set at end of script (once script is
-#.   successfully sourced).
-#:
 
 #===========================================================
 #===========================================================
@@ -1726,39 +1816,19 @@ fn_bs_lga_readonly 'c_BS_LGA__re_DIGIT' \
 #.
 #. ---------------------------------------------------------
 #.
-#. ##### `c_BS_LGA__re_ALNUM`
-#.
-#. - String for use in regular expression
-#.   [bracket expressions][posix_re_bracket_exp] to match
-#.   a single alphanumeric character.
-#. - Equivalent to `[a-zA-Z0-9]` or `[:alnum:]` (in the
-#.   `POSIX` locale)
-#.
-#. ---------------------------------------------------------
-#.
 #. ##### `c_BS_LGA__re_Alias`
 #.
 #. - ["Basic Regular Expression" (_BRE_)][posix_bre] that
 #.   matches a single valid OPTION alias.
 #.
-#. ---------------------------------------------------------
-#.
-#. ##### `c_BS_LGA__re_AliasList`
-#.
-#. - ["Basic Regular Expression" (_BRE_)][posix_bre] that
-#.   matches a `|` (`<vertical-line>`) separated list of
-#.   [`c_BS_LGA__re_Alias`](#c_bs_lga__re_alias) values.
-#.
 c_BS_LGA__re_Alias_OtherChar='[^|:=[,]'
 c_BS_LGA__re_Alias_FirstChar='[^|:=[,-]'
 
-    c_BS_LGA__re_Alias="${c_BS_LGA__re_Alias_FirstChar}${c_BS_LGA__re_Alias_OtherChar}\{0,\}"
-c_BS_LGA__re_AliasList="${c_BS_LGA__re_Alias}\(|${c_BS_LGA__re_Alias}\)\{0,\}"
+c_BS_LGA__re_Alias="${c_BS_LGA__re_Alias_FirstChar}${c_BS_LGA__re_Alias_OtherChar}\{0,\}"
 
 fn_bs_lga_readonly 'c_BS_LGA__re_Alias_FirstChar' \
                    'c_BS_LGA__re_Alias_OtherChar' \
-                   'c_BS_LGA__re_Alias'           \
-                   'c_BS_LGA__re_AliasList'
+                   'c_BS_LGA__re_Alias'
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #. ---------------------------------------------------------
@@ -1941,54 +2011,6 @@ fn_bs_lga_readonly 'c_BS_LGA__re_OperandType_Skippable'  \
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #. ---------------------------------------------------------
 #.
-#. ##### `c_BS_LGA__re_Option`
-#.
-#. - ["Basic Regular Expression" (_BRE_)][posix_bre] that
-#.   matches a single OPTION-CONFIG
-#.
-#. ---------------------------------------------------------
-#.
-#. ##### `c_BS_LGA__re_OptionConfig`
-#.
-#. - ["Basic Regular Expression" (_BRE_)][posix_bre] that
-#.   matches an OPTION-CONFIG with multiple parts
-#.
-#. ---------------------------------------------------------
-## cSpell:Ignore matchsuffix
-#.
-#. ##### `c_BS_LGA__re_Option_MatchPrefix`
-#.
-#. - Partial ["Basic Regular Expression" (_BRE_)][posix_bre]
-#.   that is prepended to an OPTION-NAME to create a full
-#.   _BRE_ to use to look up the OPTION-CONFIG.
-#. - MUST be used with
-#.   [`c_BS_LGA__re_Option_MatchSuffix`](#c_bs_lga__re_option_matchsuffix)
-#.
-#. ---------------------------------------------------------
-## cSpell:Ignore matchprefix
-#.
-#. ##### `c_BS_LGA__re_Option_MatchSuffix`
-#.
-#. - Partial ["Basic Regular Expression" (_BRE_)][posix_bre]
-#.   that is appended to an OPTION-NAME to create a full
-#.   _BRE_ to use to look up the OPTION-CONFIG.
-#. - MUST be used with
-#.   [`c_BS_LGA__re_Option_MatchPrefix`](#c_bs_lga__re_option_matchprefix)
-#.
-      c_BS_LGA__re_Option="${c_BS_LGA__re_AliasList}\[${c_BS_LGA__re_OptionType}\]${c_BS_LGA__re_Variable}"
-c_BS_LGA__re_OptionConfig="\(${c_BS_LGA__re_Option},\)\{1,\}"
-
-c_BS_LGA__re_Option_MatchPrefix="\(${c_BS_LGA__re_Alias}|\)\{0,\}"
-c_BS_LGA__re_Option_MatchSuffix="\(|${c_BS_LGA__re_Alias}\)\{0,\}\[${c_BS_LGA__re_OptionType}\]${c_BS_LGA__re_Variable}"
-
-fn_bs_lga_readonly 'c_BS_LGA__re_Option'             \
-                   'c_BS_LGA__re_OptionConfig'       \
-                   'c_BS_LGA__re_Option_MatchPrefix' \
-                   'c_BS_LGA__re_Option_MatchSuffix'
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#. ---------------------------------------------------------
-#.
 #. ##### `c_BS_LGA__re_OperandSingle`
 #.
 #. - ["Basic Regular Expression" (_BRE_)][posix_bre] that
@@ -2034,7 +2056,7 @@ fn_bs_lga_readonly 'c_BS_LGA__re_OperandSingle' \
 #; _SYNOPSIS_
 #; <!-- - -->
 #;
-#;      fn_bs_lga_error <MESSAGE>...
+#;     fn_bs_lga_error <MESSAGE>...
 #;
 #; _ARGUMENTS_
 #; <!-- -- -->
@@ -2068,23 +2090,52 @@ fn_bs_lga_error() { ## cSpell:Ignore BS_LGAE
   BS_LIBGETARGS_LAST_ERROR=;
   case $# in
   0)  : "${1:?'[libgetargs::fn_bs_lga_error]: Internal Error: an error message is required'}" ;;
-  1)  BS_LIBGETARGS_LAST_ERROR="$1" ;;
-  *)  case ${IFS-} in
-      ' '*) BS_LIBGETARGS_LAST_ERROR="$*" ;;
-         *) BS_LIBGETARGS_LAST_ERROR="$1"; shift
-            BS_LIBGETARGS_LAST_ERROR="${BS_LIBGETARGS_LAST_ERROR}$(printf ' %s' "$@")" ;;
-      esac
+  1)  BS_LIBGETARGS_LAST_ERROR=$1 ;;
+  *)
+      # NOTE: unset `IFS` == default `IFS`
+      #       null  `IFS` == null  `IFS`
+      case ${IFS-' '} in
+      ' '*) BS_LIBGETARGS_LAST_ERROR=$* ;;
+         *) BS_LIBGETARGS_LAST_ERROR=$(printf '%s ' "$@")
+            BS_LIBGETARGS_LAST_ERROR=${BS_LIBGETARGS_LAST_ERROR% } ;;
+      esac ;; #<: `case ${IFS-' '} in`
   esac
 
-  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  #  Append the argument being processed
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Append the argument being processed.
+  #
+  # The currently processed argument could be any value
+  # passed to the command, so truncate the value to
+  # ensure output remains somewhat reasonable.
+  #
+  # NOTE: Use `awk` here since `printf '%.17s'` works on
+  #       **bytes** not characters and it _could_ cause
+  #       the output to be corrupt (possibly leading to
+  #       errors in anything that processes it). While this
+  #       _could_ be a conditional check based on `LC_*` the
+  #       chances of actually needing the code are
+  #       relatively slim, and it indicates an error
+  #       condition anyway.
   case ${g_BS_LGA__CurrentArgument:+1} in
-  1)  # The currently processed argument could be any value
-      # passed to the command, so truncate the value to
-      # ensure output remains somewhat reasonable.
-      case ${#g_BS_LGA__CurrentArgument} in
-      ?|1?|20) BS_LGAE_CurrentArgument="${g_BS_LGA__CurrentArgument}" ;; #< less than or equal to 20
-            *) BS_LGAE_CurrentArgument="$(printf '%.17s...' "${g_BS_LGA__CurrentArgument}")" ;;
+  1)  BS_LGAE_CurrentArgument=${g_BS_LGA__CurrentArgument%%"="*}
+      case ${#BS_LGAE_CurrentArgument} in
+      ?|1?|20)  ;; #< less than or equal to 20
+            *)  BS_LGAE_CurrentArgument=$(
+                    {
+                      printf '%s\n' "${BS_LGAE_CurrentArgument}"
+                    } | {
+                      awk \
+                        ' BEGIN{
+                            getline
+                            BS_LGA_FullTxt = $0
+                            while (getline) {
+                              BS_LGA_FullTxt = BS_LGA_FullTxt "\n" $0
+                            }
+                            print substr(BS_LGA_FullTxt, 1, 17) "..."
+                          }
+                        '
+                    }
+                  ) ;;
       esac
       BS_LIBGETARGS_LAST_ERROR="${BS_LIBGETARGS_LAST_ERROR} (while processing: ${BS_LGAE_CurrentArgument})" ;;
   esac
@@ -2101,7 +2152,29 @@ fn_bs_lga_error() { ## cSpell:Ignore BS_LGAE
   #  Process fatal errors...
   case ${g_BS_LGA_CFG_FatalErrors:-0} in
   1)  BS_LIBGETARGS__FatalError=;
-      : "${BS_LIBGETARGS__FatalError:?"[${g_BS_LGA__ID:-getargs}]: ERROR: ${BS_LIBGETARGS_LAST_ERROR}"}" ;;
+      BS_LIBGETARGS__ErrorMessage="[${g_BS_LGA__ID:-getargs}]: ERROR: ${BS_LIBGETARGS_LAST_ERROR}"
+      # `zsh`, being it's own special self, does not perform parameter expansion
+      # of `word` in `${parameter:?[word]}`, so a workaround is required to
+      # make the error message shown. It's not clear how to do this other than
+      # to use `eval`, but that opens up a can of worms regarding the message
+      # contents - specifically what happens if the message contains special
+      # characters. In this regard, `zhs` is useful as it provides a mechanism
+      # for quoting parameters, which makes it safe.
+      #
+      # NOTE: Although shells should ignore the `zsh` branch of the `case` here
+      #       some fail to parse it. For now that means the use of two `eval`
+      #       statements - the first simply blocks other shells from seeing
+      #       the `zsh` specific code.
+      #
+      # SC2296: Parameter expansions can't start with {. Double check syntax.
+      # EXCEPT: The code here is fine in `zsh`, and should be ignored in other
+      #         shells.
+      # shellcheck disable=SC2296
+      case ${ZSH_VERSION:+1} in
+      1)  eval 'BS_LIBGETARGS__ErrorMessage=${(qq)BS_LIBGETARGS__ErrorMessage}'
+          eval ": \"\${BS_LIBGETARGS__FatalError:?${BS_LIBGETARGS__ErrorMessage}}\"" ;;
+      *) : "${BS_LIBGETARGS__FatalError:?${BS_LIBGETARGS__ErrorMessage}}" ;;
+      esac ;;
   esac
 }
 
@@ -2118,7 +2191,7 @@ fn_bs_lga_error() { ## cSpell:Ignore BS_LGAE
 #; _SYNOPSIS_
 #; <!-- - -->
 #;
-#;      fn_bs_lga_invalid_args <CALLER> <MESSAGE>...
+#;     fn_bs_lga_invalid_args <MESSAGE>...
 #;
 #; _ARGUMENTS_
 #; <!-- -- -->
@@ -2192,6 +2265,7 @@ fn_bs_lga_expected() { ## cSpell:Ignore BS_LGAExpected_
       done #<: `while : #< [ $# -gt 1 ]`
       BS_LGAExpected_Message="${BS_LGAExpected_Message}, and $1" ;;
   esac
+
   fn_bs_lga_invalid_args "${BS_LGAExpected_Message}"
 }
 
@@ -2247,7 +2321,7 @@ fn_bs_lga_expected() { ## cSpell:Ignore BS_LGAExpected_
 #;
 #_______________________________________________________________________________
 fn_bs_lga_validate_name() { ## cSpell:Ignore BS_LGAVN_
-  BS_LGAVN_Name="${1?'[libgetargs::fn_bs_lga_validate_name]: Internal Error: a variable name is required'}"
+  BS_LGAVN_Name=${1?'[libgetargs::fn_bs_lga_validate_name]: Internal Error: a variable name is required'}
 
   case ${BS_LGAVN_Name:-#} in
   [0123456789]*|*[!abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_]*)
@@ -2255,179 +2329,6 @@ fn_bs_lga_validate_name() { ## cSpell:Ignore BS_LGAVN_
     return "${c_BS_LGA__EX_USAGE}" ;;
   esac
 }
-
-#===============================================================================
-#===============================================================================
-#. <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
-#.
-#. ## SHELL COMPATIBILITY COMMANDS
-#.
-#===============================================================================
-#===============================================================================
-
-#_______________________________________________________________________________
-#; ---------------------------------------------------------
-#;
-#; ### `fn_bs_lga_expr_re`
-#;
-#; Some platforms have issues with `expr` which are hard to
-#; work around, so use an alternative where required.
-#;
-#; Known Problematic Implementations (from
-#; [`autoconf` portability documentation][autoconf_portable]):
-#;
-#; - _HP-UX_: does not allow nested captures in `expr`
-#; - _QNX_: does not properly set return values when
-#;   captures are used (can't determine success)
-#;
-#; _SYNOPSIS_
-#; <!-- - -->
-#;
-#;     fn_bs_lga_expr_re <VALUE> <BRE>
-#;
-#; _ARGUMENTS_
-#; <!-- -- -->
-#;
-#; `VALUE` \[in]
-#;
-#; : The value to test, as in: `expr <VALUE> : <BRE>`
-#;
-#; `BRE` \[in]
-#;
-#; : The regular expression to use, as in:
-#;   `expr <VALUE> : <BRE>`
-#; : MUST be a _POSIX.1_ "Basic Regular Expression" that
-#;   `expr`, `sed`, and `grep` can process (tool used
-#;   depends on requirements of expression and
-#;   limitations of `expr` for the current platform).
-#; : MUST NOT use the positional anchor `^` (`<circumflex>`).
-#; : MAY use the  positional anchor `$` (`<dollar-sign>`),
-#;   but this might not work with all implementations.
-#;
-#; _NOTES_
-#; <!-- -->
-#;
-#; - Fallback versions are written specifically for the limited functionality
-#;   necessary for this library and are not suitable as general replacements.
-#; - When using `expr` with a _BRE_, if the string matched can _ever_ be simply
-#;   `0` (`<zero>`) then the exit status of `expr` can _not_ be used as the
-#;   standard requires this results in a non-zero exit status. Some
-#;   implementations may additionally treat strings containing only `0`
-#;   (`<zero>`) characters the same way.
-#;
-#_______________________________________________________________________________
-case ${c_BS_LGA_CFG_USE__expr_exit_status:-0}:${c_BS_LGA_CFG_USE__expr_nested_captures:-0} in
-1:1)  #-----------------------------------------------------
-      # `expr` AVAILABLE
-      #
-      # Simple `expr` wrapper.
-      #-----------------------------------------------------
-      fn_bs_lga_expr_re() { ## cSpell:Ignore BS_LGAER_
-        BS_LGAER_Value="${1?'[libgetargs::fn_bs_lga_expr_re]: Internal Error: a value is required'}"
-         BS_LGAER_Expr="${2:?'[libgetargs::fn_bs_lga_expr_re]: Internal Error: an expression is required'}"
-        # An `_` (`<underscore>`) character is used to avoid
-        # either value being mistaken for an `expr` OPTION
-        expr "_${BS_LGAER_Value}" : "_${BS_LGAER_Expr}"
-      }
-  ;;  #< `case 1:1)`
-
-0:*)  #-----------------------------------------------------
-      # `expr` UNAVAILABLE: Exit status inaccurate
-      #
-      # `expr` wrapper with failure exit status
-      # modified to be more accurate.
-      #-----------------------------------------------------
-      fn_bs_lga_expr_re() { ## cSpell:Ignore BS_LGAER_
-        BS_LGAER_Value="${1?'[libgetargs::fn_bs_lga_expr_re]: Internal Error: a value is required'}"
-         BS_LGAER_Expr="${2:?'[libgetargs::fn_bs_lga_expr_re]: Internal Error: an expression is required'}"
-
-        # An `_` (`<underscore>`) character is used to avoid
-        # either value being mistaken for an `expr` OPTION
-        if  BS_LGAER_Result="$(expr "_${BS_LGAER_Value}" : "_${BS_LGAER_Expr}")"
-        then
-          return
-        else
-          case ${BS_LGAER_Result:-0} in
-          0) return 1 ;;
-          *) printf '%s\n' "${BS_LGAER_Result}" ;;
-          esac
-        fi
-      }
-  ;;  #< `case 0:*)`
-
-*:0)  #-----------------------------------------------------
-      # `expr` UNAVAILABLE: Nested captures not supported
-      #
-      # Emulated `expr`.
-      #-----------------------------------------------------
-      fn_bs_lga_expr_re() { ## cSpell:Ignore BS_LGAER_
-        BS_LGAER_Value="${1?'[libgetargs::fn_bs_lga_expr_re]: Internal Error: a value is required'}"
-         BS_LGAER_Expr="${2:?'[libgetargs::fn_bs_lga_expr_re]: Internal Error: an expression is required'}"
-
-        # Implementation depends on use of captures
-        case ${BS_LGAER_Expr} in
-        *'\('*)
-            #-----------------------------------------------
-            # Have Captures:= Match and Return
-            #-----------------------------------------------
-
-            # `expr` functions as if expression has a
-            # trailing `.*$`, so make sure this is the
-            # case for `sed`
-            case ${BS_LGAER_Expr} in
-            *[!$]) BS_LGAER_Expr="${BS_LGAER_Expr}.*\$" ;;
-            esac
-
-            # `sed` script: if text matches then replace
-            # _all_ text with the outer capture and print;
-            # no output if no match.
-            #
-            #  NOTE:
-            # - empty match is indistinguishable from no
-            #   match, but here that should not be an issue
-            # - `sed` returns exit success except on error
-            BS_LGAER_Match="$(
-              {
-                printf '%s\n' "${BS_LGAER_Value}"
-              } | {
-                sed -n -e "s/^${BS_LGAER_Expr}/\1/p"
-              }
-            )" || return $?
-
-            # Write to `STDOUT` even on no match
-            printf '%s\n' "${BS_LGAER_Match:-}"
-
-            # Determine Exit Status
-            case ${BS_LGAER_Match:+1} in
-            1) return 0 ;;
-            *) return 1 ;;
-            esac
-          ;; #< `case *'\('*)`
-
-        *)  #-----------------------------------------------
-            # No Captures:= Only Check For Match
-            #-----------------------------------------------
-
-            # Don't use >/dev/null as that is not
-            # always possible (e.g. restricted shells),
-            # and avoid the `grep` options that silence
-            # output because they are not always available
-            # (or don't work)
-            #
-            # IMPLEMENTATION NOTE:
-            # - might actually be faster to use `sed` here
-            BS_LGAER_IgnoredOutput="$(
-                {
-                  printf '%s\n' "${BS_LGAER_Value}"
-                } | {
-                  grep "^${BS_LGAER_Expr}"
-                }
-              )" || return $?
-          ;; #< `case *)`
-        esac #< `case ${BS_LGAER_Expr} in`
-      }
-  ;;  #< `case *:0)`
-esac #< `case <expr usable> in`
 
 #===============================================================================
 #===============================================================================
@@ -2441,9 +2342,230 @@ esac #< `case <expr usable> in`
 #_______________________________________________________________________________
 #; ---------------------------------------------------------
 #;
+#; ### `fn_bs_lga_validate_option_config`
+#;
+#; Validate a given OPTION-CONFIG against the specification.
+#;
+#; _SYNOPSIS_
+#; <!-- - -->
+#;
+#;     fn_bs_lga_validate_option_config <CONFIG>
+#;
+#; _ARGUMENTS_
+#; <!-- -- -->
+#;
+#; `CONFIG` \[in]
+#;
+#; : Config to be checked.
+#; : Can contain any arbitrary text excluding any
+#;   embedded `\0` (`<NUL>`) characters.
+#;
+#; _NOTES_
+#; <!-- -->
+#;
+#; - There are a number of ways this could be implemented, the choice of `sed`
+#;   using a complex script turns out to be one of the most portable options:
+#;   - _`expr`_ is perhaps the most obvious choice, and would be the fastest,
+#;     but is by far the least portable. While it tends to support complex _BRE_
+#;     on platforms where other tools are less well equipped, it is also subject
+#;     to implementations that have significant quirks that make it unusable for
+#;     many things on those platforms. Even outside this, however, because it
+#;     receives data via arguments it is easy to hit the command line length
+#;     limit - this is especially true here where the configuration is user
+#;     supplied and effectively unlimited in length.
+#;   - _`grep`_ is the next most natural option for checking something against
+#;     a _BRE_ and can be used here, but again, suffers from portability issues.
+#;     The most significant factor is that the expression needed to match the
+#;     config is complex and must contain potential null matches, while most
+#;     modern implementations can cope with this, there are some that do not
+#;     and will not necessarily output any error.
+#;   - _`awk`_ is another possibility, but here it suffers from both portability
+#;     issues and being often significantly slower than the alternatives. Given
+#;     `sed` can be used instead `awk` can be skipped.
+#; - On many platforms the capabilities of tools are similar, so it can seem
+#;   surprising that `sed` can work where `grep` does not but the advantage that
+#;   `sed` has is the ability to split the required _BRE_ into chunks that alone
+#;   are far simpler than they combined expression would be, this is what allows
+#;   the code here to work on platforms that have limitations that make `grep`
+#;   fail for the same checks.
+#;
+#. _IMPLEMENTATION NOTES_
+#. <!-- ------------- -->
+#.
+#. - The `sed` script used here is necessarily complicated in order to keep the
+#.   associated _BRE_ expressions simple.
+#. - Note that branch names are (portability) limited to 7 characters which
+#.   makes it near impossible to choose anything really descriptive.
+#. - The first few lines of the script cover edge cases that avoid things that
+#.   might be expected to work and would potentially cause issues later in the
+#.   validation script: embedded newlines and repeated comma characters. Neither
+#.   is expected to occur in most usage, but both might be expected to be
+#.   allowed and both may cause issues with later validation operations if not
+#.   handled explicitly.
+#. - Versions of this have been implemented with both `expr` and `grep`, but
+#.   this version seems to be the most robust, with both others failing in
+#.   real world use cases.
+#.
+#_______________________________________________________________________________
+fn_bs_lga_validate_option_config() { ## cSpell:Ignore BS_LGA_VOC_
+  BS_LGA_VOC_Config=${1?'[libgetargs::fn_bs_lga_validate_option_config]: Internal Error: a config to check is required'}
+  BS_LGA_VOC_Output=$(
+      {
+        # Config is comma separated, wrapping in more commas
+        # makes matching logic simpler
+        printf '%s\n' ",${BS_LGA_VOC_Config%,},"
+      } | {
+        # Script:
+        #
+        # - `:LOOP...` - turn multi-line data into a single `sed` value
+        # - ` s/,,\{1,\}/,/g` - delete extra commas
+        # - `:CONFIG` - working from the end:
+        #   - check for trailing option type & variable (error if not found)
+        #   - remove trailing option type & variable
+        #   - `:ALIAS` - process one alias at a time:
+        #     - check for trailing alias (error if not found)
+        #     - remove trailing alias
+        #     - branch back to `ALIAS` if needed
+        #   - branch back to `CONFIG` if needed
+        #
+        # NOTE:
+        # - `i\...Invalid` _could_ be replaced by `p` _but_ there is an edge
+        #   case where the pattern space is empty and so the test of the output
+        #   would be empty and give the wrong result.
+        # - The spaces prefixing `Invalid` may be part of the output (it's
+        #   implementation dependent), this makes no difference here so
+        #   alignment is maintained, however generally text used with `i\`
+        #   should be flush with the left margin or the first space should be
+        #   escaped.)
+        # - While `sed` supports comments, for maximum portability none are
+        #   used. (This is possibly a non-issue.)
+        sed -n '
+          :LOOP
+            $!N
+            $!b LOOP
+          s/,,\{1,\}/,/g
+          :CONFIG
+            /'"\[${c_BS_LGA__re_OptionType}\]${c_BS_LGA__re_Variable}"',$/!{
+              i\
+              Invalid
+              q
+            }
+            s/'"\[${c_BS_LGA__re_OptionType}\]${c_BS_LGA__re_Variable}"',$/|/
+            :ALIAS
+              /'"${c_BS_LGA__re_Alias}|"'$/!{
+                i\
+                Invalid
+                q
+              }
+              s/'"${c_BS_LGA__re_Alias}|"'$//
+              /,$/!b ALIAS
+            /^,$/!b CONFIG
+          ' 2>&1
+      }
+  ) || return $?
+
+  case ${BS_LGA_VOC_Output:+1} in
+  1) return 1 ;;
+  *) return 0 ;;
+  esac
+} #<: `fn_bs_lga_validate_option_config()`
+
+#_______________________________________________________________________________
+#; ---------------------------------------------------------
+#;
+#; ### `fn_bs_lga_validate_operand_config`
+#;
+#; Validate a given OPERAND-CONFIG against the specification.
+#;
+#; _SYNOPSIS_
+#; <!-- - -->
+#;
+#;     fn_bs_lga_validate_operand_config <CONFIG>
+#;
+#; _ARGUMENTS_
+#; <!-- -- -->
+#;
+#; `CONFIG` \[in]
+#;
+#; : Config to be checked.
+#; : Can contain any arbitrary text excluding any
+#;   embedded `\0` (`<NUL>`) characters.
+#;
+#; _NOTES_
+#; <!-- -->
+#;
+#; - As for
+#;   [`fn_bs_lga_validate_option_config`](#fn_bs_lga_validate_option_config).
+#;
+#. _IMPLEMENTATION NOTES_
+#. <!-- ------------- -->
+#.
+#. - As for
+#.   [`fn_bs_lga_validate_option_config`](#fn_bs_lga_validate_option_config).
+#.
+#_______________________________________________________________________________
+fn_bs_lga_validate_operand_config() { ## cSpell:Ignore BS_LGA_VOC_
+  BS_LGA_VOC_Config=${1?'[libgetargs::fn_bs_lga_validate_operand_config]: Internal Error: a config to check is required'}
+  BS_LGA_VOC_Output=$(
+      {
+        # Config is comma separated, wrapping in more commas
+        # makes matching logic simpler
+        printf '%s\n' ",${BS_LGA_VOC_Config%,},"
+      } | {
+        # Script:
+        #
+        # - `:LOOP...` - turn multi-line data into a single `sed` value
+        # - ` s/,,\{1,\}/,/g` - delete extra commas
+        # - `s/...//` - match and delete any multi-operand config (if present
+        #   this config must always be last).
+        # - `/^,$/q` - exit if finished
+        # - `:CONFIG` - working from the end:
+        #   - check for trailing operand type & variable (error if not found)
+        #   - remove trailing operand type & variable
+        #   - branch back to `CONFIG` if needed
+        #
+        # NOTE:
+        # - `i\...Invalid` _could_ be replaced by `p` _but_ there is an edge
+        #   case where the pattern space is empty and so the test of the output
+        #   would be empty and give the wrong result.
+        # - The spaces prefixing `Invalid` may be part of the output (it's
+        #   implementation dependent), this makes no difference here so
+        #   alignment is maintained, however generally text used with `i\`
+        #   should be flush with the left margin or the first space should be
+        #   escaped.)
+        # - While `sed` supports comments, for maximum portability none are
+        #   used. (This is possibly a non-issue.)
+        sed -n '
+          :LOOP
+            $!N
+            $!b LOOP
+          s/,,\{1,\}//g
+          s/'"${c_BS_LGA__re_OperandMulti}"',//
+          /^,$/q
+          :CONFIG
+            /'"${c_BS_LGA__re_OperandSingle}"',$/!{
+              i\
+              Invalid
+              q
+            }
+            s/'"${c_BS_LGA__re_OperandSingle}"',$//
+            /^,$/!b CONFIG
+          ' 2>&1
+      }
+  ) || return $?
+
+  case ${BS_LGA_VOC_Output:+1} in
+  1) return 1 ;;
+  *) return 0 ;;
+  esac
+} #<: `fn_bs_lga_validate_operand_config()`
+
+#_______________________________________________________________________________
+#; ---------------------------------------------------------
+#;
 #; ### `fn_bs_lga_unset_from_config`
 #;
-#; `unset` all the variables named in in an OPTION-CONFIG or OPERAND-CONFIG.
+#; `unset` all the variables named in an OPTION-CONFIG or OPERAND-CONFIG.
 #;
 #; _SYNOPSIS_
 #; <!-- - -->
@@ -2473,7 +2595,7 @@ esac #< `case <expr usable> in`
 #.
 #_______________________________________________________________________________
 fn_bs_lga_unset_from_config() { ## cSpell:Ignore BS_LGAUFC_
-  BS_LGAUFC_Config="${1:?'[libgetargs::fn_bs_lga_unset_from_config]: Internal Error: a config is required'}"
+  BS_LGAUFC_Config=${1:?'[libgetargs::fn_bs_lga_unset_from_config]: Internal Error: a config is required'}
 
   while : #< [ -n "${BS_LGAUFC_Config:+1}" ]
   do
@@ -2482,13 +2604,13 @@ fn_bs_lga_unset_from_config() { ## cSpell:Ignore BS_LGAUFC_
     #> --------------------------------------------------
 
     # Remove the first `]` and everything before
-    BS_LGAUFC_Variable="${BS_LGAUFC_Config#*\]}"
+    BS_LGAUFC_Variable=${BS_LGAUFC_Config#*"]"}
     # Remove the first `,` and everything after
-    BS_LGAUFC_Variable="${BS_LGAUFC_Variable%%,*}"
+    BS_LGAUFC_Variable=${BS_LGAUFC_Variable%%","*}
 
     # Remaining config is everything after the first
     # `,` that follows at least one character
-    BS_LGAUFC_Config="${BS_LGAUFC_Config#*?,}"
+    BS_LGAUFC_Config=${BS_LGAUFC_Config#*?","}
 
     # Check the variable name is good
     fn_bs_lga_validate_name "${BS_LGAUFC_Variable}" || return $?
@@ -2518,7 +2640,7 @@ fn_bs_lga_unset_from_config() { ## cSpell:Ignore BS_LGAUFC_
 #; _ARGUMENTS_
 #; <!-- -- -->
 #;
-#; `VARIABLE` \[in:ref]
+#; `VARIABLE` \[in]
 #;
 #; : Name of the variable to check.
 #; : MUST be a valid _POSIX.1_ name.
@@ -2539,7 +2661,7 @@ fn_bs_lga_unset_from_config() { ## cSpell:Ignore BS_LGAUFC_
 #.
 #_______________________________________________________________________________
 fn_bs_lga_check_var_unset() { ## cSpell:Ignore BS_LGACU_
-  BS_LGACU_Variable="${1:?'[libgetargs::fn_bs_lga_check_var_unset]: Internal Error: a variable to test is required'}"
+  BS_LGACU_Variable=${1:?'[libgetargs::fn_bs_lga_check_var_unset]: Internal Error: a variable to test is required'}
 
   # Check if the variable has been set
   case ,${g_BS_LGA__AssignedVariables}, in
@@ -2566,7 +2688,7 @@ fn_bs_lga_check_var_unset() { ## cSpell:Ignore BS_LGACU_
 #; _ARGUMENTS_
 #; <!-- -- -->
 #;
-#; `VALUE`
+#; `VALUE` \[in]
 #;
 #; : Value to quote.
 #; : Can be null.
@@ -2574,7 +2696,7 @@ fn_bs_lga_check_var_unset() { ## cSpell:Ignore BS_LGACU_
 #;   embedded `\0` (`<NUL>`) characters.
 #; : MUST be a single value.
 #;
-#; `SUFFIX`
+#; `SUFFIX` \[in]
 #;
 #; : An optional suffix to append to the quoted string
 #;   OUTSIDE the quotes, but prior to any `\n` (`<newline>`).
@@ -2658,7 +2780,7 @@ fn_bs_lga_safe_quote() { ## cSpell:Ignore BS_LGASQ_
 #; _ARGUMENTS_
 #; <!-- -- -->
 #;
-#; `VALUE`
+#; `VALUE` \[in]
 #;
 #; : Value to convert into an array value.
 #; : Can be null.
@@ -2670,14 +2792,15 @@ fn_bs_lga_safe_quote() { ## cSpell:Ignore BS_LGASQ_
 #; <!-- -->
 #;
 #; - More details about emulated shell arrays can be found in the documentation
-#;   for [`libarray.sh`](./LIBARRAY.MD)
+#;   for [`libarray.sh`](./libarray.md)
 #;
 #_______________________________________________________________________________
 fn_bs_lga_array_value() { ## cSpell:Ignore BS_LGANAV_
+  BS_LGANAV_Value=${1?'[libgetargs::fn_bs_lga_array_value]: An array value is required'}
   # SC1003: Want to escape a single quote? echo 'This is how it'\''s done'.
   # EXCEPT: Escape here is NOT for the quote character.
   # shellcheck disable=SC1003
-  fn_bs_lga_safe_quote "${1?'[libgetargs::fn_bs_lga_array_value]: An array value is required'}" ' \\'
+  fn_bs_lga_safe_quote "${BS_LGANAV_Value}" ' \\'
 }
 
 #_______________________________________________________________________________
@@ -2708,7 +2831,7 @@ fn_bs_lga_array_value() { ## cSpell:Ignore BS_LGANAV_
 #; <!-- -->
 #;
 #; - More details about emulated shell arrays can be found in the documentation
-#;   for [`libarray.sh`](./LIBARRAY.MD)
+#;   for [`libarray.sh`](./libarray.md)
 #;
 #_______________________________________________________________________________
 fn_bs_lga_create_array() { ## cSpell:Ignore BS_LGACA_
@@ -2746,7 +2869,7 @@ fn_bs_lga_create_array() { ## cSpell:Ignore BS_LGACA_
 #; _ARGUMENTS_
 #; <!-- -- -->
 #;
-#; `OPTION`
+#; `OPTION` \[in]
 #;
 #; : An OPTION name (used for each OPERAND).
 #; : MUST have the appropriate '-' prefix.
@@ -2757,7 +2880,7 @@ fn_bs_lga_create_array() { ## cSpell:Ignore BS_LGACA_
 #;   (`<equals>`) is removed before the OPERAND is appended
 #;   (this is more widely supported).
 #;
-#; `OPERAND`
+#; `OPERAND` \[in]
 #;
 #; : Values to make OPTION-ARGUMENTs for `OPTION`.
 #; : Can be null.
@@ -2766,20 +2889,21 @@ fn_bs_lga_create_array() { ## cSpell:Ignore BS_LGACA_
 #;
 #_______________________________________________________________________________
 fn_bs_lga_operands_to_options() { ## cSpell:Ignore BS_LGAOTO_
-  BS_LGAOTO_Option="${1:?'[libgetargs::fn_bs_lga_operands_to_options]: Internal Error: an option to append is required'}"
+  BS_LGAOTO_Option=${1:?'[libgetargs::fn_bs_lga_operands_to_options]: Internal Error: an option to append is required'}
   shift
 
   case $# in 0) return ;; esac #< Early out if nothing to do
 
   case ${BS_LGAOTO_Option} in
-  *=) #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      # Create a single OPTION & OPTION-ARGUMENT for
-      # each operand
-      #
-      # Remove the `=` if the option is a short option as
-      # the `-o=Value` syntax is not widely supported
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Create a single OPTION & OPTION-ARGUMENT for
+    # each operand
+    #
+    # Remove the `=` if the option is a short option as
+    # the `-o=Value` syntax is not widely supported
+    *=)
       case ${BS_LGAOTO_Option} in
-      -?=) BS_LGAOTO_Option="${BS_LGAOTO_Option%=}" ;;
+      -?=) BS_LGAOTO_Option=${BS_LGAOTO_Option%=} ;;
       esac
 
       for BS_LGAOTO_Value
@@ -2787,13 +2911,14 @@ fn_bs_lga_operands_to_options() { ## cSpell:Ignore BS_LGAOTO_
         fn_bs_lga_array_value "${BS_LGAOTO_Option}${BS_LGAOTO_Value}" || return $?
       done ;;
 
-  *)  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      # Create a an OPTION & OPTION-ARGUMENT pair for
-      # each operand
-
-      # Only need to convert the OPTION to an array value
-      # once, then use that for every OPTION-ARGUMENT
-      BS_LGAOTO_Option="$(fn_bs_lga_array_value "${BS_LGAOTO_Option}")" || return $?
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Create a an OPTION & OPTION-ARGUMENT pair for
+    # each operand
+    #
+    # Only need to convert the OPTION to an array value
+    # once, then use that for every OPTION-ARGUMENT
+    *)
+      BS_LGAOTO_Option=$(fn_bs_lga_array_value "${BS_LGAOTO_Option}") || return $?
       for BS_LGAOTO_Value
       do
         printf '%s\n' "${BS_LGAOTO_Option}"
@@ -2868,20 +2993,20 @@ fn_bs_lga_operands_to_options() { ## cSpell:Ignore BS_LGAOTO_
 #
 #...............................................................................
 fn_bs_lga_find_config() { ## cSpell:Ignore BS_LGAFC
-       BS_LGAFC_Option="${1:?'[libgetargs::fn_bs_lga_find_config]: Internal Error: an option to match is required'}"
-      BS_LGAFC_refType="${2:?'[libgetargs::fn_bs_lga_find_config]: Internal Error: a type output variable is required'}"
-  BS_LGAFC_refVariable="${3:?'[libgetargs::fn_bs_lga_find_config]: Internal Error: a variable output variable is required'}"
+       BS_LGAFC_Option=${1:?'[libgetargs::fn_bs_lga_find_config]: Internal Error: an option to match is required'}
+      BS_LGAFC_refType=${2:?'[libgetargs::fn_bs_lga_find_config]: Internal Error: a type output variable is required'}
+  BS_LGAFC_refVariable=${3:?'[libgetargs::fn_bs_lga_find_config]: Internal Error: a variable output variable is required'}
 
   #---------------------------------------------------------
   # LONG-OPTIONs are indicated with a single `-`
   # (`<hyphen>`) prefix here, so remove it to get the
   # actual OPTION-ALIAS needing to be looked up.
-  BS_LGAFC_OptionName="${BS_LGAFC_Option#-}"
+  BS_LGAFC_OptionName=${BS_LGAFC_Option#-}
 
   #---------------------------------------------------------
   # Build the "Basic Regular Expression" that will be used
   # to look up the OPTION.
-  BS_LGAFC_OptionRegExp="${BS_LGAFC_OptionName}"
+  BS_LGAFC_OptionRegExp=${BS_LGAFC_OptionName}
 
   # OPTIONs are used as regular expressions, so MAY need
   # escaped to avoid errors. In most use cases this is
@@ -2898,14 +3023,14 @@ fn_bs_lga_find_config() { ## cSpell:Ignore BS_LGAFC
   #   it requires an additional check.
   case ${g_BS_LGA_CFG_AllowUnsafeOptions:-0}:${BS_LGAFC_OptionRegExp} in
   0:*[!${c_BS_LGA__re_ALNUM}_-]*)
-    BS_LGAFC_OptionRegExp="$(
+    BS_LGAFC_OptionRegExp=$(
         {
           printf '%s\n' "${BS_LGAFC_OptionRegExp}"
         } | {
           sed -e "s/[^^${c_BS_LGA__re_ALNUM}_-]/[&]/g
                   s/\^/\\^/g"
         }
-      )" ;;
+      ) ;;
   esac
 
   #---------------------------------------------------------
@@ -2949,7 +3074,7 @@ fn_bs_lga_find_config() { ## cSpell:Ignore BS_LGAFC
   #   matches were made).
   #
   {
-    BS_LGAFC_Matched="$(
+    BS_LGAFC_Matched=$(
         {
           printf '%s\n' "${g_BS_LGA__OptionConfig}"
         } | {
@@ -2962,7 +3087,7 @@ fn_bs_lga_find_config() { ## cSpell:Ignore BS_LGAFC
                     ${BS_LGAFC_MatchAction}
                   }"
         }
-      )"
+      )
   } || {
     ec_fn_bs_lga_find_config=$?
     fn_bs_lga_error "unexpected exit status '${ec_fn_bs_lga_find_config}' from 'sed' while matching '${BS_LGAFC_OptionName}'"
@@ -2988,19 +3113,19 @@ fn_bs_lga_find_config() { ## cSpell:Ignore BS_LGAFC
   #    <ALIAS_LIST> '[' <TYPE> ']' <VARIABLE>
   # where the first part is used only to find the correct
   # config, so can be discarded now
-  BS_LGAFC_Matched="${BS_LGAFC_Matched#*\[}"
+  BS_LGAFC_Matched=${BS_LGAFC_Matched#*"["}
 
   # Extract the type (this is now the just the first
   # character, which is followed by a literal ']', so
   # remove that and everything after)
   #
   # NOTE: the calling function will validate this value
-  BS_LGAFC_OptionType="${BS_LGAFC_Matched%]*}"
+  BS_LGAFC_OptionType=${BS_LGAFC_Matched%"]"*}
 
   # Extract the output variable (this is now the everything
   # after the ']' following the first character, so remove
   # both)
-  BS_LGAFC_OptionVariable="${BS_LGAFC_Matched#?]}"
+  BS_LGAFC_OptionVariable=${BS_LGAFC_Matched#?"]"}
 
   # Verify the variable name is a valid value
   fn_bs_lga_validate_name "${BS_LGAFC_OptionVariable}" || return $?
@@ -3008,8 +3133,8 @@ fn_bs_lga_find_config() { ## cSpell:Ignore BS_LGAFC
   #---------------------------------------------------------
   # Save the found configuration
   eval "
-        ${BS_LGAFC_refType}=\"\${BS_LGAFC_OptionType}\"
-    ${BS_LGAFC_refVariable}=\"\${BS_LGAFC_OptionVariable}\"
+        ${BS_LGAFC_refType}=\${BS_LGAFC_OptionType}
+    ${BS_LGAFC_refVariable}=\${BS_LGAFC_OptionVariable}
   "
 }
 
@@ -3056,10 +3181,10 @@ fn_bs_lga_find_config() { ## cSpell:Ignore BS_LGAFC
 #;
 #_______________________________________________________________________________
 fn_bs_lga_process_simple_option() { ## cSpell:Ignore BS_LGAPSO
-  BS_LGAPSO_refValueUsed="${1:?'[libgetargs::fn_bs_lga_process_simple_option]: Internal Error: an output variable for params used is required'}"
-        BS_LGAPSO_Option="${2:?'[libgetargs::fn_bs_lga_process_simple_option]: Internal Error: an option to match is required'}"
-    BS_LGAPSO_OptArgType="${3?'[libgetargs::fn_bs_lga_process_simple_option]: Internal Error: a option-argument type is required'}"
-        BS_LGAPSO_OptArg="${4?'[libgetargs::fn_bs_lga_process_simple_option]: Internal Error: a option-argument is required'}"
+  BS_LGAPSO_refValueUsed=${1:?'[libgetargs::fn_bs_lga_process_simple_option]: Internal Error: an output variable for params used is required'}
+        BS_LGAPSO_Option=${2:?'[libgetargs::fn_bs_lga_process_simple_option]: Internal Error: an option to match is required'}
+    BS_LGAPSO_OptArgType=${3?'[libgetargs::fn_bs_lga_process_simple_option]: Internal Error: a option-argument type is required'}
+        BS_LGAPSO_OptArg=${4?'[libgetargs::fn_bs_lga_process_simple_option]: Internal Error: a option-argument is required'}
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   # Extract any OPTION-TAG (i.e. the value after any `:`
@@ -3072,8 +3197,8 @@ fn_bs_lga_process_simple_option() { ## cSpell:Ignore BS_LGAPSO
   #   option type and is dealt with later.
   BS_LGAPSO_HaveTag=0
   case ${BS_LGAPSO_Option} in
-  *?':'*) BS_LGAPSO_OptionTag="${BS_LGAPSO_Option#*:}"
-             BS_LGAPSO_Option="${BS_LGAPSO_Option%%:*}"
+  *?':'*) BS_LGAPSO_OptionTag=${BS_LGAPSO_Option#*":"}
+             BS_LGAPSO_Option=${BS_LGAPSO_Option%%":"*}
             BS_LGAPSO_HaveTag=1 ;;
   esac
 
@@ -3115,7 +3240,7 @@ fn_bs_lga_process_simple_option() { ## cSpell:Ignore BS_LGAPSO
       #.................................
       # Increment and Save
       eval "
-                       BS_LGAPSO_OptArg=\"\${${BS_LGAPSO_refOptionVariable}:-0}\"
+                      BS_LGAPSO_OptArg=\${${BS_LGAPSO_refOptionVariable}:-0}
         ${BS_LGAPSO_refOptionVariable}=\$((BS_LGAPSO_OptArg + BS_LGAPSO_OptionTag))
              ${BS_LGAPSO_refValueUsed}=0
       " || return $?
@@ -3137,7 +3262,7 @@ fn_bs_lga_process_simple_option() { ## cSpell:Ignore BS_LGAPSO
       #.................................
       #  Check for & validate any tag
       case ${BS_LGAPSO_HaveTag} in
-      0)  BS_LGAPSO_OptionTag="${BS_LIBGETARGS_CONFIG_TRUE_VALUE}" ;;
+      0)  BS_LGAPSO_OptionTag=${BS_LIBGETARGS_CONFIG_TRUE_VALUE} ;;
       1)  case ${BS_LGAPSO_OptionTag} in
           "${BS_LIBGETARGS_CONFIG_FALSE_VALUE}"|"${BS_LIBGETARGS_CONFIG_TRUE_VALUE}") ;;
           *)  fn_bs_lga_error "Invalid tag '${BS_LGAPSO_OptionTag}' for option '${BS_LGAPSO_Option#-}'"
@@ -3148,7 +3273,7 @@ fn_bs_lga_process_simple_option() { ## cSpell:Ignore BS_LGAPSO
       #.................................
       #  Save the value
       eval "
-        ${BS_LGAPSO_refOptionVariable}=\"\${BS_LGAPSO_OptionTag}\"
+        ${BS_LGAPSO_refOptionVariable}=\${BS_LGAPSO_OptionTag}
              ${BS_LGAPSO_refValueUsed}=0
       " || return $?
     ;;
@@ -3189,7 +3314,7 @@ fn_bs_lga_process_simple_option() { ## cSpell:Ignore BS_LGAPSO
       ?:"${BS_LIBGETARGS_TYPE_OPT_ARG_AGGREGATE}":*) BS_LGAPSO_OptArgUsed=1 ;;
       1:"${BS_LIBGETARGS_TYPE_OPT_ARG}":[!-]*)       BS_LGAPSO_OptArgUsed=1 ;;
       *)  BS_LGAPSO_OptArgUsed=0
-              BS_LGAPSO_OptArg="${BS_LIBGETARGS_CONFIG_OPTIONAL_VALUE-}" ;;
+              BS_LGAPSO_OptArg=${BS_LIBGETARGS_CONFIG_OPTIONAL_VALUE-} ;;
       esac
 
       #.................................
@@ -3209,7 +3334,7 @@ fn_bs_lga_process_simple_option() { ## cSpell:Ignore BS_LGAPSO
       #.................................
       # Save the value
       eval "
-        ${BS_LGAPSO_refOptionVariable}=\"\${BS_LGAPSO_OptArg}\"
+        ${BS_LGAPSO_refOptionVariable}=\${BS_LGAPSO_OptArg}
              ${BS_LGAPSO_refValueUsed}=\${BS_LGAPSO_OptArgUsed}
       " || return $?
     ;;
@@ -3264,7 +3389,7 @@ fn_bs_lga_process_simple_option() { ## cSpell:Ignore BS_LGAPSO
       #.................................
       # Save the value
       eval "
-        ${BS_LGAPSO_refOptionVariable}=\"\${BS_LGAPSO_OptArg}\"
+        ${BS_LGAPSO_refOptionVariable}=\${BS_LGAPSO_OptArg}
              ${BS_LGAPSO_refValueUsed}=1
       " || return $?
     ;;
@@ -3298,13 +3423,13 @@ fn_bs_lga_process_simple_option() { ## cSpell:Ignore BS_LGAPSO
                 return ${ec_fn_bs_user_validator}
               } ;;
         esac
-        BS_LGAPSO_OptArg="$(fn_bs_lga_create_array "${BS_LGAPSO_OptArg}")"
+        BS_LGAPSO_OptArg=$(fn_bs_lga_create_array "${BS_LGAPSO_OptArg}")
       ;;
       1)  # Validate the tag
           case ${BS_LGAPSO_OptionTag} in
           'array'|'passthrough'|'passthru'|'forward') ;;
           # Everything else is an error
-          *) fn_bs_lga_error "Invalid tag '${BS_LGAPSO_OptArg}' in option '${BS_LGAPSO_Option#-}'"
+          *) fn_bs_lga_error "Invalid tag '${BS_LGAPSO_OptionTag}' in option '${BS_LGAPSO_Option#-}'"
              return "${c_BS_LGA__EX_DATAERR}" ;;
           esac
 
@@ -3321,7 +3446,7 @@ fn_bs_lga_process_simple_option() { ## cSpell:Ignore BS_LGAPSO
              *) # Verify the variable name is a valid value
                 fn_bs_lga_validate_name "${BS_LGAPSO_OptArg}" || return $?
 
-                eval "BS_LGAPSO_OptArg=\"\${${BS_LGAPSO_OptArg}-}\"" || return $? ;;
+                eval "BS_LGAPSO_OptArg=\${${BS_LGAPSO_OptArg}-}" || return $? ;;
           esac
       ;;
       esac
@@ -3330,7 +3455,7 @@ fn_bs_lga_process_simple_option() { ## cSpell:Ignore BS_LGAPSO
       # Save the value (preserving
       # existing values)
       eval "
-        ${BS_LGAPSO_refOptionVariable}=\"\${${BS_LGAPSO_refOptionVariable}-}\${BS_LGAPSO_OptArg}\"
+        ${BS_LGAPSO_refOptionVariable}=\${${BS_LGAPSO_refOptionVariable}-}\${BS_LGAPSO_OptArg}
              ${BS_LGAPSO_refValueUsed}=1
       " || return $?
     ;;
@@ -3403,10 +3528,10 @@ fn_bs_lga_process_simple_option() { ## cSpell:Ignore BS_LGAPSO
 #;
 #_______________________________________________________________________________
 fn_bs_lga_process_complex_option() { ## cSpell:Ignore BS_LGAPCO_
-  BS_LGAPCO_refValueUsed="${1:?'[libgetargs::fn_bs_lga_process_complex_option]: Internal Error: an output variable for params used is required'}"
-        BS_LGAPCO_Option="${2:?'[libgetargs::fn_bs_lga_process_complex_option]: Internal Error: an option to match is required'}"
-    BS_LGAPCO_OptArgType="${3?'[libgetargs::fn_bs_lga_process_complex_option]: Internal Error: a option-argument type is required'}"
-        BS_LGAPCO_OptArg="${4?'[libgetargs::fn_bs_lga_process_complex_option]: Internal Error: a option-argument is required'}"
+  BS_LGAPCO_refValueUsed=${1:?'[libgetargs::fn_bs_lga_process_complex_option]: Internal Error: an output variable for params used is required'}
+        BS_LGAPCO_Option=${2:?'[libgetargs::fn_bs_lga_process_complex_option]: Internal Error: an option to match is required'}
+    BS_LGAPCO_OptArgType=${3?'[libgetargs::fn_bs_lga_process_complex_option]: Internal Error: a option-argument type is required'}
+        BS_LGAPCO_OptArg=${4?'[libgetargs::fn_bs_lga_process_complex_option]: Internal Error: a option-argument is required'}
 
   #---------------------------------------------------------
   # Check for a LONG-OPTION match first - the whole
@@ -3432,7 +3557,7 @@ fn_bs_lga_process_complex_option() { ## cSpell:Ignore BS_LGAPCO_
 
   #---------------------------------------------------------
   # Remove the prefix
-  BS_LGAPCO_Option="${BS_LGAPCO_Option#-}"
+  BS_LGAPCO_Option=${BS_LGAPCO_Option#-}
   #---------------------------------------------------------
 
   #---------------------------------------------------------
@@ -3445,7 +3570,7 @@ fn_bs_lga_process_complex_option() { ## cSpell:Ignore BS_LGAPCO_
 
     #.......................................................
     # Split the OPTION
-    BS_LGAPCO_Remaining="${BS_LGAPCO_Option#?}"
+    BS_LGAPCO_Remaining=${BS_LGAPCO_Option#?}
     case ${BS_LGAPCO_Remaining:+1} in
     1)  # BS_LGAPCO_Remaining is _not_ empty, a
         # value (if required) _must_ be whatever
@@ -3454,11 +3579,8 @@ fn_bs_lga_process_complex_option() { ## cSpell:Ignore BS_LGAPCO_
         #---------------------------------------------------
         # Getting just the first character of a
         # _POSIX.1_ parameter is annoyingly cumbersome,
-        # and potentially not highly portable,
-        # especially given the quoting requirements
-        # (multiple quotes often seem the cause of
-        #  portability issues).
-        BS_LGAPCO_ShortOption="${BS_LGAPCO_Option%"${BS_LGAPCO_Remaining}"}"
+        # and potentially not highly portable.
+        BS_LGAPCO_ShortOption=${BS_LGAPCO_Option%"${BS_LGAPCO_Remaining}"}
         #---------------------------------------------------
 
         #---------------------------------------------------
@@ -3468,8 +3590,8 @@ fn_bs_lga_process_complex_option() { ## cSpell:Ignore BS_LGAPCO_
         # it again
         case ${BS_LGAPCO_OptArgType} in
         "${BS_LIBGETARGS_TYPE_OPT_ARG_DELIMITED}")
-            BS_LGAPCO_CompoundValue="${BS_LGAPCO_Remaining}${BS_LGAPCO_OptArg:+=${BS_LGAPCO_OptArg}}" ;;
-        *) BS_LGAPCO_CompoundValue="${BS_LGAPCO_Remaining}" ;;
+            BS_LGAPCO_CompoundValue=${BS_LGAPCO_Remaining}${BS_LGAPCO_OptArg:+"=${BS_LGAPCO_OptArg}"} ;;
+        *)  BS_LGAPCO_CompoundValue=${BS_LGAPCO_Remaining} ;;
         esac
         #---------------------------------------------------
 
@@ -3488,7 +3610,7 @@ fn_bs_lga_process_complex_option() { ## cSpell:Ignore BS_LGAPCO_
         # done, otherwise loop round again with the
         # processed SHORT-OPTION removed
         case ${BS_LGAPCO_CompoundValueUsed} in
-        0) BS_LGAPCO_Option="${BS_LGAPCO_Remaining}" ;;
+        0) BS_LGAPCO_Option=${BS_LGAPCO_Remaining} ;;
         1) break ;;
         esac
         #---------------------------------------------------
@@ -3506,9 +3628,9 @@ fn_bs_lga_process_complex_option() { ## cSpell:Ignore BS_LGAPCO_
         #---------------------------------------------------
         break
     ;;
-    esac #< `case ${BS_LGAPCO_Remaining:+1} in`
+    esac #<: `case ${BS_LGAPCO_Remaining:+1} in`
     #.......................................................
-  done #< `while [ -n "${BS_LGAPCO_Option:+1}" ]`
+  done #<: `while [ -n "${BS_LGAPCO_Option:+1}" ]`
   #---------------------------------------------------------
 }
 
@@ -3552,11 +3674,11 @@ fn_bs_lga_process_complex_option() { ## cSpell:Ignore BS_LGAPCO_
 #; - Unmatched OPTIONs only occur if `g_BS_LGA_CFG_AllowUnmatched` is _ON_. This
 #;   is related to
 #;   [`BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED`](#bs_libgetargs_config_allow_unmatched),
-#;   but has extended capabilities that can be enabled with `--unmatched=<VAR>`.
+#;   but has extended capabilities that can be enabled with `--unmatched=<VARIABLE>`.
 #;
 #_______________________________________________________________________________
 fn_bs_lga_process_operand() { ## cSpell:Ignore BS_LGAPO_
-  BS_LGAPO_OperandOption="${1?'[libgetargs::fn_bs_lga_process_operand]: Internal Error: an operand option value is required'}"
+  BS_LGAPO_OperandOption=${1?'[libgetargs::fn_bs_lga_process_operand]: Internal Error: an operand option value is required'}
   shift
 
   #---------------------------------------------------------
@@ -3572,7 +3694,7 @@ fn_bs_lga_process_operand() { ## cSpell:Ignore BS_LGAPO_
     #-------------------------------------------------------
     # Store current ARGUMENT for error reporting
     #-------------------------------------------------------
-    g_BS_LGA__CurrentArgument="$1"
+    g_BS_LGA__CurrentArgument=$1
 
     #-------------------------------------------------------
     # No remaining OPERAND-CONFIG, but still have OPERANDs
@@ -3589,19 +3711,19 @@ fn_bs_lga_process_operand() { ## cSpell:Ignore BS_LGAPO_
     # Config format:
     #    '[' <TYPE> ']' <VARIABLE>
     #-------------------------------------------------------
-    BS_LGAPO_OperandConfig="${g_BS_LGA__OperandConfig%%,*}"
+    BS_LGAPO_OperandConfig=${g_BS_LGA__OperandConfig%%","*}
 
     # Extract the output variable name
     # (everything after the ']')
-    BS_LGAPO_refOutput="${BS_LGAPO_OperandConfig#*\]}"
+    BS_LGAPO_refOutput=${BS_LGAPO_OperandConfig#*"]"}
 
     # Verify the variable name is a valid value
     fn_bs_lga_validate_name "${BS_LGAPO_refOutput}" || return $?
 
     # Extract the Operand Type
     # (the character inside the square brackets)
-    BS_LGAPO_OperandType="${BS_LGAPO_OperandConfig%\]*}"
-    BS_LGAPO_OperandType="${BS_LGAPO_OperandType#\[}"
+    BS_LGAPO_OperandType=${BS_LGAPO_OperandConfig%"]"*}
+    BS_LGAPO_OperandType=${BS_LGAPO_OperandType#"["}
 
     #-------------------------------------------------------
     # Deal with the OPERAND-CONFIG TYPE
@@ -3617,7 +3739,7 @@ fn_bs_lga_process_operand() { ## cSpell:Ignore BS_LGAPO_
       "${c_BS_LGA__re_OperandType_Single}"|"${c_BS_LGA__re_OperandType_Skippable}")
         # Single use OPERAND-CONFIG, so remove it
         # from the available OPERAND-CONFIGS
-        g_BS_LGA__OperandConfig="${g_BS_LGA__OperandConfig#*,}"
+        g_BS_LGA__OperandConfig=${g_BS_LGA__OperandConfig#*","}
 
         # This OPERAND-CONFIG TYPE is only allowed to be
         # set once; if unset use it, if set then either an
@@ -3637,11 +3759,11 @@ fn_bs_lga_process_operand() { ## cSpell:Ignore BS_LGAPO_
                 } ;;
           esac
 
-          eval "${BS_LGAPO_refOutput}=\"\$1\"" || return $?
+          eval "${BS_LGAPO_refOutput}=\$1" || return $?
           shift # Only `shift` when a value is used
         else
           # Error for SINGLE-VALUE OPERAND only
-          case ${BS_LGAPO_OperandConfig} in
+          case ${BS_LGAPO_OperandType} in
           "${c_BS_LGA__re_OperandType_Single}")
             fn_bs_lga_error "Multiple values for single value variable '${BS_LGAPO_refOutput}'"
             return "${c_BS_LGA__EX_DATAERR}" ;;
@@ -3656,7 +3778,7 @@ fn_bs_lga_process_operand() { ## cSpell:Ignore BS_LGAPO_
       "${c_BS_LGA__re_OperandType_Resettable}")
         # Single use OPERAND-CONFIG, so remove it
         # from the available OPERAND-CONFIGS
-        g_BS_LGA__OperandConfig="${g_BS_LGA__OperandConfig#*,}"
+        g_BS_LGA__OperandConfig=${g_BS_LGA__OperandConfig#*,}
 
         # Validate the value
         case ${g_BS_LGA_CFG_fn_Validator:+1} in
@@ -3672,7 +3794,7 @@ fn_bs_lga_process_operand() { ## cSpell:Ignore BS_LGAPO_
         esac
 
         # Save
-        eval "${BS_LGAPO_refOutput}=\"\$1\"" || return $?
+        eval "${BS_LGAPO_refOutput}=\$1" || return $?
         shift
       ;;
 
@@ -3700,8 +3822,8 @@ fn_bs_lga_process_operand() { ## cSpell:Ignore BS_LGAPO_
             done ;;
         esac
         # Save all remaining OPERANDs
-        BS_LGAPO_Output="$(fn_bs_lga_create_array "$@")"
-        eval "${BS_LGAPO_refOutput}=\"\${${BS_LGAPO_refOutput}-}\${BS_LGAPO_Output}\"" || return $?
+        BS_LGAPO_Output=$(fn_bs_lga_create_array "$@")
+        eval "${BS_LGAPO_refOutput}=\${${BS_LGAPO_refOutput}-}\${BS_LGAPO_Output}" || return $?
         break #< no more OPERANDs to process
       ;;
 
@@ -3777,8 +3899,8 @@ fn_bs_lga_process_arguments() { ## cSpell:Ignore BS_LGAPA
     #-------------------------------------------------------
     # Loop initialization:
     #-------------------------------------------------------
-    g_BS_LGA__CurrentArgument="$1" #< Store current ARGUMENT for error reporting
-          BS_LGAPA_OptArgUsed=0    #< Any OPTION-ARGUMENT is unused
+    g_BS_LGA__CurrentArgument=$1 #< Store current ARGUMENT for error reporting
+          BS_LGAPA_OptArgUsed=0  #< Any OPTION-ARGUMENT is unused
 
     #-------------------------------------------------------
     # Get the OPTION
@@ -3805,26 +3927,26 @@ fn_bs_lga_process_arguments() { ## cSpell:Ignore BS_LGAPA
       # Values found may not be used, and are verified
       # when OPTION-TYPE is known (can't do more here)
       *'='*)
-        BS_LGAPA_OptArgType="${BS_LIBGETARGS_TYPE_OPT_ARG_DELIMITED}"
-            BS_LGAPA_OptArg="${g_BS_LGA__CurrentArgument#*=}"
-            BS_LGAPA_Option="${g_BS_LGA__CurrentArgument%%=*}"
+        BS_LGAPA_OptArgType=${BS_LIBGETARGS_TYPE_OPT_ARG_DELIMITED}
+            BS_LGAPA_OptArg=${g_BS_LGA__CurrentArgument#*"="}
+            BS_LGAPA_Option=${g_BS_LGA__CurrentArgument%%"="*}
       ;;
 
       *)
-        BS_LGAPA_Option="${g_BS_LGA__CurrentArgument}"
+        BS_LGAPA_Option=${g_BS_LGA__CurrentArgument}
         case $# in
         1)  BS_LGAPA_OptArgType=;
                 BS_LGAPA_OptArg=; ;;
-        *)  BS_LGAPA_OptArgType="${BS_LIBGETARGS_TYPE_OPT_ARG}"
-                BS_LGAPA_OptArg="$2" ;;
+        *)  BS_LGAPA_OptArgType=${BS_LIBGETARGS_TYPE_OPT_ARG}
+                BS_LGAPA_OptArg=$2 ;;
         esac
       ;;
-    esac #< `case ${BS_LGAPA_AutoHelpEnabled}${g_BS_LGA_CFG_AllowPOSIXLong}:${g_BS_LGA__CurrentArgument} in`
+    esac #<: `case ${BS_LGAPA_AutoHelpEnabled}${g_BS_LGA_CFG_AllowPOSIXLong}:${g_BS_LGA__CurrentArgument} in`
 
     #-------------------------------------------------------
     # Process the OPTION
     #-------------------------------------------------------
-    case ${BS_LGAPA_Option} in #< `shift` after `case`
+    case ${BS_LGAPA_Option} in #<: `shift` after `case`
       #.....................................................
       # Process "simple" OPTIONs:
       # - single SHORT-OPTIONs (with possible TAG)
@@ -3835,7 +3957,7 @@ fn_bs_lga_process_arguments() { ## cSpell:Ignore BS_LGAPA
         # LONG-OPTIONs to be distinguished from
         # SHORT-OPTIONs in later processing
         #---------------------------------------------------
-        BS_LGAPA_Option="${BS_LGAPA_Option#-}"
+        BS_LGAPA_Option=${BS_LGAPA_Option#-}
 
         #---------------------------------------------------
         # Process the OPTION
@@ -3936,7 +4058,7 @@ fn_bs_lga_process_arguments() { ## cSpell:Ignore BS_LGAPA
         0:0:*)  break ;;
         esac
       ;;
-    esac #< `case ${BS_LGAPA_Option} in`
+    esac #<: `case ${BS_LGAPA_Option} in`
 
     #-------------------------------------------------------
     # SHIFT
@@ -3948,7 +4070,7 @@ fn_bs_lga_process_arguments() { ## cSpell:Ignore BS_LGAPA
     case ${BS_LGAPA_OptArgUsed}${BS_LGAPA_OptArgType} in
     "1${BS_LIBGETARGS_TYPE_OPT_ARG}") shift ;;
     esac
-  done #< `while [ $# -gt 0 ]`
+  done #<: `while [ $# -gt 0 ]`
 
   #---------------------------------------------------------
   # Clear the current argument
@@ -4010,14 +4132,14 @@ fn_bs_lga_auto_help() { ## cSpell:Ignore BS_LGAAH_
   #---------------------------------------------------------
   # Initialize
   #---------------------------------------------------------
-  BS_LGAAH_Command="${g_BS_LGA__ID:-getargs}"
+  BS_LGAAH_Command=${g_BS_LGA__ID:-getargs}
   case ${BS_LGAAH_Command} in
   'getargs') BS_LGAAH_Command='<command>' ;;
   esac
 
-  BS_LGAAH_WrapColumns="${BS_LIBGETARGS_CONFIG_HELP_WRAP_COLUMNS-}"
+  BS_LGAAH_WrapColumns=${BS_LIBGETARGS_CONFIG_HELP_WRAP_COLUMNS-}
   case ${BS_LGAAH_WrapColumns-} in
-  [012345678]|*[!0123456789]*) BS_LGAAH_WrapColumns="${COLUMNS:-80}" ;;
+  [012345678]|*[!0123456789]*) BS_LGAAH_WrapColumns=${COLUMNS:-80} ;;
   esac
 
   #---------------------------------------------------------
@@ -4032,7 +4154,7 @@ fn_bs_lga_auto_help() { ## cSpell:Ignore BS_LGAAH_
   #   confusing, but is correct!
   #
   #---------------------------------------------------------
-  BS_LGAAH_Help="$(
+  BS_LGAAH_Help=$(
     {
       printf '%s\n--\n%s\n'                   \
              "${g_BS_LGA__OptionConfigHelp}"  \
@@ -4088,7 +4210,7 @@ fn_bs_lga_auto_help() { ## cSpell:Ignore BS_LGAAH_
         #
         #_______________________________________________________________________
         function bs_fn_trim_l(strText) {
-          sub(/^[ \t\n\v\f\r]{1,}/, "", strText)
+          sub(/^[[:space:]]{1,}/, "", strText)
         }
 
         #_______________________________________________________________________
@@ -4104,7 +4226,7 @@ fn_bs_lga_auto_help() { ## cSpell:Ignore BS_LGAAH_
         #
         #_______________________________________________________________________
         function bs_fn_trim_r(strText) {
-          sub(/[ \t\n\v\f\r]{1,}$/, "", strText)
+          sub(/[[:space:]]{1,}$/, "", strText)
         }
 
         #_______________________________________________________________________
@@ -4199,7 +4321,7 @@ fn_bs_lga_auto_help() { ## cSpell:Ignore BS_LGAAH_
           close(cmdFold)
 
           return strWrapped c_chNewLine
-        } #< `function bs_fn_wrap`
+        } #<: `function bs_fn_wrap`
 
         #_______________________________________________________________________
         # ## `bs_fn_get_option_help`
@@ -4229,6 +4351,7 @@ fn_bs_lga_auto_help() { ## cSpell:Ignore BS_LGAAH_
           #-------------------------------------------------
           c_aOptionValue["?"] = "[=<VALUE>]"
           c_aOptionValue[":"] = " <VALUE>"
+          c_aOptionValue[";"] = " <VALUE>"
           c_aOptionValue["+"] = " <VALUE>"
 
           strOptionHelp = ""
@@ -4332,7 +4455,7 @@ fn_bs_lga_auto_help() { ## cSpell:Ignore BS_LGAAH_
           }
 
           return strOptionHelp
-        } #< `function bs_fn_get_option_help`
+        } #<: `function bs_fn_get_option_help`
 
         #_______________________________________________________________________
         # ## `bs_fn_get_operand_help`
@@ -4403,7 +4526,7 @@ fn_bs_lga_auto_help() { ## cSpell:Ignore BS_LGAAH_
           }
 
           return strOperandHelp
-        } #< `function bs_fn_get_operand_help`
+        } #<: `function bs_fn_get_operand_help`
 
         ########################################################################
         # PATTERNS
@@ -4454,7 +4577,7 @@ fn_bs_lga_auto_help() { ## cSpell:Ignore BS_LGAAH_
         # - MUST be first to avoid other patterns matching
         #   before this
         #===================================================
-        /^[ \t\n\v\f\r]*#/ {
+        /^[[:space:]]*#/ {
           # Technically this is an error, but just ignore it
           if (!g_Current) next
 
@@ -4478,7 +4601,7 @@ fn_bs_lga_auto_help() { ## cSpell:Ignore BS_LGAAH_
           }
 
           next #< Do not match anything else
-        } #< `/^[ \t\n\v\f\r]*#/`
+        } #<: `/^[ \t\n\v\f\r]*#/`
 
         #=====================================================
         # Switch Modes
@@ -4487,7 +4610,7 @@ fn_bs_lga_auto_help() { ## cSpell:Ignore BS_LGAAH_
           g_OperandMode=1
 
           next #< Do not match anything else
-        } #< `/^--$/`
+        } #<: `/^--$/`
 
         #=====================================================
         # Gather data from CONFIG lines
@@ -4594,7 +4717,7 @@ fn_bs_lga_auto_help() { ## cSpell:Ignore BS_LGAAH_
         }
       '
     }
-  )" || {
+  ) || {
     ec_fn_bs_lga_auto_help=$?
     fn_bs_lga_error 'unknown error while trying to generate help text'
     return ${ec_fn_bs_lga_auto_help}
@@ -4605,7 +4728,7 @@ fn_bs_lga_auto_help() { ## cSpell:Ignore BS_LGAAH_
   #---------------------------------------------------------
   case ${g_BS_LGA_CFG_AutoHelp:--} in
   -) printf '%s\n' "${BS_LGAAH_Help}" ;;
-  *) eval "${g_BS_LGA_CFG_AutoHelp}=\"\${BS_LGAAH_Help}\"" ;;
+  *) eval "${g_BS_LGA_CFG_AutoHelp}=\${BS_LGAAH_Help}" ;;
   esac
 }
 
@@ -4648,20 +4771,14 @@ fn_bs_lga_generate_script() { ## cSpell:Ignore BS_LGA_GS_
   # Append both configs - they can be processed together
   # here, but need to be a single line, so also replace any
   # `\n` (`<newline>`) characters with a `,` (`<comma>`).
-  # (Note, this effectively reverses the substitution that
-  #  happens in the main function related to ambiguous
-  #  options.)
   #---------------------------------------------------------
-  BS_LGA_GS_Config="${g_BS_LGA__OptionConfig},${g_BS_LGA__OperandConfig}"
-  case ${g_BS_LGA_CFG_AllowAmbiguous:-0} in
-  0)  BS_LGA_GS_Config="$(
-          {
-            printf '%s\n' "${BS_LGA_GS_Config}"
-          } | {
-            tr -s "${c_BS_LGA__newline}" ','
-          }
-        )" ;;
-  esac
+  BS_LGA_GS_Config=$(
+      {
+        printf '%s\n' "${g_BS_LGA__OptionConfig},${g_BS_LGA__OperandConfig}"
+      } | {
+        tr -s "${c_BS_LGA__newline}" ','
+      }
+    )
 
   #---------------------------------------------------------
   # For easier matching, make sure the string is surrounded
@@ -4696,8 +4813,8 @@ fn_bs_lga_generate_script() { ## cSpell:Ignore BS_LGA_GS_
     # - Remove the first `]` and everything before
     # - Remove the first `,` and everything after
     #-------------------------------------------------------
-    BS_LGA_GS_refVariable="${BS_LGA_GS_Config#*\]}"
-    BS_LGA_GS_refVariable="${BS_LGA_GS_refVariable%%,*}"
+    BS_LGA_GS_refVariable=${BS_LGA_GS_Config#*"]"}
+    BS_LGA_GS_refVariable=${BS_LGA_GS_refVariable%%","*}
 
     #-------------------------------------------------------
     # Check the variable name
@@ -4716,7 +4833,7 @@ fn_bs_lga_generate_script() { ## cSpell:Ignore BS_LGA_GS_
     # - Remaining config is everything after the first
     #   `,` that follows at least one character
     #-------------------------------------------------------
-    BS_LGA_GS_Config="${BS_LGA_GS_Config#*?,}"
+    BS_LGA_GS_Config=${BS_LGA_GS_Config#*?","}
 
     #-------------------------------------------------------
     # Skip any variable already processed
@@ -4769,7 +4886,7 @@ fn_bs_lga_generate_script() { ## cSpell:Ignore BS_LGA_GS_
   #---------------------------------------------------------
   case ${g_BS_LGA_CFG_Script:--} in
   -) printf '%s\n' "${BS_LGA_GS_Script}" ;;
-  *) eval "${g_BS_LGA_CFG_Script}=\"\${BS_LGA_GS_Script}\"" ;;
+  *) eval "${g_BS_LGA_CFG_Script}=\${BS_LGA_GS_Script}" ;;
   esac
 }
 
@@ -4861,7 +4978,7 @@ The command 'getarg' is a wrapper script that allows 'libgetargs' to be
 invoked directly. Some options are omitted as they are only useful when using
 'libgetargs' itself.
 
-For more details see getarg(1), libgetargs(7), betterscripts(7).
+For more details see getarg(1), libgetargs(7), shtoolkit(7).
 EndOfUsageText
 }
 
@@ -5015,7 +5132,7 @@ getargs() { ## cSpell:Ignore BS_LGA_
     case $# in 0) break ;; esac #< [ $# -gt 0 ]
     #> ---------------------------------
 
-    case $1 in #< `shift` after `case`
+    case $1 in #<: `shift` after `case`
       #.....................................................
       # STOP: Consume any 'stop' value and break the loop
       '--') shift; break ;;
@@ -5042,23 +5159,23 @@ getargs() { ## cSpell:Ignore BS_LGA_
       #.....................................................
       # OPTION-CONFIG
       '--options='*|'-o='*)
-        BS_LGA__Arg="${1#-*=}"
+        BS_LGA__Arg=${1#-*=}
         case ${BS_LGA__Arg:+1} in
         1)  g_BS_LGA__OptionConfigHelp="${g_BS_LGA__OptionConfigHelp-}${BS_LGA__Arg}${c_BS_LGA__newline}"
-            g_BS_LGA__OptionConfig="${g_BS_LGA__OptionConfig-}${BS_LGA__Arg%%#*}," ;;
+            g_BS_LGA__OptionConfig="${g_BS_LGA__OptionConfig-}${BS_LGA__Arg%%[#]*}," ;;
         *)  fn_bs_lga_invalid_args "a value is required with '$1'"
             return "${c_BS_LGA__EX_USAGE}" ;;
         esac ;;
 
       '-o'[!=]*)
-        BS_LGA__Arg="${1#-?}"
+        BS_LGA__Arg=${1#-?}
         g_BS_LGA__OptionConfigHelp="${g_BS_LGA__OptionConfigHelp-}${BS_LGA__Arg}${c_BS_LGA__newline}"
-        g_BS_LGA__OptionConfig="${g_BS_LGA__OptionConfig-}${BS_LGA__Arg%%#*}," ;;
+        g_BS_LGA__OptionConfig="${g_BS_LGA__OptionConfig-}${BS_LGA__Arg%%[#]*}," ;;
 
       '--options'|'-o')
         case ${2:+1} in
         1)  g_BS_LGA__OptionConfigHelp="${g_BS_LGA__OptionConfigHelp-}${2}${c_BS_LGA__newline}"
-            g_BS_LGA__OptionConfig="${g_BS_LGA__OptionConfig-}${2%%#*},"
+            g_BS_LGA__OptionConfig="${g_BS_LGA__OptionConfig-}${2%%[#]*},"
             shift ;;
         *)  fn_bs_lga_invalid_args "a value is required with '$1'"
             return "${c_BS_LGA__EX_USAGE}" ;;
@@ -5067,23 +5184,23 @@ getargs() { ## cSpell:Ignore BS_LGA_
       #.....................................................
       # OPERAND-CONFIG
       '--operands='*|'--positional='*|'-p='*)
-        BS_LGA__Arg="${1#-*=}"
+        BS_LGA__Arg=${1#-*=}
         case ${BS_LGA__Arg:+1} in
         1)  g_BS_LGA__OperandConfigHelp="${g_BS_LGA__OperandConfigHelp-}${BS_LGA__Arg}${c_BS_LGA__newline}"
-            g_BS_LGA__OperandConfig="${g_BS_LGA__OperandConfig-}${BS_LGA__Arg%%#*}," ;;
+            g_BS_LGA__OperandConfig="${g_BS_LGA__OperandConfig-}${BS_LGA__Arg%%[#]*}," ;;
         *)  fn_bs_lga_invalid_args "a value is required with '$1'"
             return "${c_BS_LGA__EX_USAGE}" ;;
         esac ;;
 
       '-p'[!=]*)
-        BS_LGA__Arg="${1#-?}"
+        BS_LGA__Arg=${1#-?}
         g_BS_LGA__OperandConfigHelp="${g_BS_LGA__OperandConfigHelp-}${BS_LGA__Arg}${c_BS_LGA__newline}"
-        g_BS_LGA__OperandConfig="${g_BS_LGA__OperandConfig-}${BS_LGA__Arg%%#*}," ;;
+        g_BS_LGA__OperandConfig="${g_BS_LGA__OperandConfig-}${BS_LGA__Arg%%[#]*}," ;;
 
       '--operands'|'--positional'|'-p')
         case ${2:+1} in
         1)  g_BS_LGA__OperandConfigHelp="${g_BS_LGA__OperandConfigHelp-}${2}${c_BS_LGA__newline}"
-                g_BS_LGA__OperandConfig="${g_BS_LGA__OperandConfig-}${2%%#*},"
+                g_BS_LGA__OperandConfig="${g_BS_LGA__OperandConfig-}${2%%[#]*},"
             shift ;;
         *)  fn_bs_lga_invalid_args "a value is required with '$1'"
             return "${c_BS_LGA__EX_USAGE}" ;;
@@ -5096,9 +5213,9 @@ getargs() { ## cSpell:Ignore BS_LGA_
         1)  fn_bs_lga_invalid_args "'${1%%=*}' specified multiple times"
             return "${c_BS_LGA__EX_USAGE}" ;;
         esac
-        BS_LGA__Arg="${1#-*=}"
+        BS_LGA__Arg=${1#-*=}
         case ${BS_LGA__Arg:+1} in
-        1)  g_BS_LGA__ID="${BS_LGA__Arg}" ;;
+        1)  g_BS_LGA__ID=${BS_LGA__Arg} ;;
         *)  fn_bs_lga_invalid_args "a value is required with '$1'"
             return "${c_BS_LGA__EX_USAGE}" ;;
         esac ;;
@@ -5108,7 +5225,7 @@ getargs() { ## cSpell:Ignore BS_LGA_
         1)  fn_bs_lga_invalid_args "'${1%%=*}' specified multiple times"
             return "${c_BS_LGA__EX_USAGE}" ;;
         esac
-        g_BS_LGA__ID="${1#-?}" ;;
+        g_BS_LGA__ID=${1#-?} ;;
 
       '--id'|'--name'|'-i'|'-n')
         case ${g_BS_LGA__ID:+1} in
@@ -5116,7 +5233,7 @@ getargs() { ## cSpell:Ignore BS_LGA_
             return "${c_BS_LGA__EX_USAGE}" ;;
         esac
         case ${2:+1} in
-        1)  g_BS_LGA__ID="$2"
+        1)  g_BS_LGA__ID=$2
             shift ;;
         *)  fn_bs_lga_invalid_args "a value is required with '$1'"
             return "${c_BS_LGA__EX_USAGE}" ;;
@@ -5129,9 +5246,9 @@ getargs() { ## cSpell:Ignore BS_LGA_
         1)  fn_bs_lga_invalid_args "'${1%%=*}' specified multiple times"
             return "${c_BS_LGA__EX_USAGE}" ;;
         esac
-        BS_LGA__Arg="${1#-*=}"
+        BS_LGA__Arg=${1#-*=}
         case ${BS_LGA__Arg:+1} in
-        1)  g_BS_LGA_CFG_fn_Validator="${BS_LGA__Arg}" ;;
+        1)  g_BS_LGA_CFG_fn_Validator=${BS_LGA__Arg} ;;
         *)  fn_bs_lga_invalid_args "a value is required with '$1'"
             return "${c_BS_LGA__EX_USAGE}" ;;
         esac ;;
@@ -5141,7 +5258,7 @@ getargs() { ## cSpell:Ignore BS_LGA_
         1)  fn_bs_lga_invalid_args "'${1%%=*}' specified multiple times"
             return "${c_BS_LGA__EX_USAGE}" ;;
         esac
-        g_BS_LGA_CFG_fn_Validator="${1#-?}" ;;
+        g_BS_LGA_CFG_fn_Validator=${1#-?} ;;
 
       '--validate'|'-v')
         case ${g_BS_LGA_CFG_fn_Validator+1} in
@@ -5157,9 +5274,9 @@ getargs() { ## cSpell:Ignore BS_LGA_
         1)  fn_bs_lga_invalid_args "'${1%%=*}' specified multiple times"
             return "${c_BS_LGA__EX_USAGE}" ;;
         esac
-        BS_LGA__Arg="${1#-*=}"
+        BS_LGA__Arg=${1#-*=}
         case ${BS_LGA__Arg:+1} in
-        1)  g_BS_LGA_CFG_AutoHelp="${BS_LGA__Arg}" ;;
+        1)  g_BS_LGA_CFG_AutoHelp=${BS_LGA__Arg} ;;
         *)  fn_bs_lga_invalid_args "a value is required with '$1'"
             return "${c_BS_LGA__EX_USAGE}" ;;
         esac ;;
@@ -5178,9 +5295,9 @@ getargs() { ## cSpell:Ignore BS_LGA_
         1)  fn_bs_lga_invalid_args "'${1%%=*}' specified multiple times"
             return "${c_BS_LGA__EX_USAGE}" ;;
         esac
-        BS_LGA__Arg="${1#-*=}"
+        BS_LGA__Arg=${1#-*=}
         case ${BS_LGA__Arg:+1} in
-        1)  g_BS_LGA_CFG_Script="${BS_LGA__Arg}" ;;
+        1)  g_BS_LGA_CFG_Script=${BS_LGA__Arg} ;;
         *)  fn_bs_lga_invalid_args "a value is required with '$1'"
             return "${c_BS_LGA__EX_USAGE}" ;;
         esac ;;
@@ -5190,7 +5307,7 @@ getargs() { ## cSpell:Ignore BS_LGA_
         1)  fn_bs_lga_invalid_args "'${1%%=*}' specified multiple times"
             return "${c_BS_LGA__EX_USAGE}" ;;
         esac
-        g_BS_LGA_CFG_Script="${1#-?}" ;;
+        g_BS_LGA_CFG_Script=${1#-?} ;;
 
       '--script'|'-s')
         case ${g_BS_LGA_CFG_Script+1} in
@@ -5207,9 +5324,9 @@ getargs() { ## cSpell:Ignore BS_LGA_
         1)  fn_bs_lga_invalid_args "'${1%%=*}' specified multiple times"
             return "${c_BS_LGA__EX_USAGE}" ;;
         esac
-        BS_LGA__Arg="${1#-*=}"
+        BS_LGA__Arg=${1#-*=}
         case ${BS_LGA__Arg:+1} in
-        1)  g_BS_LGA_CFG_refUnmatched="${BS_LGA__Arg}" ;;
+        1)  g_BS_LGA_CFG_refUnmatched=${BS_LGA__Arg} ;;
         *)  fn_bs_lga_invalid_args "a value is required with '$1'"
             return "${c_BS_LGA__EX_USAGE}" ;;
         esac ;;
@@ -5221,6 +5338,11 @@ getargs() { ## cSpell:Ignore BS_LGA_
             return "${c_BS_LGA__EX_USAGE}" ;;
         esac
         g_BS_LGA_CFG_refUnmatched=; ;;
+
+      '--no-unmatched')
+        g_BS_LGA_CFG_AllowUnmatched=0
+        g_BS_LGA_CFG_refUnmatched=;
+        unset 'g_BS_LGA_CFG_refUnmatched' ;;
 
       #...................................................
       # ENVIRONMENT OVERRIDES
@@ -5265,6 +5387,12 @@ getargs() { ## cSpell:Ignore BS_LGA_
 
   #=========================================================
   # ARGUMENT VALIDATION
+  #
+  # TODO: Having changed how options are matched, it is now
+  #       possible to use `\n` rather than `,` to split
+  #       option config in all places. Doing this would be
+  #       a bit better performance wise, but needs a bit of
+  #       work.
   #=========================================================
 
   #---------------------------------------------------------
@@ -5286,50 +5414,23 @@ getargs() { ## cSpell:Ignore BS_LGA_
   esac
 
   # Config Checking
-  case ${g_BS_LGA_CFG_CheckConfig} in
-  1)  { # OPTION-CONFIG
-          BS_LGA_IgnoreOutput="$(
-              fn_bs_lga_expr_re                 \
-                "${g_BS_LGA__OptionConfig}"     \
-                "${c_BS_LGA__re_OptionConfig}$" 2>&1
-            )"
-      } || {
-        fn_bs_lga_invalid_args "invalid OPTION-CONFIG '${g_BS_LGA__OptionConfig}'"
-        return "${c_BS_LGA__EX_CONFIG}"
-      }
+  case ${g_BS_LGA_CFG_CheckConfig:-0} in
+    1)  {
+          fn_bs_lga_validate_option_config "${g_BS_LGA__OptionConfig}"
+        } || {
+          fn_bs_lga_invalid_args "invalid OPTION-CONFIG '${g_BS_LGA__OptionConfig}'"
+          return "${c_BS_LGA__EX_CONFIG}"
+        }
 
-      # OPERAND-CONFIG
-      case ${g_BS_LGA__OperandConfig:+1} in
-      1)  # If operand config contains the '+' type then
-          # this has to be the last entry in the config. As
-          # `expr` doesn't deal well with large optional
-          # expressions, the validation expression has to be
-          # dynamically constructed to match the config, and
-          # is one of the following:
-          # - \(non-multi BRE\)+\(multi BRE\)
-          # - \(non-multi BRE\)+
-          # - \(multi BRE\)
-          BS_LGA_re_OperandConfig=
-
-          case ${g_BS_LGA__OperandConfig} in
-          '['[!+]']'*) BS_LGA_re_OperandConfig="${BS_LGA_re_OperandConfig-}\(${c_BS_LGA__re_OperandSingle},\)\{1,\}" ;;
-          esac
-
-          case ${g_BS_LGA__OperandConfig} in
-          *'[+]'*) BS_LGA_re_OperandConfig="${BS_LGA_re_OperandConfig-}${c_BS_LGA__re_OperandMulti}," ;;
-          esac
-
-          {
-            BS_LGA_IgnoreOutput="$(
-                fn_bs_lga_expr_re               \
-                  "${g_BS_LGA__OperandConfig}"  \
-                  "${BS_LGA_re_OperandConfig}$" 2>&1
-              )"
-          } || {
-            fn_bs_lga_invalid_args "invalid OPERAND-CONFIG '${g_BS_LGA__OperandConfig}'"
-            return "${c_BS_LGA__EX_CONFIG}"
-          } ;;
-      esac ;;
+        # OPERAND-CONFIG
+        case ${g_BS_LGA__OperandConfig:+1} in
+        1)  {
+              fn_bs_lga_validate_operand_config "${g_BS_LGA__OperandConfig}"
+            } || {
+              fn_bs_lga_invalid_args "invalid OPERAND-CONFIG '${g_BS_LGA__OperandConfig}'"
+              return "${c_BS_LGA__EX_CONFIG}"
+            } ;;
+        esac ;;
   esac
 
   #---------------------------------------------------------
@@ -5361,7 +5462,8 @@ getargs() { ## cSpell:Ignore BS_LGA_
   # Unset Target Variables
   #---------------------------------------------------------
   case ${g_BS_LGA_CFG_AutoUnset} in
-  1)  # OPTION-CONFIG Variables
+    1)
+      # OPTION-CONFIG Variables
       fn_bs_lga_unset_from_config "${g_BS_LGA__OptionConfig}"
 
       # OPERAND-CONFIG Variables
@@ -5371,7 +5473,8 @@ getargs() { ## cSpell:Ignore BS_LGA_
 
       case ${g_BS_LGA_CFG_refUnmatched:+1} in
       1) eval "${g_BS_LGA_CFG_refUnmatched}=; unset ${g_BS_LGA_CFG_refUnmatched}" || return $? ;;
-      esac ;;
+      esac
+    ;;
   esac
 
   #---------------------------------------------------------
@@ -5394,13 +5497,13 @@ getargs() { ## cSpell:Ignore BS_LGA_
   # individual lines (one line per config).
   #---------------------------------------------------------
   {
-    g_BS_LGA__OptionConfig="$(
+    g_BS_LGA__OptionConfig=$(
       {
         printf '%s\n' "${g_BS_LGA__OptionConfig%,}"
       } | {
         tr -s ',' "${c_BS_LGA__newline}"
       }
-    )"
+    )
   } || {
     ec_getargs_tr=$?
     fn_bs_lga_error "'tr' failed while attempting to replace ',' with '\n' in option config '${g_BS_LGA__OptionConfig}'"
@@ -5427,7 +5530,7 @@ getargs() { ## cSpell:Ignore BS_LGA_
   # Save unmatched
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   case ${g_BS_LGA_CFG_refUnmatched:+1} in
-  1) eval "${g_BS_LGA_CFG_refUnmatched}=\"\${g_BS_LGA_Unmatched-}\"" || return $? ;;
+  1) eval "${g_BS_LGA_CFG_refUnmatched}=\${g_BS_LGA_Unmatched-}" || return $? ;;
   esac
 
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -5522,10 +5625,10 @@ getargs() { ## cSpell:Ignore BS_LGA_
 #:
 #_______________________________________________________________________________
 getargs_validate_option_value() { ## cSpell:Ignore BS_LGAVVW_
-   BS_LGAVVW_refTarget="${1:?'[libgetargs::getargs_validate_option_value]: Internal Error: a target variable name is required'}"
-      BS_LGAVVW_Option="${2:?'[libgetargs::getargs_validate_option_value]: Internal Error: an option name is required'}"
-   BS_LGAVVW_ValueType="${3:?'[libgetargs::getargs_validate_option_value]: Internal Error: a value type is required'}"
-       BS_LGAVVW_Value="${4?'[libgetargs::getargs_validate_option_value]: Internal Error: a value is required'}"
+   BS_LGAVVW_refTarget=${1:?'[libgetargs::getargs_validate_option_value]: Internal Error: a target variable name is required'}
+      BS_LGAVVW_Option=${2:?'[libgetargs::getargs_validate_option_value]: Internal Error: an option name is required'}
+   BS_LGAVVW_ValueType=${3:?'[libgetargs::getargs_validate_option_value]: Internal Error: a value type is required'}
+       BS_LGAVVW_Value=${4?'[libgetargs::getargs_validate_option_value]: Internal Error: a value is required'}
 
   #  Skip explicit OPERANDs
   case ${BS_LGAVVW_Option} in '--') return ;; esac
@@ -5574,13 +5677,10 @@ getargs_validate_option_value() { ## cSpell:Ignore BS_LGAVVW_
 #: `OPTION` \[in]
 #:
 #: : The OPTION-NAME to use for each element in `VALUES`.
-#: : Each element in `VALUES` will become and
+#: : Each element in `VALUES` will become an
 #:   OPTION-ARGUMENT for `OPTION`.
 #: : A trailing `=` (`<equals>`) will cause the
 #:   OPTION-ARGUMENT to be made an AGGREGATE-OPTION-ARGUMENT.
-#; : A trailing `=` (`<equals>`) causes the OPERAND to be appended to
-#;   OPTION as a single value, otherwise a pair of an
-#;   OPTION followed by the OPERAND is created.
 #:
 #: _NOTES_
 #: <!-- -->
@@ -5606,8 +5706,8 @@ getargs_validate_option_value() { ## cSpell:Ignore BS_LGAVVW_
 getargs_operands_to_options() { ## cSpell:Ignore BS_LGAOTO_
   #---------------------------------------------------------
   case $# in
-  2)  BS_LGAOTO_refOperands="$1"
-           BS_LGAOTO_Option="$2" ;;
+  2)  BS_LGAOTO_refOperands=$1
+           BS_LGAOTO_Option=$2 ;;
   *)  fn_bs_lga_expected 'an array of operands' 'an option'
       return "${c_BS_LGA__EX_USAGE}" ;;
   esac
@@ -5633,11 +5733,11 @@ getargs_operands_to_options() { ## cSpell:Ignore BS_LGAOTO_
 
   #---------------------------------------------------------
   # Repack the operands with the option as a prefix
-  BS_LGAOTO_Operands="$(fn_bs_lga_operands_to_options "${BS_LGAOTO_Option}" "$@")"
+  BS_LGAOTO_Operands=$(fn_bs_lga_operands_to_options "${BS_LGAOTO_Option}" "$@")
 
   #---------------------------------------------------------
   # Save the converted values
-  eval "${BS_LGAOTO_refOperands}=\"\${BS_LGAOTO_Operands}\""
+  eval "${BS_LGAOTO_refOperands}=\${BS_LGAOTO_Operands}"
 }
 
 #===============================================================================
@@ -5661,40 +5761,68 @@ fn_bs_lga_readonly 'BS_LIBGETARGS_SOURCED'
 #.
 #. ## VERSIONS
 #.
-#. v1.3.0        - [FIX] Fixed an issue that would cause a failure under
-#.                 `set -u` when an unset user variable was used. (Although the
-#.                 failure _may_ be useful, it breaks the principle that
-#.                 behavior is the same under `set -u` and `set +u`.)
-#.               - [FIX] (PORTABILITY) Added trailing '\n' to `printf` - without
-#.                 it some implementations will effectively discard the last
-#.                 line of data.
-#.               - [FIX] (PORTABILITY) Rewrote OPTION matching to be simpler and
-#.                 more portable: `sed` is now used in place of `expr` and
-#.                 `grep` for all matching; `tr` is required where previously
-#.                 use was based on config. (NOTES: Previously rejected
-#.                 OPTION-CONFIG may now be accepted; performance
-#.                 characteristics may have changed, however  overall
-#.                 performance was not measurably altered.)
-#.               - [FIX] (PORTABILITY) Minor changes to some `case` statements
-#.                 which should now be more portable, though never showed any
-#.                 issues (e.g. add `;;` to some statements where it was missing
-#.                 even though this was permitted.)
+#. v1.3.1       - \[NEW] Added simple debugging output (disabled by default),
+#.                controlled by `BS_LIBGETARGS_DEBUG`,
+#.                `BS_LIBGETARGS_CONFIG_DEBUG`, and `BS_LIBGETARGS_DEBUG_FD`.
+#.              - \[NEW] Added `--no-unmatched` which operates like other
+#.                `--no-...` options but for unmatched arguments. Was
+#.                previously documented but not implemented.
+#.              - \[CHANGE] Minor documentation updates/fixes.
+#.              - \[CHANGE] Minor clean-ups and refactoring.
+#.              - \[FIX] _(PORTABILITY)_ Changed parameter expansion of the
+#.                form `${parameter:?[word]}` to use a fixed string, or a
+#.                workaround for `zsh` which fails to expand parameters used
+#:                 in `word`.
+#.              - \[FIX] _(PORTABILITY)_ changed some quoting in cases where it
+#.                could be problematic for some shells and an alternative was
+#.                available.
+#.              - \[FIX] _(PORTABILITY)_ changed some parameter expansions to
+#.                ensure that meta-characters where safe (e.g. `#` to `[#]`).
+#.              - \[FIX] _(PORTABILITY)_ switched from `printf '%.17s'` to
+#.                using `awk` for string truncation to avoid the potential for
+#.                error if the string contains any multi-byte characters.
+#.              - \[FIX] _(PORTABILITY)_ Rewrote OPTION/OPERAND CONFIG
+#.                validation - previously this used `grep` (and before than
+#.                `expr`) and was the only remaining usage of this, but it too
+#.                hit errors in some situations which have been resolved with
+#.                a new `sed` implementation. Both `expr` and `grep` are now
+#.                completely removed.
 #.
-#. v1.2.0        - [NEW] Added ability to specify a variable name with `--unmatched`,
-#.                 which will receive all unmatched OPTIONS and OPTION-ARGUMENTs
-#.                 allowing OPERANDs to be available (this automatically enables
-#.                 [`BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`](#bs_libgetargs_config_strict_operands).)
-#.               - [FIX] Fixed an issue that caused auto-help generation to fail in
-#.                 all cases (line continuation in `awk` was not dealt with
-#.                 correctly).
-#.               - [CHANGE] Removed some config checks that were not useful.
+#. v1.3.0       - \[FIX] Fixed an issue that would cause a failure under
+#.                `set -u` when an unset user variable was used. (Although the
+#.                failure _may_ be useful, it breaks the principle that
+#.                behavior is the same under `set -u` and `set +u`.)
+#.              - \[FIX] _(PORTABILITY)_ Added trailing '\n' to `printf` -
+#.                without it some implementations will effectively discard the
+#.                last line of data.
+#.              - \[FIX] _(PORTABILITY)_ Rewrote OPTION matching to be simpler
+#.                and more portable: `sed` is now used in place of `expr` and
+#.                `grep` for all matching; `tr` is required where previously
+#.                use was based on config. (NOTES: Previously rejected
+#.                OPTION-CONFIG may now be accepted; performance
+#.                characteristics may have changed, however  overall
+#.                performance was not measurably altered.)
+#.              - \[FIX] _(PORTABILITY)_ Minor changes to some `case` statements
+#.                which should now be more portable, though never showed any
+#.                issues (e.g. add `;;` to some statements where it was missing
+#.                even though this was permitted.)
 #.
-#. v1.1.0        - [NEW] Optional OPTION-ARGUMENTs can now be separated from the
-#.                 OPTION if
-#.                 [`BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`](#bs_libgetargs_config_strict_operands)
-#.                 is enabled.
+#. v1.2.0       - \[NEW] Added ability to specify a variable name with
+#.                `--unmatched`, which will receive all unmatched OPTIONS and
+#.                OPTION-ARGUMENTs allowing OPERANDs to be available (this
+#.                automatically enables
+#.                [`BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`](#bs_libgetargs_config_strict_operands).)
+#.              - \[CHANGE] Removed some config checks that were not useful.
+#.              - \[FIX] Fixed an issue that caused auto-help generation to fail
+#.                in all cases (line continuation in `awk` was not dealt with
+#.                correctly).
 #.
-#. v1.0.0        - First Release
+#. v1.1.0       - \[NEW] Optional OPTION-ARGUMENTs can now be separated from the
+#.                OPTION if
+#.                [`BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`](#bs_libgetargs_config_strict_operands)
+#.                is enabled.
+#.
+#. v1.0.0       - First Release
 #.
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
@@ -5705,7 +5833,7 @@ fn_bs_lga_readonly 'BS_LIBGETARGS_SOURCED'
 #: - [Semantic Versioning v2.0.0][semver].
 #: - [Inclusive Naming Initiative][inclusivenaming].
 #:
-#: _For more details see the common suite [documentation](./README.MD#standards)._
+#: _For more details see the `shtoolkit` general [documentation](./README.MD#standards)._
 #:
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
@@ -5895,14 +6023,24 @@ fn_bs_lga_readonly 'BS_LIBGETARGS_SOURCED'
 #: impact.
 #:
 #: The configuration of `getargs` can also make a difference. The biggest single
-#: change is to allow ambiguous options, which will use `expr` (or rarely `sed`)
-#: rather than `grep`, resulting in improved performance. Disabling other
+#: change is to allow ambiguous options: this lets the `sed` OPTION-matching
+#: script quit after the first match, rather than scanning for every match to
+#: detect ambiguity, resulting in improved performance. Disabling other
 #: options where they are noted to have a performance impact will also help
 #: (though to a lesser extent). Additionally, setting config using the provided
 #: [environment variables](#environment) rather than passing as options to
 #: `getargs` options, can make minor improvements.
 #:
-#: _For more details see the common suite [documentation](./README.MD#performance)._
+#: _For more details see the `shtoolkit` general [documentation](./README.MD#performance)._
+#:
+#: <!-- ------------------------------------------------ -->
+#:
+#: ### PRIOR ART
+#:
+#: There are a number of tools available to aid argument processing for shell scripts
+#: is enormous and continuously growing. Despite this, before the creation of
+#: `getargs`, the only options found suffered from significant issues, e.g.
+#: poorly documented, non-portable, etc.
 #:
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
@@ -5917,7 +6055,7 @@ fn_bs_lga_readonly 'BS_LIBGETARGS_SOURCED'
 #: length of _both_ the SPECIFICATION _and_ the ARGUMENTs to process, and may
 #: be a particular issue where [AUTO-HELP](#auto-help) is used.
 #:
-#: _For more details see the common suite [documentation](./README.MD#caveats)._
+#: _For more details see the `shtoolkit` general [documentation](./README.MD#caveats)._
 #:
 #: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
@@ -5964,7 +6102,17 @@ fn_bs_lga_readonly 'BS_LIBGETARGS_SOURCED'
 #: The following example is adapted from
 #: [the Wikipedia page for `getopts`](<https://wikipedia.org/wiki/Getopts#Examples>)
 #: and is implemented for `getopts`, `getopt` and `getargs`
-#: to provide a comparison between the available tools.
+#: to provide a comparison between the available
+#: tools.[^printf_format_omitted]
+#:
+#: [^printf_format_omitted]: The original uses
+#:                           `printf '%q '` to quote output
+#:                           output but this is omitted here
+#:                           as there is no such format
+#:                           character in _POSIX_ and it is
+#:                           used for code that does not
+#:                           usefully contribute to the
+#:                           comparison as a whole.
 #:
 #: ---------------------------------------------------------
 #:
@@ -5994,7 +6142,7 @@ fn_bs_lga_readonly 'BS_LIBGETARGS_SOURCED'
 #:
 #:     if ((VERBOSE > 2)); then
 #:       printf '%s\n' 'Non-option arguments:'
-#:       printf '%q ' "${remaining[@]]}"
+#:       printf '%s ' "${remaining[@]}"
 #:     fi
 #:
 #:     if ((VERBOSE > 1)); then
@@ -6041,7 +6189,7 @@ fn_bs_lga_readonly 'BS_LIBGETARGS_SOURCED'
 #:
 #:     if ((VERBOSE > 2)); then
 #:       printf '%s\n' 'Non-option arguments:'
-#:       printf '%q ' "${remaining[@]]}"
+#:       printf '%s ' "${remaining[@]}"
 #:     fi
 #:
 #:     if ((VERBOSE > 1)); then
@@ -6054,7 +6202,6 @@ fn_bs_lga_readonly 'BS_LIBGETARGS_SOURCED'
 #:     fi
 #:
 #:     save_webpage "https://${LANG}.wikipedia.org/wiki/${ARTICLE}"
-#:     </pre>
 #:
 #: ---------------------------------------------------------
 #:
@@ -6075,17 +6222,17 @@ fn_bs_lga_readonly 'BS_LIBGETARGS_SOURCED'
 #:     : "${VERBOSE:=0}"
 #:     : "${LANG:=en}"
 #:
-#:     if ((VERBOSE > 2)); then
+#:     if [ "$VERBOSE" -gt 2 ]; then
 #:        printf '%s\n' 'Non-option arguments:'
-#:        printf '%q ' "$@"
+#:        printf '%s ' "$@"
 #:     fi
 #:
-#:     if ((VERBOSE > 1)); then
+#:     if [ "$VERBOSE" -gt 1 ]; then
 #:        printf 'Downloading %s:%s\n' "$LANG" "$ARTICLE"
 #:     fi
 #:
-#:     if [[ ! $ARTICLE ]]; then
-#:        printf '%s\n' "No articles!" \>&2
+#:     if [ -z "$ARTICLE" ]; then
+#:        printf '%s\n' "No articles!">&2
 #:        exit 1
 #:     fi
 #:
@@ -6111,17 +6258,17 @@ fn_bs_lga_readonly 'BS_LIBGETARGS_SOURCED'
 #:     : "${VERBOSE:=0}"
 #:     : "${LANG:=en}"
 #:
-#:     if ((VERBOSE > 2)); then
+#:     if [ "$VERBOSE" -gt 2 ]; then
 #:        printf '%s\n' 'Non-option arguments:'
-#:        printf '%q ' "$@"
+#:        printf '%s ' "$@"
 #:     fi
 #:
-#:     if ((VERBOSE > 1)); then
+#:     if [ "$VERBOSE" -gt 1 ]; then
 #:        printf 'Downloading %s:%s\n' "$LANG" "$ARTICLE"
 #:     fi
 #:
-#:     if [[ ! $ARTICLE ]]; then
-#:        printf '%s\n' "No articles!" \>&2
+#:     if [ -z "$ARTICLE" ]; then
+#:        printf '%s\n' "No articles!">&2
 #:        exit 1
 #:     fi
 #:
@@ -6131,18 +6278,22 @@ fn_bs_lga_readonly 'BS_LIBGETARGS_SOURCED'
 #%
 #% ## SEE ALSO
 #%
-#% betterscripts(7), libarray(7)
+#% shtoolkit(7), libarray(7)
 #%
-#: <!-- -------------------------------------------------------------------- -->
+#: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #: <!-- REFERENCES -->
-#: <!-- -------------------------------------------------------------------- -->
+#: <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #:
 #: [markdown]:                  <https://daringfireball.net/projects/markdown/syntax>                                                "Markdown: Syntax [daringfireball.net]"
 #: [commonmark]:                <https://commonmark.org/>                                                                            "CommonMark [spec.commonmark.org]"
 #: [commonmark_spec]:           <https://spec.commonmark.org/current/>                                                               "CommonMark Spec (current) [spec.commonmark.org]"
 #:
 #: [posix]:                     <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition>                                       "POSIX.1-2008 \[pubs.opengroup.org\]"
-#: [posix_2017]:                <https://pubs.opengroup.org/onlinepubs/9699919799>                                                   "POSIX.1-2017 \[pubs.opengroup.org\]"
+#: [posix_2013]:                <https://pubs.opengroup.org/onlinepubs/9699919799.2013edition>                                       "POSIX.1-2013 \[pubs.opengroup.org\]"
+#: [posix_2016]:                <https://pubs.opengroup.org/onlinepubs/9699919799.2016edition>                                       "POSIX.1-2016 \[pubs.opengroup.org\]"
+#: [posix_2018]:                <https://pubs.opengroup.org/onlinepubs/9699919799.2018edition>                                       "POSIX.1-2018 \[pubs.opengroup.org\]"
+#: [posix_2024]:                <https://pubs.opengroup.org/onlinepubs/9799919799.2024edition>                                       "POSIX.1-2024 \[pubs.opengroup.org\]"
+#:
 #: [posix_bre]:                 <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap09.html#tag_09_03>     "Basic Regular Expression \[pubs.opengroup.org\]"
 #: [posix_ere]:                 <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap09.html#tag_09_04>     "Extended Regular Expression \[pubs.opengroup.org\]"
 #: [posix_re_bracket_exp]:      <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap09.html#tag_09_03_05>  "RE Bracket Expression \[pubs.opengroup.org\]"
@@ -6150,8 +6301,12 @@ fn_bs_lga_readonly 'BS_LIBGETARGS_SOURCED'
 #: [posix_getopts]:             <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/utilities/getopts.html>                "getopts \[pubs.opengroup.org\]"
 #: [posix_utility_conventions]: <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap12.html>               "POSIX: Utility Conventions \[pubs.opengroup.org\]"
 #: [posix_variable]:            <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap03.html#tag_03_230>    "Definitions: Name \[pubs.opengroup.org\]"
+#: [posix_execl]:               <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/functions/execl.html>                  "execl \[pubs.opengroup.org\]"
+#: [posix_chars]:               <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap06.html#tag_06_01>     "Portable Character Set \[pubs.opengroup.org\]"
+#: [posix_glob]:                <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/utilities/V3_chap02.html#tag_18_13>    "Pattern Matching Notation \[pubs.opengroup.org\]"
 #:
 #: [sysexits]:                  <https://www.freebsd.org/cgi/man.cgi?sysexits(3)>                                                    "FreeBSD SYSEXITS(3) \[freebsd.org\]"
+#:
 #: [semver]:                    <https://semver.org/>                                                                                "Semantic Versioning \[semver.org\]"
 #:
 #: [util_linux]:                <https://git.kernel.org/pub/scm/utils/util-linux/util-linux.git/about/>                              "util-linux (about) \[git.kernel.org\]"
@@ -6160,7 +6315,12 @@ fn_bs_lga_readonly 'BS_LIBGETARGS_SOURCED'
 #:
 #: [man_page]:                  <https://wikipedia.org/wiki/Man_page>                                                                "man page \[wikipedia.org\]"
 #:
-#: [autoconf_portable]:         <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Portable-Shell.html>           "autoconf: Portable Shell Programming \[gnu.org\]"
+#: [autoconf_portable]:         <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Portable-Shell.html>                  "autoconf: Portable Shell Programming \[gnu.org\]"
+#: [autoconf_awk]:              <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Limitations-of-Usual-Tools.html#awk>  "autoconf: Limitations of Usual Tools \[gnu.org\]"
+#: [autoconf_sed]:              <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Limitations-of-Usual-Tools.html#sed>  "autoconf: Limitations of Usual Tools \[gnu.org\]"
+#: [autoconf_grep]:             <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Limitations-of-Usual-Tools.html#grep> "autoconf: Limitations of Usual Tools \[gnu.org\]"
+#:
+#: [inclusivenaming]:           <https://inclusivenaming.org/>                                                                       "Inclusive Naming Initiative \[inclusivenaming.org\]"
 #:
 ################################################################################
 

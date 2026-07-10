@@ -4,14 +4,14 @@
 <!-- ########################### DO NOT EDIT! ########################### -->
 <!-- #################################################################### -->
 
-# libdeque
+# `libdeque.sh`
 
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
 ## SYNOPSIS
 
-_Full synopsis, description, arguments, examples and other information is
- documented with each individual command._
+_Full synopsis, description, arguments, examples and other information is_
+_documented with each individual command._
 
 ---------------------------------------------------------
 
@@ -78,6 +78,18 @@ _Full synopsis, description, arguments, examples and other information is
 
 ---------------------------------------------------------
 
+_NOTABLE CHANGES_
+<!-- -------- -->
+
+As of `v1.1.1` the config variable
+[`BS_LIBDEQUE_CONFIG_USE_SAFER_DEQUE`](#bs_libdeque_config_use_safer_deque)
+has been depreciated in favor of
+[`BS_LIBDEQUE_CONFIG_ALLOW_UNSAFE_DATA_FORMAT`](#bs_libdeque_config_allow_unsafe_data_format).
+This change is non-breaking, but users should update their configuration
+accordingly.
+
+Depreciated code will be removed in `v2.0.0`.
+
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
 ## DESCRIPTION
@@ -121,11 +133,12 @@ _The types `queue` and `stack` are specializations of `deque`, so provided
   the command was completed successfully.
 - For any command which is intended to perform a test, an exit status of
   `1` (`<one>`) indicates "false", while `0` (`<zero>`) indicates "true".
-- An exit status that is NOT `0` (`<zero>`) from an external command will
+- An exit status that is _NOT_ `0` (`<zero>`) from an external command will
   be propagated to the caller where relevant (and possible).
-- For any usage error (e.g. an unsupported variable name), the `EX_USAGE`
-  error code from [FreeBSD `SYSEXITS(3)`][sysexits] is used.
-- Configuration SHOULD NOT change the value of any exit status.
+- Exit status' not covered by any of the above use values as described in
+  [FreeBSD `SYSEXITS(3)`][sysexits] - including the `EX_USAGE` which is used
+  for all usage errors.
+- Exit status is configuration agnostic.
 
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
@@ -140,18 +153,18 @@ set manually to force specific configurations.
 In additional to these, there are a number of variables that are set by the
 library to convey information outside of command invocation.
 
-If unset, some variables will take an initial value from a _BetterScripts_
-_POSIX Suite_ wide variable, these allow the same configuration to be used by
-all libraries in the suite.
+If unset, some variables will take an initial value from a common `shtoolkit`
+variable applicable to all libraries, these allow the same configuration to
+be used across libraries more easily.
 
 After the library has been sourced, external commands must not set library
-environment variables that are classified as CONSTANT. Variables may use
+environment variables that are classified as _CONSTANT_. Variables may use
 the `readonly` command to enforce this.
 
 **_If not otherwise specified, an `<unset>` variable is equivalent to the_**
 **_default value._**
 
-_For more details see the common suite [documentation](./README.MD#environment)._
+_For more details see the `shtoolkit` general [documentation](./README.MD#environment)._
 
 <!-- ------------------------------------------------ -->
 
@@ -162,8 +175,8 @@ _For more details see the common suite [documentation](./README.MD#environment).
 #### `BS_LIBDEQUE_CONFIG_NO_Z_SHELL_SETOPT`
 
 - Suite:    [`BETTER_SCRIPTS_CONFIG_NO_Z_SHELL_SETOPT`](./README.MD#better_scripts_config_no_z_shell_setopt)
-- Type:     FLAG
-- Class:    CONSTANT
+- Type:     _FLAG_
+- Class:    _CONSTANT_
 - Default:  \<automatic>
 - \[Disable]/Enable using `setopt` in _Z Shell_ to ensure
   _POSIX.1_ like behavior.
@@ -176,8 +189,8 @@ _For more details see the common suite [documentation](./README.MD#environment).
 #### `BS_LIBDEQUE_CONFIG_NO_GREP_F`
 
 - Suite:    [`BETTER_SCRIPTS_CONFIG_NO_GREP_F`](./README.MD#better_scripts_config_no_grep_f)
-- Type:     FLAG
-- Class:    CONSTANT
+- Type:     _FLAG_
+- Class:    _CONSTANT_
 - Default:  \<automatic>
 - \[Disable]/Enable using the non-standard `fgrep`
   instead of `grep -F`.
@@ -186,84 +199,6 @@ _For more details see the common suite [documentation](./README.MD#environment).
 - While `grep -F` is standard, it is not always available
   but in the cases it is not `fgrep` often is and
   provides the required functionality.
-
-<!-- ------------------------------------------------ -->
-
-### USER PREFERENCE
-
----------------------------------------------------------
-
-#### `BS_LIBDEQUE_CONFIG_QUIET_ERRORS`
-
-- Suite:    [`BETTER_SCRIPTS_CONFIG_QUIET_ERRORS`](./README.MD#better_scripts_config_quiet_errors)
-- Type:     FLAG
-- Class:    VARIABLE
-- Default:  _OFF_
-- \[Enable]/Disable library error message output.
-- _OFF_: error messages will be written to `STDERR` as:
-  `[libdeque::<COMMAND>]: ERROR: <MESSAGE>`.
-- _ON_: library error messages will be suppressed.
-- The most recent error message is always available in
-  [`BS_LIBDEQUE_LAST_ERROR`](#bs_libdeque_last_error)
-  even when error output is suppressed.
-- Both the library version of this option and the
-  suite version can be modified between command
-  invocations and will affect the next command.
-- Does NOT affect errors from non-library commands, which
-  _may_ still produce output.
-
----------------------------------------------------------
-
-#### `BS_LIBDEQUE_CONFIG_FATAL_ERRORS`
-
-- Suite:    [`BETTER_SCRIPTS_CONFIG_FATAL_ERRORS`](./README.MD#better_scripts_config_fatal_errors)
-- Type:     FLAG
-- Class:    VARIABLE
-- Default:  _OFF_
-- Enable/\[Disable] causing library errors to terminate
-  the current (sub-)shell.
-- _OFF_: errors stop any further processing, and cause a
-  non-zero exit status, but do not cause an exception.
-- _ON_: any library error will cause an "unset variable"
-  shell exception using the
-  [`${parameter:?[word]}`][posix_param_expansion]
-  parameter expansion, where `word` is set to an error
-  message that _should_ be displayed by the shell (this
-  message is NOT suppressed by
-  [`BS_LIBDEQUE_CONFIG_QUIET_ERRORS`](#bs_libdeque_config_quiet_errors)).
-- Both the library version of this option and the
-  suite version can be modified between command
-  invocations and will affect the next command.
-
----------------------------------------------------------
-
-#### `BS_LIBDEQUE_CONFIG_USE_SAFER_DEQUE`
-
-- Type:     FLAG
-- Class:    CONSTANT
-- Default:  _OFF_
-- Enable/\[Disable] the use of an internal format for
-  `deque`, `queue`, and `stack` that is slightly safer.
-- _OFF_: don't use the safer format, but if any value
-  added contains text that matches the internal
-  delimiters errors _will_ occur.
-- _ON_: use the safer format, at the expense of some
-  performance.
-- The internal delimiters used to create the data
-  structures that enable `deque`, `queue`, and `stack`
-  types have been chosen to be highly unlikely to occur
-  in any normal data, however it remains possible that
-  they could be present. Setting this flag to _ON_ causes
-  every value added to be modified such that it can no
-  longer match the internal values, removing a possible
-  (though unlikely) source of errors. Unfortunately this
-  can result in lower performance, the extent of which
-  is largely dependent on the contents of the values
-  added.
-- This affects all three data types; there is no
-  available mechanism for applying this to a single type.
-- Has a performance impact.
-  Prefer **_OFF_** for performance.
 
 <!-- ------------------------------------------------ -->
 
@@ -357,6 +292,104 @@ Variables that convey library information.
 - Set (and non-null) once the library has been sourced.
 - Dependant scripts can query if this variable is set to
   determine if this file has been sourced.
+
+<!-- ------------------------------------------------ -->
+
+### USER PREFERENCE
+
+---------------------------------------------------------
+
+#### `BS_LIBDEQUE_CONFIG_QUIET_ERRORS`
+
+- Suite:    [`BETTER_SCRIPTS_CONFIG_QUIET_ERRORS`](./README.MD#better_scripts_config_quiet_errors)
+- Type:     _FLAG_
+- Class:    _VARIABLE_
+- Default:  _OFF_
+- \[Enable]/Disable library error message output.
+- _OFF_: error messages will be written to `STDERR` as:
+  `[libdeque::<COMMAND>]: ERROR: <MESSAGE>`.
+- _ON_: library error messages will be suppressed.
+- The most recent error message is always available in
+  [`BS_LIBDEQUE_LAST_ERROR`](#bs_libdeque_last_error)
+  even when error output is suppressed.
+- Both the library version of this option and the
+  suite version can be modified between command
+  invocations and will affect the next command.
+- Does NOT affect errors from non-library commands, which
+  _may_ still produce output.
+
+---------------------------------------------------------
+
+#### `BS_LIBDEQUE_CONFIG_FATAL_ERRORS`
+
+- Suite:    [`BETTER_SCRIPTS_CONFIG_FATAL_ERRORS`](./README.MD#better_scripts_config_fatal_errors)
+- Type:     _FLAG_
+- Class:    _VARIABLE_
+- Default:  _OFF_
+- Enable/\[Disable] causing library errors to terminate
+  the current (sub-)shell.
+- _OFF_: errors stop any further processing, and cause a
+  non-zero exit status, but do not cause an exception.
+- _ON_: any library error will cause an "unset variable"
+  shell exception using the
+  [`${parameter:?[word]}`][posix_param_expansion]
+  parameter expansion, where `word` is set to an error
+  message that _should_ be displayed by the shell (this
+  message is NOT suppressed by
+  [`BS_LIBDEQUE_CONFIG_QUIET_ERRORS`](#bs_libdeque_config_quiet_errors)).
+- Both the library version of this option and the
+  suite version can be modified between command
+  invocations and will affect the next command.
+
+---------------------------------------------------------
+
+#### `BS_LIBDEQUE_CONFIG_USE_SAFER_DEQUE`
+
+- Type:     _FLAG_
+- Class:    _CONSTANT_
+- _**DEPRECIATED, DO NOT USE:**_ Will be removed in
+  version 2.0.0.
+- _Usage of this variable will trigger a warning in the
+  version prior to removal._
+- Replaced by
+  [`BS_LIBDEQUE_CONFIG_ALLOW_UNSAFE_DATA_FORMAT`](#bs_libdeque_config_allow_unsafe_data_format),
+  which is identical but with inverted meaning - the new
+  variable takes precedence over this variable. Where
+  the new variable is unset this variable will remain
+  effective until it is removed in a future version.
+
+---------------------------------------------------------
+
+#### `BS_LIBDEQUE_CONFIG_ALLOW_UNSAFE_DATA_FORMAT`
+
+- Type:     _FLAG_
+- Class:    _CONSTANT_
+- Default:  _OFF_
+- Enable/\[Disable] the use of an internal format for
+  `deque`, `queue`, and `stack` that is slightly less
+  safe but has better performance.
+- _ON_: don't use the safer format, but if any value
+  added contains text that matches the internal
+  delimiters errors _will_ occur.
+- _OFF_: use the safer format, at the expense of some
+  performance.
+- The internal delimiters used to create the data
+  structures that enable `deque`, `queue`, and `stack`
+  types have been chosen to be highly unlikely to occur
+  in any normal data, however it remains possible that
+  they could be present. Setting this flag to _ON_ causes
+  every value added to be modified such that it can no
+  longer match the internal values, removing a possible
+  (though unlikely) source of errors. Unfortunately this
+  can result in lower performance, the extent of which
+  is largely dependent on the contents of the values
+  added.
+- This affects all three data types; there is no
+  available mechanism for applying this to a single type.
+- Has a performance impact.
+  Prefer **_OFF_** for performance.
+- If set, this value has preference over the depreciated
+  [`BS_LIBDEQUE_CONFIG_USE_SAFER_DEQUE`](#bs_libdeque_config_use_safer_deque).
 
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
@@ -577,8 +610,8 @@ _EXAMPLES_
 <!-- - -->
 
     deque_peek_back 'MyDeque' 'MyVar'
-    MyVar="$(deque_peek_back 'MyDeque' )"
-    MyVar="$(deque_peek_back 'MyDeque' -)"
+    MyVar=$(deque_peek_back 'MyDeque' )
+    MyVar=$(deque_peek_back 'MyDeque' -)
 
 _NOTES_
 <!-- -->
@@ -619,8 +652,8 @@ _EXAMPLES_
 <!-- - -->
 
     deque_peek_front 'MyDeque' 'MyVar'
-    MyVar="$(deque_peek_front 'MyDeque' )"
-    MyVar="$(deque_peek_front 'MyDeque' -)"
+    MyVar=$(deque_peek_front 'MyDeque' )
+    MyVar=$(deque_peek_front 'MyDeque' -)
 
 _NOTES_
 <!-- -->
@@ -674,8 +707,8 @@ _EXAMPLES_
 <!-- - -->
 
     deque_size 'MyDeque' 'MySize'
-    MySize="$(deque_size 'MyDeque' )"
-    MySize="$(deque_size 'MyDeque' -)"
+    MySize=$(deque_size 'MyDeque' )
+    MySize=$(deque_size 'MyDeque' -)
 
 _NOTES_
 <!-- -->
@@ -781,7 +814,7 @@ _ARGUMENTS_
 
 `QUEUE` \[in:ref]
 
-- Variable containing a deque.
+- Variable containing a queue.
 - MUST be a valid _POSIX.1_ name.
 
 `OUTPUT` \[out:ref]
@@ -840,8 +873,8 @@ _EXAMPLES_
 <!-- - -->
 
     queue_peek 'MyQueue' 'MyVar'
-    MyVar="$(queue_peek 'MyQueue' )"
-    MyVar="$(queue_peek 'MyQueue' -)"
+    MyVar=$(queue_peek 'MyQueue' )
+    MyVar=$(queue_peek 'MyQueue' -)
 
 _NOTES_
 <!-- -->
@@ -883,8 +916,8 @@ _EXAMPLES_
 <!-- - -->
 
     queue_size 'MyQueue' 'MySize'
-    MySize="$(queue_size 'MyQueue' )"
-    MySize="$(queue_size 'MyQueue' -)"
+    MySize=$(queue_size 'MyQueue' )
+    MySize=$(queue_size 'MyQueue' -)
 
 _NOTES_
 <!-- -->
@@ -992,7 +1025,7 @@ _SYNOPSIS_
 _ARGUMENTS_
 <!-- -- -->
 
-`STACK` \[out:ref]
+`STACK` \[in:ref]
 
 - Variable containing a stack.
 - MUST be a valid _POSIX.1_ name.
@@ -1053,8 +1086,8 @@ _EXAMPLES_
 <!-- - -->
 
     stack_peek 'MyStack' 'MyVar'
-    MyVar="$(stack_peek 'MyStack' )"
-    MyVar="$(stack_peek 'MyStack' -)"
+    MyVar=$(stack_peek 'MyStack' )
+    MyVar=$(stack_peek 'MyStack' -)
 
 _NOTES_
 <!-- -->
@@ -1096,8 +1129,8 @@ _EXAMPLES_
 <!-- - -->
 
     stack_size 'MyStack' 'MySize'
-    MySize="$(stack_size 'MyStack' )"
-    MySize="$(stack_size 'MyStack' -)"
+    MySize=$(stack_size 'MyStack' )
+    MySize=$(stack_size 'MyStack' -)
 
 _NOTES_
 <!-- -->
@@ -1147,17 +1180,12 @@ _NOTES_
 
 ## STANDARDS
 
-- [_POSIX.1-2008_][posix]
-  - also known as:
-    - _The Open Group Base Specifications Issue 7_
-    - _IEEE Std 1003.1-2008_
-    - _The Single UNIX Specification Version 4 (SUSv4)_
-  - the more recent
-    [_POSIX.1-2017_][posix_2017]
-    is functionally identical to _POSIX.1-2008_, but incorporates some errata
-- [FreeBSD SYSEXITS(3)][sysexits]
-  - while not truly standard, these are used by many projects
-- [Semantic Versioning v2.0.0][semver]
+- [_POSIX.1-2008_][posix].
+- [FreeBSD SYSEXITS(3)][sysexits].
+- [Semantic Versioning v2.0.0][semver].
+- [Inclusive Naming Initiative][inclusivenaming].
+
+_For more details see the `shtoolkit` general [documentation](./README.MD#standards)._
 
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
@@ -1194,21 +1222,21 @@ _NOTES_
 
 ## CAVEATS
 
-_The internal structure of a `deque`, `queue`, or `stack` is subject to
- change without notice and should not be relied upon. In particular,
- currently all three types are interchangeable (e.g. a `stack` can be used
- with commands for a `queue`, etc.), however, this should not be assumed:
- types should always be used only with the commands for the specific type._
+- The internal structure of a deque, queue, or stack is subject to change
+  without notice and should not be relied upon. In particular, currently
+  all three types are interchangeable (e.g. a `stack` can be used with
+  commands for a `queue`, etc.), however, this should not be assumed: types
+  should always be used only with the commands for the specific type.
+- The maximum size of any deque, queue, or stack is limited by the
+  environment in which it is used, specifically the command line length limit
+  may cause issues with these structures if used as arguments to some
+  commands. Other limitations may also exist. It is highly recommended that
+  variables containing a deque, queue, or stack are **not** marked for
+  export.
+- The library attempts to account for differences between implementations
+  (where known), however, it is not possible to do this for every case.
 
-The maximum size of any deque, queue or stack is limited by the environment
-in which it is used, specifically they will not be able to exceed the
-command line length limit, though other limitations may also exist.
-
-Note that exporting a variable containing any deque, queue or stack will
-cause that variable to be counted against the command line length limit
-**TWICE** (for any library operations).
-
-_For more details see the common suite [documentation](./README.MD#caveats)._
+_For more details see the `shtoolkit` general [documentation](./README.MD#caveats)._
 
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
@@ -1231,8 +1259,16 @@ operations occur within the same subshell, or it will not work as expected.
 <!-- REFERENCES -->
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
+[markdown]:                  <https://daringfireball.net/projects/markdown/syntax>                                                "Markdown: Syntax [daringfireball.net]"
+[commonmark]:                <https://commonmark.org/>                                                                            "CommonMark [spec.commonmark.org]"
+[commonmark_spec]:           <https://spec.commonmark.org/current/>                                                               "CommonMark Spec (current) [spec.commonmark.org]"
+
 [posix]:                     <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition>                                       "POSIX.1-2008 \[pubs.opengroup.org\]"
-[posix_2017]:                <https://pubs.opengroup.org/onlinepubs/9699919799>                                                   "POSIX.1-2017 \[pubs.opengroup.org\]"
+[posix_2013]:                <https://pubs.opengroup.org/onlinepubs/9699919799.2013edition>                                       "POSIX.1-2013 \[pubs.opengroup.org\]"
+[posix_2016]:                <https://pubs.opengroup.org/onlinepubs/9699919799.2016edition>                                       "POSIX.1-2016 \[pubs.opengroup.org\]"
+[posix_2018]:                <https://pubs.opengroup.org/onlinepubs/9699919799.2018edition>                                       "POSIX.1-2018 \[pubs.opengroup.org\]"
+[posix_2024]:                <https://pubs.opengroup.org/onlinepubs/9799919799.2024edition>                                       "POSIX.1-2024 \[pubs.opengroup.org\]"
+
 [posix_bre]:                 <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap09.html#tag_09_03>     "Basic Regular Expression \[pubs.opengroup.org\]"
 [posix_ere]:                 <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap09.html#tag_09_04>     "Extended Regular Expression \[pubs.opengroup.org\]"
 [posix_re_bracket_exp]:      <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap09.html#tag_09_03_05>  "RE Bracket Expression \[pubs.opengroup.org\]"
@@ -1240,8 +1276,12 @@ operations occur within the same subshell, or it will not work as expected.
 [posix_getopts]:             <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/utilities/getopts.html>                "getopts \[pubs.opengroup.org\]"
 [posix_utility_conventions]: <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap12.html>               "POSIX: Utility Conventions \[pubs.opengroup.org\]"
 [posix_variable]:            <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap03.html#tag_03_230>    "Definitions: Name \[pubs.opengroup.org\]"
+[posix_execl]:               <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/functions/execl.html>                  "execl \[pubs.opengroup.org\]"
+[posix_chars]:               <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap06.html#tag_06_01>     "Portable Character Set \[pubs.opengroup.org\]"
+[posix_glob]:                <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/utilities/V3_chap02.html#tag_18_13>    "Pattern Matching Notation \[pubs.opengroup.org\]"
 
 [sysexits]:                  <https://www.freebsd.org/cgi/man.cgi?sysexits(3)>                                                    "FreeBSD SYSEXITS(3) \[freebsd.org\]"
+
 [semver]:                    <https://semver.org/>                                                                                "Semantic Versioning \[semver.org\]"
 
 [util_linux]:                <https://git.kernel.org/pub/scm/utils/util-linux/util-linux.git/about/>                              "util-linux (about) \[git.kernel.org\]"
@@ -1250,5 +1290,10 @@ operations occur within the same subshell, or it will not work as expected.
 
 [man_page]:                  <https://wikipedia.org/wiki/Man_page>                                                                "man page \[wikipedia.org\]"
 
-[autoconf_portable]:         <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Portable-Shell.html>           "autoconf: Portable Shell Programming \[gnu.org\]"
+[autoconf_portable]:         <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Portable-Shell.html>                  "autoconf: Portable Shell Programming \[gnu.org\]"
+[autoconf_awk]:              <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Limitations-of-Usual-Tools.html#awk>  "autoconf: Limitations of Usual Tools \[gnu.org\]"
+[autoconf_sed]:              <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Limitations-of-Usual-Tools.html#sed>  "autoconf: Limitations of Usual Tools \[gnu.org\]"
+[autoconf_grep]:             <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Limitations-of-Usual-Tools.html#grep> "autoconf: Limitations of Usual Tools \[gnu.org\]"
+
+[inclusivenaming]:           <https://inclusivenaming.org/>                                                                       "Inclusive Naming Initiative \[inclusivenaming.org\]"
 

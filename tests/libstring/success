@@ -1,0 +1,1128 @@
+#!/usr/bin/env false
+# SPDX-License-Identifier: MPL-2.0
+#################################### LICENSE ###################################
+#******************************************************************************#
+#*                                                                            *#
+#* BetterScripts 'libstring/success': Tests for 'libstring' success           *#
+#* conditions.                                                                *#
+#*                                                                            *#
+#* Copyright (c) 2026 BetterScripts ( better.scripts@proton.me,               *#
+#*                                    https://github.com/BetterScripts )      *#
+#*                                                                            *#
+#* This file is part of the BetterScripts `shtoolkit` (aka _the suite_).      *#
+#*                                                                            *#
+#* This Source Code Form is subject to the terms of the Mozilla Public        *#
+#* License, v. 2.0. If a copy of the MPL was not distributed with this        *#
+#* file, You can obtain one at https://mozilla.org/MPL/2.0/.                  *#
+#*                                                                            *#
+#* -------------------------------------------------------------------------- *#
+#*                                                                            *#
+#* ADDENDUM:                                                                  *#
+#*                                                                            *#
+#* In addition to the Mozilla Public License a copy of LICENSE.MD should have *#
+#* been provided alongside this file; LICENSE.MD clarifies how the Mozilla    *#
+#* Public License v2.0 applies to this file and MAY confer additional rights. *#
+#*                                                                            *#
+#* Should there be any apparent ambiguity (implied or otherwise) the terms    *#
+#* and conditions from the Mozilla Public License v2.0 shall apply.           *#
+#*                                                                            *#
+#* If a copy of LICENSE.MD was not provided it can be obtained from           *#
+#* https://github.com/BetterScripts/shtoolkit/LICENSE.MD.                     *#
+#*                                                                            *#
+#* NOTE:                                                                      *#
+#*                                                                            *#
+#* The Mozilla Public License v2.0 is compatible with the GNU General Public  *#
+#* License v2.0.                                                              *#
+#*                                                                            *#
+#******************************************************************************#
+################################################################################
+
+############################### LIBSTRING/SUCCESS ###############################
+#
+# Documentation is written inline formatted as [`Markdown`][markdown], this is
+# in addition to `shtoolkit` general documentation which includes details
+# common to multiple libraries that may not be noted here.
+#
+# The included `Makefile` can be used to generate standalone documentation in
+# various formats with various verbosity settings. The `Makefile` can also be
+# used to install scripts and documentation in appropriate locations.
+#
+# As far as possible, terminology and conventions follow those of the
+# [_POSIX.1-2008_ Standard][posix_2008].
+#
+#===============================================================================
+## cSpell:Ignore libstring testrunner testwrapper LSTS toupper tolower
+################################ DOCUMENTATION #################################
+#
+#% % libstring-success(7) BetterScripts | Tests for 'libstring' success conditions.
+#% % BetterScripts (better.scripts@proton.me)
+#
+#: # LIBSTRING/SUCCESS
+#:
+#  `libstring` Test Success (LSTS)
+#  ==============================
+#
+#  Tests for `libstring` checking success conditions.
+#
+################################################################################
+
+############################## SHELLCHECK: GLOBAL ##############################
+# shellcheck shell=sh
+# shellcheck enable=avoid-nullary-conditions
+# shellcheck enable=check-extra-masked-returns
+# shellcheck enable=deprecate-which
+# shellcheck enable=require-variable-braces
+################################################################################
+
+#===============================================================================
+#===============================================================================
+#  TESTS
+#===============================================================================
+#===============================================================================
+
+#_______________________________________________________________________________
+#  fn_bs_lats_constants
+#  --------------------
+#
+#  TESTS:   Constants Are Set (and look reasonable)
+#_______________________________________________________________________________
+fn_bs_lsts_constants() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBSTRING_SOURCED-}" || return $?
+
+    #-----------------------------------
+
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBSTRING_VERSION_MAJOR-}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBSTRING_VERSION_MINOR-}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBSTRING_VERSION_PATCH-}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBSTRING_VERSION_FULL-}"  || return $?
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBSTRING_VERSION-}"       || return $?
+
+    #  Check they are version numbers are actually numbers
+    test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBSTRING_VERSION_MAJOR-}" -notmatch ".*[^0123456789].*" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBSTRING_VERSION_MINOR-}" -notmatch ".*[^0123456789].*" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBSTRING_VERSION_PATCH-}" -notmatch ".*[^0123456789].*" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBSTRING_VERSION_FULL-}"  -notmatch ".*[^0123456789].*" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBSTRING_VERSION-}" -match "BetterScripts 'libstring' v.*" || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lsts_string_length
+#  --------------------
+#
+#  TESTS:   `string_length`
+#_______________________________________________________________________________
+fn_bs_lsts_string_length() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  TestString='The quick brown fox jumps over the lazy dog'
+  TestLength=43
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    TestOutput=; unset TestOutput
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+        string_length         \
+          'TestOutput'        \
+          "${TestString}"     || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput}" -eq "${TestLength}" || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Single-argument form (`OUTPUT` omitted, output via `STDOUT`)
+  {
+    TestOutput=$(string_length "${TestString}") || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${TestOutput}" -eq "${TestLength}" || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lsts_string_quote
+#  --------------------
+#
+#  TESTS:   `string_quote`
+#_______________________________________________________________________________
+fn_bs_lsts_string_quote() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    TestString1='The quick brown fox jumps over the lazy dog'
+    TestQuoted1="'The quick brown fox jumps over the lazy dog'"
+
+    Quoted=; unset Quoted
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      string_quote            \
+        'Quoted'              \
+        "${TestString1}"       || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "_${Quoted}" = "_${TestQuoted1}" || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    TestString2='"The quick brown fox jumps over the lazy dog,"'
+    TestQuoted2="'\"The quick brown fox jumps over the lazy dog,\"'"
+
+    Quoted=; unset Quoted
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      string_quote            \
+        'Quoted'              \
+        "${TestString2}"       || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "_${Quoted}" = "_${TestQuoted2}" || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    TestString3='The quick brown fox jumps "
+" over the lazy dog,'
+    TestQuoted3="'The quick brown fox jumps \"
+\" over the lazy dog,'"
+
+    Quoted=; unset Quoted
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      string_quote            \
+        'Quoted'              \
+        "${TestString3}"      || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "_${Quoted}" = "_${TestQuoted3}" || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    TestString4='The quick brown '\''fox'\'' jumps over the lazy dog'
+    TestQuoted4="'The quick brown '\''fox'\'' jumps over the lazy dog'"
+
+    Quoted=; unset Quoted
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      string_quote            \
+        'Quoted'              \
+        "${TestString4}"       || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "_${Quoted}" = "_${TestQuoted4}" || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lsts_string_join
+#  --------------------
+#
+#  TESTS:   `string_join`
+#_______________________________________________________________________________
+fn_bs_lsts_string_join() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  TestString1='The quick brown'
+  TestString2='"fox jumps over"'
+  TestString3='the lazy "
+" dog,'
+  TestJoined="${TestString1} ${TestString2} ${TestString3}"
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    Joined=; unset Joined
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+      string_join             \
+        'Joined'              \
+        "${TestString1}"      \
+        "${TestString2}"      \
+        "${TestString3}"      || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "_${Joined}" = "_${TestJoined}" || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    case $(
+      (
+        set 'BS_DUMMY_PARAM' 'S' 'U' 'C' 'C' 'E' 'S' 'S' && shift
+        IFS="$(printf '_')" && export IFS
+        printf '%s\n' "$*"
+      ) 2>&1 || echo 'FAILED'
+    ) in
+    'S_U_C_C_E_S_S')
+      (
+        IFS="$(printf '_')" && export IFS
+
+        Joined=; unset Joined
+        test_run_expect_success   \
+          ${LINENO:+"@${LINENO}"} \
+          string_join             \
+            'Joined'              \
+            "${TestString1}"      \
+            "${TestString2}"      \
+            "${TestString3}"      || return $?
+
+        test_assert ${LINENO:+"@${LINENO}"} "_${Joined}" = "_${TestJoined}" || return $?
+      )
+    ;;
+    *) echo 'IFS not settable: skipping additional string join tests' ;;
+    esac
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lsts_string_toupper_tolower
+#  --------------------
+#
+#  TESTS:   `string_toupper`/`string_tolower`
+#_______________________________________________________________________________
+fn_bs_lsts_string_toupper_tolower() { ## cSpell:Ignore toupper tolower
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  TestString1='The Quick Brown Fox Jumps Over The Lazy Dog 1 Time'
+   TestUpper1='THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG 1 TIME'
+   TestLower1='the quick brown fox jumps over the lazy dog 1 time'
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    TestOutput=; unset TestOutput
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+        string_toupper        \
+          'TestOutput'        \
+          "${TestString1}"    || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput}" = "_${TestUpper1}" || return $?
+   }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    TestOutput=; unset TestOutput
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+        string_tolower        \
+          'TestOutput'        \
+          "${TestString1}"    || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput}" = "_${TestLower1}" || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lsts_string_trim
+#  --------------------
+#
+#  TESTS:   `string_trim`
+#_______________________________________________________________________________
+fn_bs_lsts_string_trim() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  TestString='   The quick brown fox   '
+  TestTrimmedAll='The quick brown fox'
+  TestTrimmedLeft='The quick brown fox   '
+  TestTrimmedRight='   The quick brown fox'
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Default (equivalent to `--all`)
+  {
+    TestOutput=; unset TestOutput
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+        string_trim           \
+          'TestOutput'        \
+          "${TestString}"     || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput}" = "_${TestTrimmedAll}" || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  `--left`
+  {
+    TestOutput=; unset TestOutput
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+        string_trim           \
+          '--left'            \
+          'TestOutput'        \
+          "${TestString}"     || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput}" = "_${TestTrimmedLeft}" || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  `--right`
+  {
+    TestOutput=; unset TestOutput
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+        string_trim           \
+          '--right'           \
+          'TestOutput'        \
+          "${TestString}"     || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput}" = "_${TestTrimmedRight}" || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  `--all`
+  {
+    TestOutput=; unset TestOutput
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+        string_trim           \
+          '--all'             \
+          'TestOutput'        \
+          "${TestString}"     || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput}" = "_${TestTrimmedAll}" || return $?
+  }
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #  Single-argument form (`OUTPUT` omitted, output via `STDOUT`)
+  {
+    TestOutput=$(string_trim "${TestString}") || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput}" = "_${TestTrimmedAll}" || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lsts_string_index
+#  -----------------------------
+fn_bs_lsts_string_index() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  BS_LSTS_TestIdx1_Source='The quick brown fox jumps over the lazy dog'
+  BS_LSTS_TestIdx1_Index=$(( 0 + BS_LSTS_STRING_FIRST_INDEX ))
+  BS_LSTS_TestIdx1_Sub_E='The'
+  BS_LSTS_TestIdx1_Sub_F='The'
+  BS_LSTS_TestIdx1_Sub_G='The'
+  BS_LSTS_TestIdx1_Sub_W='The'
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  BS_LSTS_TestIdx2_Source='The quick brown fox jumps
+over the lazy dog'
+  BS_LSTS_TestIdx2_Index=$(( 26 + BS_LSTS_STRING_FIRST_INDEX ))
+  BS_LSTS_TestIdx2_Sub_E='([ou]..[rs] )'
+  BS_LSTS_TestIdx2_Sub_F='over '
+  BS_LSTS_TestIdx2_Sub_G='\([ou].\{2\}[rs] \)'
+  BS_LSTS_TestIdx2_Sub_W='[ou]??[rs] '
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  BS_LSTS_TestIdx3_Source='The quick brown fox
+ jumps over the lazy dog'
+  BS_LSTS_TestIdx3_Index=$(( 16 + BS_LSTS_STRING_FIRST_INDEX ))
+  BS_LSTS_TestIdx3_Sub_E='([fg].[xy])\n'
+  BS_LSTS_TestIdx3_Sub_F='fox
+'
+  BS_LSTS_TestIdx3_Sub_G='\([fg].\{1\}[xy]\)\n'
+  BS_LSTS_TestIdx3_Sub_W='[fg]?[xy]?'
+
+  #=========================================================
+  #
+  #=========================================================
+  for TestMode in E F G W
+  do
+    eval "
+      BS_LSTS_TestIdx1_Sub=\${BS_LSTS_TestIdx1_Sub_${TestMode}}
+      BS_LSTS_TestIdx2_Sub=\${BS_LSTS_TestIdx2_Sub_${TestMode}}
+      BS_LSTS_TestIdx3_Sub=\${BS_LSTS_TestIdx3_Sub_${TestMode}}
+    "
+
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    {
+      TestOutput=; unset TestOutput
+      test_run_expect_success             \
+        ${LINENO:+"@${LINENO}"}           \
+          string_index                    \
+            "-${TestMode}"                \
+            'TestOutput'                  \
+            "${BS_LSTS_TestIdx1_Source}"  \
+            "${BS_LSTS_TestIdx1_Sub-}"    || return $?
+
+      test_assert "@${LINENO-?} [${TestMode}]" "${TestOutput}" -eq "${BS_LSTS_TestIdx1_Index}" || return $?
+
+      TestOutput=; unset TestOutput
+      test_run_expect_success             \
+        ${LINENO:+"@${LINENO}"}           \
+          string_index                    \
+            "-${TestMode}"                \
+            'TestOutput'                  \
+            "${BS_LSTS_TestIdx2_Source}"  \
+            "${BS_LSTS_TestIdx2_Sub-}"    || return $?
+
+      test_assert "@${LINENO-?} [${TestMode}]" "${TestOutput}" -eq "${BS_LSTS_TestIdx2_Index}" || return $?
+
+      TestOutput=; unset TestOutput
+      test_run_expect_success             \
+        ${LINENO:+"@${LINENO}"}           \
+          string_index                    \
+            "-${TestMode}"                \
+            'TestOutput'                  \
+            "${BS_LSTS_TestIdx3_Source}"  \
+            "${BS_LSTS_TestIdx3_Sub-}"    || return $?
+
+      test_assert "@${LINENO-?} [${TestMode}]" "${TestOutput}" -eq "${BS_LSTS_TestIdx3_Index}" || return $?
+    }
+  done
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lsts_string_match
+#  -----------------------------
+fn_bs_lsts_string_match() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  BS_LSTS_TestIdx1_Source='The quick brown fox jumps over the lazy dog'
+  BS_LSTS_TestIdx1_Index=$(( 0 + BS_LSTS_STRING_FIRST_INDEX ))
+  BS_LSTS_TestIdx1_Length=3
+  BS_LSTS_TestIdx1_Sub_E='The'
+  BS_LSTS_TestIdx1_Sub_F='The'
+  BS_LSTS_TestIdx1_Sub_G='The'
+  BS_LSTS_TestIdx1_Sub_W='The'
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  BS_LSTS_TestIdx2_Source='The quick brown fox jumps
+over the lazy dog'
+  BS_LSTS_TestIdx2_Index=$(( 26 + BS_LSTS_STRING_FIRST_INDEX ))
+  BS_LSTS_TestIdx2_Length=5
+  BS_LSTS_TestIdx2_Sub_E='([ou]..[rs] )'
+  BS_LSTS_TestIdx2_Sub_F='over '
+  BS_LSTS_TestIdx2_Sub_G='\([ou].\{2\}[rs] \)'
+  BS_LSTS_TestIdx2_Sub_W='[ou]??[rs] '
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  BS_LSTS_TestIdx3_Source='The quick brown fox
+ jumps over the lazy dog'
+  BS_LSTS_TestIdx3_Index=$(( 16 + BS_LSTS_STRING_FIRST_INDEX ))
+  BS_LSTS_TestIdx3_Length=4
+  BS_LSTS_TestIdx3_Sub_E='([fg].[xy])\n'
+  BS_LSTS_TestIdx3_Sub_F='fox
+'
+  BS_LSTS_TestIdx3_Sub_G='\([fg].\{1\}[xy]\)\n'
+  BS_LSTS_TestIdx3_Sub_W='[fg]?[xy]?'
+
+  #=========================================================
+  #
+  #=========================================================
+  for TestMode in E F G W
+  do
+    eval "
+      BS_LSTS_TestIdx1_Sub=\${BS_LSTS_TestIdx1_Sub_${TestMode}}
+      BS_LSTS_TestIdx2_Sub=\${BS_LSTS_TestIdx2_Sub_${TestMode}}
+      BS_LSTS_TestIdx3_Sub=\${BS_LSTS_TestIdx3_Sub_${TestMode}}
+    "
+
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    {
+      test_run_expect_success             \
+        ${LINENO:+"@${LINENO}"}           \
+          string_match                    \
+            "-${TestMode}"                \
+            "${BS_LSTS_TestIdx1_Source}"  \
+            "${BS_LSTS_TestIdx1_Sub-}"    || return $?
+
+      test_assert "@${LINENO-?} [${TestMode}]" "${BS_LIBSTRING_MATCH_START-}"  -eq "${BS_LSTS_TestIdx1_Index}" || return $?
+      test_assert "@${LINENO-?} [${TestMode}]" "${BS_LIBSTRING_MATCH_LENGTH-}" -eq "${BS_LSTS_TestIdx1_Length}" || return $?
+
+      test_run_expect_success             \
+        ${LINENO:+"@${LINENO}"}           \
+          string_match                    \
+            "-${TestMode}"                \
+            "${BS_LSTS_TestIdx2_Source}"  \
+            "${BS_LSTS_TestIdx2_Sub-}"    || return $?
+
+      test_assert "@${LINENO-?} [${TestMode}]" "${BS_LIBSTRING_MATCH_START-}"  -eq "${BS_LSTS_TestIdx2_Index}" || return $?
+      test_assert "@${LINENO-?} [${TestMode}]" "${BS_LIBSTRING_MATCH_LENGTH-}" -eq "${BS_LSTS_TestIdx2_Length}" || return $?
+
+      test_run_expect_success             \
+        ${LINENO:+"@${LINENO}"}           \
+          string_match                    \
+            "-${TestMode}"                \
+            "${BS_LSTS_TestIdx3_Source}"  \
+            "${BS_LSTS_TestIdx3_Sub-}"    || return $?
+
+      test_assert "@${LINENO-?} [${TestMode}]" "${BS_LIBSTRING_MATCH_START-}"  -eq "${BS_LSTS_TestIdx3_Index}" || return $?
+      test_assert "@${LINENO-?} [${TestMode}]" "${BS_LIBSTRING_MATCH_LENGTH-}" -eq "${BS_LSTS_TestIdx3_Length}" || return $?
+    }
+  done
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lsts_string_substr
+#  ------------------------------
+fn_bs_lsts_string_substr() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  TestString='The quick brown fox jumps over the lazy dog'
+   TestIndex=10
+  TestLength=10
+
+  TestSubstr0='brown fox '
+  TestSubstr1=' brown fox'
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    TestOutput=; unset TestOutput
+    test_run_expect_success   \
+      ${LINENO:+"@${LINENO}"} \
+        string_substr         \
+          'TestOutput'        \
+          "${TestString}"     \
+          "${TestIndex}"      \
+          "${TestLength}"     || return $?
+
+    case ${BS_LSTS_STRING_FIRST_INDEX:-0} in
+    0) test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput}" = "_${TestSubstr0}" || return $? ;;
+    1) test_assert ${LINENO:+"@${LINENO}"} "_${TestOutput}" = "_${TestSubstr1}" || return $? ;;
+    esac
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lsts_string_truncate
+#  --------------------------------
+fn_bs_lsts_string_truncate() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  TestString='The quick brown fox jumps over the lazy dog'
+  TestLength=19
+  TestResult='The quick brown fox'
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+  TestOutput=; unset TestOutput
+  test_run_expect_success   \
+    ${LINENO:+"@${LINENO}"} \
+      string_truncate       \
+        'TestOutput'        \
+        "${TestString}"     \
+        "${TestLength}"     || return $?
+
+  test_assert ${LINENO:+"@${LINENO}"} "${TestOutput}" = "${TestResult}" || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lsts_string_sub
+#  ------------------------------
+fn_bs_lsts_string_sub() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  BS_LSTS_TestSub1_Source='The quick brown fox jumps over the lazy dog'
+  BS_LSTS_TestSub1_Target='The quick brown &frog jumps over the lazy dog'
+    BS_LSTS_TestSub1_Repl='&frog'
+  BS_LSTS_TestSub1_Expr_E='([fg].[xy])'
+  BS_LSTS_TestSub1_Expr_F='fox'
+  BS_LSTS_TestSub1_Expr_G='\([fg].\{1\}[xy]\)'
+  BS_LSTS_TestSub1_Expr_W='[fg]?[xy]'
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  BS_LSTS_TestSub2_Source='The quick brown fox jumps
+over the lazy dog'
+  BS_LSTS_TestSub2_Target='The quick brown &frog jumps
+over the lazy dog'
+    BS_LSTS_TestSub2_Repl='&frog'
+  BS_LSTS_TestSub2_Expr_E='([fg].[xy])'
+  BS_LSTS_TestSub2_Expr_F='fox'
+  BS_LSTS_TestSub2_Expr_G='\([fg].\{1\}[xy]\)'
+  BS_LSTS_TestSub2_Expr_W='[fg]?[xy]'
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  BS_LSTS_TestSub3_Source='The quick brown fox
+ jumps over the lazy dog'
+  BS_LSTS_TestSub3_Target='The quick brown &frog jumps over the lazy dog'
+    BS_LSTS_TestSub3_Repl='&frog'
+  BS_LSTS_TestSub3_Expr_E='([fg].[xy])\n'
+  BS_LSTS_TestSub3_Expr_F='fox
+'
+  BS_LSTS_TestSub3_Expr_G='\([fg].\{1\}[xy]\)\n'
+  BS_LSTS_TestSub3_Expr_W='[fg]?[xy]?'
+
+  #=========================================================
+  #
+  #=========================================================
+  for TestMode in E F G W
+  do
+    eval "
+      BS_LSTS_TestSub1_Expr=\${BS_LSTS_TestSub1_Expr_${TestMode}}
+      BS_LSTS_TestSub2_Expr=\${BS_LSTS_TestSub2_Expr_${TestMode}}
+      BS_LSTS_TestSub3_Expr=\${BS_LSTS_TestSub3_Expr_${TestMode}}
+    "
+
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    {
+      TestSub=; unset TestSub
+      test_run_expect_success             \
+        ${LINENO:+"@${LINENO}"}           \
+          --output=TestSub                \
+          string_sub                      \
+            "-${TestMode}"                \
+            "${BS_LSTS_TestSub1_Source}"  \
+            "${BS_LSTS_TestSub1_Expr-}"   \
+            "${BS_LSTS_TestSub1_Repl}"    || return $?
+
+      test_assert "@${LINENO-?} [${TestMode}]" "_${TestSub-}" = "_${BS_LSTS_TestSub1_Target}" || return $?
+    }
+
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    {
+      TestSub=; unset TestSub
+      test_run_expect_success             \
+        ${LINENO:+"@${LINENO}"}           \
+          --output=TestSub                \
+          string_sub                      \
+            "-${TestMode}"                \
+            "${BS_LSTS_TestSub2_Source}"  \
+            "${BS_LSTS_TestSub2_Expr-}"   \
+            "${BS_LSTS_TestSub2_Repl}"    || return $?
+
+      test_assert "@${LINENO-?} [${TestMode}]" "_${TestSub-}" = "_${BS_LSTS_TestSub2_Target}" || return $?
+    }
+
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    {
+      TestSub=; unset TestSub
+      test_run_expect_success             \
+        ${LINENO:+"@${LINENO}"}           \
+          --output=TestSub                \
+          string_sub                      \
+            "-${TestMode}"                \
+            "${BS_LSTS_TestSub3_Source}"  \
+            "${BS_LSTS_TestSub3_Expr-}"   \
+            "${BS_LSTS_TestSub3_Repl}"    || return $?
+
+      test_assert "@${LINENO-?} [${TestMode}]" "_${TestSub-}" = "_${BS_LSTS_TestSub3_Target}" || return $?
+    }
+  done
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lsts_string_gsub
+#  ------------------------------
+fn_bs_lsts_string_gsub() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  BS_LSTS_TestGSub1_Source='The quick brown fox jumps over the lazy dog'
+  BS_LSTS_TestGSub1_Target='The quick brown frog jumps over the lazy dog'
+  BS_LSTS_TestGSub1_Expr_E='([fg].[xy])'
+  BS_LSTS_TestGSub1_Expr_G='\([fg].\{1\}[xy]\)'
+  BS_LSTS_TestGSub1_Expr_W='[fg]?[xy]'
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  BS_LSTS_TestGSub2_Source='The quick brown fox jumps
+over the lazy dog'
+  BS_LSTS_TestGSub2_Target='The quick brown frog jumps
+over the lazy dog'
+  BS_LSTS_TestGSub2_Expr_E='([fg].[xy])'
+  BS_LSTS_TestGSub2_Expr_G='\([fg].\{1\}[xy]\)'
+  BS_LSTS_TestGSub2_Expr_W='[fg]?[xy]'
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+  BS_LSTS_TestGSub3_Source='The quick brown fox
+ jumps over the lazy dog
+'
+  BS_LSTS_TestGSub3_Target='The quick brown frog jumps over the lazy dog'
+  BS_LSTS_TestGSub3_Expr_E='([fg].[xy])\n'
+  BS_LSTS_TestGSub3_Expr_G='\([fg].\{1\}[xy]\)\n'
+  BS_LSTS_TestGSub3_Expr_W='[fg]?[xy]?'
+
+  #=========================================================
+  #
+  #=========================================================
+  for TestMode in E G W
+  do
+    eval "
+      BS_LSTS_TestGSub1_Expr=\${BS_LSTS_TestGSub1_Expr_${TestMode}}
+      BS_LSTS_TestGSub2_Expr=\${BS_LSTS_TestGSub2_Expr_${TestMode}}
+      BS_LSTS_TestGSub3_Expr=\${BS_LSTS_TestGSub3_Expr_${TestMode}}
+    "
+
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    {
+      TestSub=; unset TestSub
+      test_run_expect_success             \
+        ${LINENO:+"@${LINENO}"}           \
+          --output=TestSub                \
+          string_gsub                     \
+            "-${TestMode}"                \
+            "${BS_LSTS_TestGSub1_Source}" \
+            "${BS_LSTS_TestGSub1_Expr-}"  \
+            'frog'                        || return $?
+
+      test_assert "@${LINENO-?} [${TestMode}]" "_${TestSub-}" = "_${BS_LSTS_TestGSub1_Target}" || return $?
+
+      TestSub=; unset TestSub
+      test_run_expect_success             \
+        ${LINENO:+"@${LINENO}"}           \
+          --output=TestSub                \
+          string_gsub                     \
+            "-${TestMode}"                \
+            "${BS_LSTS_TestGSub2_Source}" \
+            "${BS_LSTS_TestGSub2_Expr-}"  \
+            'frog'                        || return $?
+
+      test_assert "@${LINENO-?} [${TestMode}]" "_${TestSub-}" = "_${BS_LSTS_TestGSub2_Target}" || return $?
+
+      TestSub=; unset TestSub
+      test_run_expect_success             \
+        ${LINENO:+"@${LINENO}"}           \
+          --output=TestSub                \
+          string_gsub                     \
+            "-${TestMode}"                \
+            "${BS_LSTS_TestGSub3_Source}" \
+            "${BS_LSTS_TestGSub3_Expr-}"  \
+            'frog'                        || return $?
+
+      test_assert "@${LINENO-?} [${TestMode}]" "_${TestSub-}" = "_${BS_LSTS_TestGSub3_Target}" || return $?
+    }
+  done
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    TestSub=; unset TestSub
+    test_run_expect_success             \
+      ${LINENO:+"@${LINENO}"}           \
+        --output=TestSub                \
+        string_gsub                     \
+          '-F'                          \
+          "${BS_LSTS_TestGSub1_Source}" \
+          'fox'                         \
+          'frog'                        || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "_${TestSub-}" = "_${BS_LSTS_TestGSub1_Target}" || return $?
+  }
+}
+
+#===============================================================================
+#  TEST MAIN
+#===============================================================================
+
+#_______________________________________________________________________________
+#  fn_bs_lsts_run_units
+#  ----------------
+#
+#
+#_______________________________________________________________________________
+fn_bs_lsts_run_units() {
+  #  Ensure always at least one argument so no issues with "$@"
+  case $# in 0) set 'BS_DUMMY_PARAM' '--' && shift ;; esac
+
+  #-------------------------------------
+  #  CONSTANTS
+  test_run_unit               \
+    -u 'libstring: constants' \
+    'fn_bs_lsts_constants'    \
+      "$@"
+
+  #-------------------------------------
+  #
+  test_run_unit                   \
+    -u 'libstring: string_length' \
+    'fn_bs_lsts_string_length'    \
+      "$@"
+
+  #-------------------------------------
+  #
+  test_run_unit                  \
+    -u 'libstring: string_quote' \
+    'fn_bs_lsts_string_quote'    \
+      "$@"
+
+  #-------------------------------------
+  #
+  test_run_unit                 \
+    -u 'libstring: string_join' \
+    'fn_bs_lsts_string_join'    \
+      "$@"
+
+  #-------------------------------------
+  #
+  test_run_unit                                   \
+    -u 'libstring: string_toupper/string_tolower' \
+    'fn_bs_lsts_string_toupper_tolower'           \
+      "$@"
+
+  #-------------------------------------
+  #
+  test_run_unit                 \
+    -u 'libstring: string_trim' \
+    'fn_bs_lsts_string_trim'    \
+      "$@"
+
+  #-------------------------------------
+  #
+  test_run_unit                  \
+    -u 'libstring: string_index' \
+    'fn_bs_lsts_string_index'    \
+      "$@"
+
+  #-------------------------------------
+  #
+  test_run_unit                  \
+    -u 'libstring: string_match' \
+    'fn_bs_lsts_string_match'    \
+      "$@"
+
+  #-------------------------------------
+  #
+  test_run_unit                   \
+    -u 'libstring: string_substr' \
+    'fn_bs_lsts_string_substr'    \
+      "$@"
+
+  #-------------------------------------
+  #
+  test_run_unit                     \
+    -u 'libstring: string_truncate' \
+    'fn_bs_lsts_string_truncate'    \
+      "$@"
+
+  #-------------------------------------
+  #
+  test_run_unit                \
+    -u 'libstring: string_sub' \
+    'fn_bs_lsts_string_sub'    \
+      "$@"
+
+  #-------------------------------------
+  #
+  test_run_unit                 \
+    -u 'libstring: string_gsub' \
+    'fn_bs_lsts_string_gsub'    \
+      "$@"
+}
+
+################################################################################
+#  TESTWRAPPER Values & Commands
+################################################################################
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  FRIENDLY NAME
+BS_TEST_NAME='libstring/success'
+export BS_TEST_NAME
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  NUMBER OF AVAILABLE CONFIGURATIONS
+BS_TEST_CONFIG_COUNT=2
+export BS_TEST_CONFIG_COUNT
+
+#_______________________________________________________________________________
+#  test_set_config
+#  ---------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_set_config() { ## cSpell:Ignore BS_TRC_
+  BS_TRC_Config=${1:?'[libstring::success::test_run_config]: Error: expected a configuration index'}
+
+  #---------------------------------------------------------
+  case ${BS_LIBSTRING_CONFIG_INDEX_ONE_BASED:+1} in
+  1) unset BS_LIBSTRING_CONFIG_INDEX_ONE_BASED ;;
+  esac
+  #---------------------------------------------------------
+
+  #---------------------------------------------------------
+  #  Set Configuration Accordingly
+  BS_LSTS_STRING_FIRST_INDEX=0
+  case ${BS_TRC_Config} in
+    #...................................
+    #  CONFIG: DEFAULT
+    1)  test_print_config_info 'Config: DEFAULT' ;;
+
+    #...................................
+    #  CONFIG: ONE-BASED INDEXES
+    2)  BS_LIBSTRING_CONFIG_INDEX_ONE_BASED=1
+        export BS_LIBSTRING_CONFIG_INDEX_ONE_BASED
+
+        BS_LSTS_STRING_FIRST_INDEX=1
+
+        test_print_config_info 'Config: STRING_INDEX_ONE_BASED' ;;
+
+    #...................................
+    #  CONFIG: UNKNOWN
+    *)  return 1 ;;
+  esac
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  NUMBER OF AVAILABLE CONFIGURATIONS
+BS_TEST_PLATFORM_CONFIG_COUNT=6
+export BS_TEST_PLATFORM_CONFIG_COUNT
+
+#_______________________________________________________________________________
+#  test_set_platform_config
+#  ---------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_set_platform_config() { ## cSpell:Ignore BS_TRC_
+  BS_TRC_PlatformConfig=${1:?'[libstring::success::test_run_config]: Error: expected a configuration index'}
+
+  #BS_LIBSTRING_CONFIG_ALLOW_STRING_OPTIMIZATIONS
+  #BS_LIBSTRING_CONFIG_ALLOW_EXPR
+  # BS_LIBSTRING_CONFIG_NO_AWK_ARGV
+  #BS_LIBSTRING_CONFIG_NO_TR_LOCALE_AWARE
+
+  #---------------------------------------------------------
+  #  Set Configuration Accordingly
+  case ${BS_TRC_PlatformConfig} in
+    #...................................
+    #
+    0) ;;
+
+    #...................................
+    #  CONFIG: No `tr` case classes
+    1)
+      : "${BS_LIBSTRING_CONFIG_NO_TR_CASE_CLASS:=1}"
+      export BS_LIBSTRING_CONFIG_NO_TR_CASE_CLASS
+
+      test_print_config_info 'Platform Config: NO_TR_CASE_CLASS' ;;
+
+    #...................................
+    #  CONFIG: ONLY ALLOW `$1`-`$9`
+    2)
+      : "${BS_LIBSTRING_CONFIG_NO_CASE_CHAR_CLASS:=1}"
+      export BS_LIBSTRING_CONFIG_NO_CASE_CHAR_CLASS
+
+      test_print_config_info 'Platform Config: NO_CASE_CHAR_CLASS' ;;
+
+    #...................................
+    #  CONFIG:
+    3)
+      : "${BS_LIBSTRING_CONFIG_NO_PARAM_EXPANSION_CHAR_CLASS:=1}"
+      export BS_LIBSTRING_CONFIG_NO_PARAM_EXPANSION_CHAR_CLASS
+
+      test_print_config_info 'Platform Config: NO_PARAM_EXPANSION_CHAR_CLASS' ;;
+
+    #...................................
+    #  CONFIG:
+    4)
+      : "${BS_LIBSTRING_CONFIG_ALLOW_STRING_OPTIMIZATIONS:=1}"
+      export BS_LIBSTRING_CONFIG_ALLOW_STRING_OPTIMIZATIONS
+
+      test_print_config_info 'Platform Config: ALLOW_STRING_OPTIMIZATIONS' ;;
+
+    #...................................
+    #  CONFIG:
+    5)
+      : "${BS_LIBSTRING_CONFIG_ALLOW_EXPR:=1}"
+      export BS_LIBSTRING_CONFIG_ALLOW_EXPR
+
+      test_print_config_info 'Platform Config: ALLOW_EXPR' ;;
+
+    #...................................
+    #  CONFIG:
+    6)
+      : "${BS_LIBSTRING_CONFIG_NO_AWK_ARGV:=1}"
+      export BS_LIBSTRING_CONFIG_NO_AWK_ARGV
+
+      test_print_config_info 'Platform Config: NO_AWK_ARGV' ;;
+
+    #...................................
+    #  CONFIG: UNKNOWN
+    *)  return 1 ;;
+  esac
+}
+
+#_______________________________________________________________________________
+#  test_check_config
+#  ---------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_check_config() { ## cSpell:Ignore BS_TCC_
+  #---------------------------------------------------------
+  #  Get Library File
+  BS_TCC_Library=${1:?'[libstring::success::test_check_config]: Error: expected a library to source'}
+  shift
+
+  return
+}
+
+#_______________________________________________________________________________
+#  test_run_all
+#  ------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_run_all() { ## cSpell:Ignore BS_TRC_
+  #---------------------------------------------------------
+  #  Get Library File
+  BS_TRC_Library=${1:?'[libstring::success::test_run_config]: Error: expected a library to source'}
+  shift
+
+  #---------------------------------------------------------
+  test_print_config_info 'Type: NORMAL USAGE'
+  #---------------------------------------------------------
+
+  #---------------------------------------------------------
+  # Source the tool
+  # shellcheck source=SCRIPTDIR/../../libstring.sh
+  . "${BS_TRC_Library:?}" || return $?
+  #---------------------------------------------------------
+
+  #---------------------------------------------------------
+  #  Run the tests
+  fn_bs_lsts_run_units ${1+"$@"}
+  #---------------------------------------------------------
+}
+
+############################ DOCUMENTATION CONTINUED ###########################
+#. <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+#.
+#. ## VERSIONS
+#.
+#. v1.0.0       - First Release
+#.
+################################################################################
+
+################################################################################
+# END
+################################################################################

@@ -1,0 +1,755 @@
+#!/usr/bin/env false
+# SPDX-License-Identifier: MPL-2.0
+#################################### LICENSE ###################################
+#******************************************************************************#
+#*                                                                            *#
+#* BetterScripts 'libpath/success': Tests for 'libpath' success conditions.   *#
+#*                                                                            *#
+#* Copyright (c) 2026 BetterScripts ( better.scripts@proton.me,               *#
+#*                                    https://github.com/BetterScripts )      *#
+#*                                                                            *#
+#* This file is part of the BetterScripts `shtoolkit` (aka _the suite_).      *#
+#*                                                                            *#
+#* This Source Code Form is subject to the terms of the Mozilla Public        *#
+#* License, v. 2.0. If a copy of the MPL was not distributed with this        *#
+#* file, You can obtain one at https://mozilla.org/MPL/2.0/.                  *#
+#*                                                                            *#
+#* -------------------------------------------------------------------------- *#
+#*                                                                            *#
+#* ADDENDUM:                                                                  *#
+#*                                                                            *#
+#* In addition to the Mozilla Public License a copy of LICENSE.MD should have *#
+#* been provided alongside this file; LICENSE.MD clarifies how the Mozilla    *#
+#* Public License v2.0 applies to this file and MAY confer additional rights. *#
+#*                                                                            *#
+#* Should there be any apparent ambiguity (implied or otherwise) the terms    *#
+#* and conditions from the Mozilla Public License v2.0 shall apply.           *#
+#*                                                                            *#
+#* If a copy of LICENSE.MD was not provided it can be obtained from           *#
+#* https://github.com/BetterScripts/shtoolkit/LICENSE.MD.                     *#
+#*                                                                            *#
+#* NOTE:                                                                      *#
+#*                                                                            *#
+#* The Mozilla Public License v2.0 is compatible with the GNU General Public  *#
+#* License v2.0.                                                              *#
+#*                                                                            *#
+#******************************************************************************#
+################################################################################
+
+############################### LIBPATH/SUCCESS ###############################
+#
+# Documentation is written inline formatted as [`Markdown`][markdown], this is
+# in addition to `shtoolkit` general documentation which includes details
+# common to multiple libraries that may not be noted here.
+#
+# The included `Makefile` can be used to generate standalone documentation in
+# various formats with various verbosity settings. The `Makefile` can also be
+# used to install scripts and documentation in appropriate locations.
+#
+# As far as possible, terminology and conventions follow those of the
+# [_POSIX.1-2008_ Standard][posix_2008].
+#
+#===============================================================================
+## cSpell:Ignore libpath testrunner testwrapper LPTS
+################################ DOCUMENTATION #################################
+#
+#% % libpath-success(7) BetterScripts | Tests for 'libpath' success conditions.
+#% % BetterScripts (better.scripts@proton.me)
+#
+#: <!-- #################################################################### -->
+#: <!-- ########## THIS FILE WAS GENERATED FROM 'libpath/success' ######### -->
+#: <!-- #################################################################### -->
+#: <!-- ########################### DO NOT EDIT! ########################### -->
+#: <!-- #################################################################### -->
+#:
+#: # LIBPATH/SUCCESS
+#:
+#:
+#
+#  libpath Test Success (LPTS)
+#  ===========================
+#
+#  Tests for `libpath` checking successful executing from valid input.
+#
+################################################################################
+
+############################## SHELLCHECK: GLOBAL ##############################
+# shellcheck shell=sh                                                          #
+#                                                                              #
+# Enable some optional checks:                                                 #
+#                                                                              #
+# shellcheck enable=avoid-nullary-conditions                                   #
+# shellcheck enable=check-extra-masked-returns                                 #
+# shellcheck enable=deprecate-which                                            #
+# shellcheck enable=require-variable-braces                                    #
+#                                                                              #
+################################################################################
+
+#===============================================================================
+#===============================================================================
+#  TESTS
+#===============================================================================
+#===============================================================================
+
+#_______________________________________________________________________________
+#  fn_bs_lpts_constants
+#  --------------------
+#
+#  TESTS:   Constants Are Set (and look reasonable)
+#_______________________________________________________________________________
+fn_bs_lpts_constants() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  {
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBPATH_SOURCED-}" || return $?
+
+    #-----------------------------------
+
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBPATH_VERSION_MAJOR-}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBPATH_VERSION_MINOR-}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBPATH_VERSION_PATCH-}" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBPATH_VERSION_FULL-}"  || return $?
+    test_assert ${LINENO:+"@${LINENO}"} -n "${BS_LIBPATH_VERSION-}"       || return $?
+
+    #  Check they are version numbers are actually numbers
+    test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBPATH_VERSION_MAJOR-}" -notmatch ".*[^0123456789].*" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBPATH_VERSION_MINOR-}" -notmatch ".*[^0123456789].*" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBPATH_VERSION_PATCH-}" -notmatch ".*[^0123456789].*" || return $?
+    test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBPATH_VERSION_FULL-}"  -notmatch ".*[^0123456789].*" || return $?
+
+    test_assert ${LINENO:+"@${LINENO}"} "${BS_LIBPATH_VERSION-}" -match "BetterScripts 'libpath' v.*" || return $?
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lpts_path_basename
+#  --------------------
+#
+#  TESTS:   `path_basename`
+#_______________________________________________________________________________
+fn_bs_lpts_path_basename() { ## cSpell:Ignore BS_AIAN_
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #
+  {
+    {
+      TestPath=; unset 'TestPath'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        path_basename           \
+          'TestPath'            \
+          '/dev/null'           || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} "${TestPath-}" = 'null' || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestPath=; unset 'TestPath'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        path_basename           \
+          'TestPath'            \
+          '/dev/null'           \
+          'll'                  || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} "${TestPath-}" = 'nu' || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lpts_path_dirname
+#  ---------------------
+#
+#  TESTS:   `path_dirname`
+#_______________________________________________________________________________
+fn_bs_lpts_path_dirname() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #
+  {
+    {
+      TestPath=; unset 'TestPath'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        path_dirname            \
+          'TestPath'            \
+          '/dev/null'           || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} "${TestPath-}" = '/dev' || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lpts_path_pwd
+#  --------------------
+#
+#  TESTS:   `path_pwd`
+#_______________________________________________________________________________
+fn_bs_lpts_path_pwd() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #
+  {
+    {
+      TestPath=; unset 'TestPath'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        path_pwd                \
+          'TestPath'            || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} "${TestPath:+1}" = '1' || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lpts_path_serial
+#  --------------------
+#
+#  TESTS:   `path_serial`
+#_______________________________________________________________________________
+fn_bs_lpts_path_serial() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #
+  {
+    {
+      TestPath=; unset 'TestPath'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        path_serial             \
+          'TestPath'            \
+          '/dev/null'           || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} "${TestPath-}" -notmatch ".*[^0123456789].*" || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestPath=; unset 'TestPath'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        path_serial             \
+          'TestPath'            \
+          '/tmp'                || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} "${TestPath-}" -notmatch ".*[^0123456789].*" || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lpts_path_size
+#  -----------------------
+#
+#  TESTS:   `path_size`
+#_______________________________________________________________________________
+fn_bs_lpts_path_size() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #
+  {
+    {
+      TestPath=; unset 'TestPath'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        path_size               \
+          'TestPath'            \
+          '/dev/null'           || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} "${TestPath-}" -notmatch ".*[^0123456789].*" || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestPath=; unset 'TestPath'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        path_size               \
+          'TestPath'            \
+          '/tmp'                || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} "${TestPath-}" -notmatch ".*[^0123456789].*" || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lpts_path_owner
+#  -----------------------
+#
+#  TESTS:   `path_owner`
+#_______________________________________________________________________________
+fn_bs_lpts_path_owner() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #
+  {
+    {
+      TestPath=; unset 'TestPath'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        path_owner              \
+          'TestPath'            \
+          '/dev/null'           || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} "${TestPath-}" -match "[0123456789]\{1,\}:[0123456789]\{1,\}" || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestPath=; unset 'TestPath'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        path_owner              \
+          -n                    \
+          'TestPath'            \
+          '/tmp'                || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} "${TestPath-}" -match ".\{1,\}:.\{1,\}" || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lpts_path_mode
+#  ---------------------
+#
+#  TESTS:   `path_mode`
+#_______________________________________________________________________________
+fn_bs_lpts_path_mode() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #
+  {
+    {
+      TestPath=; unset 'TestPath'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        path_mode               \
+          'TestPath'            \
+          '/dev/null'           || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} "${TestPath-}" -match "[rw-][rw-].[rw-][rw-].[rw-][rw-]." || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestPath=; unset 'TestPath'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        path_mode               \
+          -c                    \
+          'TestPath'            \
+          '/tmp'                || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} "${TestPath-}" -match "u=.*,g=.*,o=.*" || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lpts_path_mktemp
+#  --------------------
+#
+#  TESTS:   `path_mktemp`
+#_______________________________________________________________________________
+fn_bs_lpts_path_mktemp() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #
+  {
+    {
+      TestPath=; unset 'TestPath'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        path_mktemp      -u     \
+          --target 'TestPath'   || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} "${TestPath-}" -match "/tmp/tmp[.].\{10\}" || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestPath=; unset 'TestPath'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        path_mktemp      -u     \
+          --target 'TestPath'   \
+          -d                    \
+          -p '/tmp'             || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} "${TestPath-}" -match "/tmp/tmp[.].\{10\}" || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestPath=; unset 'TestPath'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        path_mktemp      -u     \
+          --target 'TestPath'   \
+          -p '/tmp'             \
+          'file.XXX.tmp'        || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} "${TestPath-}" -match "/tmp/file[.].\{3\}[.]tmp" || return $?
+    }
+
+    #-----------------------------------
+
+    {
+      TestPath=; unset 'TestPath'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        path_mktemp      -u     \
+          --target 'TestPath'   \
+          -p '/tmp'             \
+          --suffix '.tmp'       \
+          'file.XXX'            || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} "${TestPath-}" -match "/tmp/file[.]...[.]tmp" || return $?
+    }
+  }
+}
+
+#_______________________________________________________________________________
+#  fn_bs_lpts_path_mktmp
+#  --------------------
+#
+#  TESTS:   `path_mktmp` (alias for `path_mktemp`)
+#_______________________________________________________________________________
+fn_bs_lpts_path_mktmp() {
+  set 'BS_DUMMY_PARAM' && shift  #< Clear positional parameters to avoid accidental usage
+
+  #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  #
+  {
+    {
+      TestPath=; unset 'TestPath'
+      test_run_expect_success   \
+        ${LINENO:+"@${LINENO}"} \
+        path_mktmp       -u     \
+          --target 'TestPath'   || return $?
+
+      test_assert ${LINENO:+"@${LINENO}"} "${TestPath-}" -match "/tmp/tmp[.].\{10\}" || return $?
+    }
+  }
+}
+
+#===============================================================================
+#===============================================================================
+#  TEST MAIN
+#===============================================================================
+#===============================================================================
+
+#_______________________________________________________________________________
+#  fn_bs_lpts_run_units
+#  --------------------
+#
+#  Run all test units for the library
+#_______________________________________________________________________________
+fn_bs_lpts_run_units() {
+  #  Ensure always at least one argument so no issues with "$@"
+  case $# in 0) set 'BS_DUMMY_PARAM' '--' && shift ;; esac
+
+  #-------------------------------------
+  #  CONSTANTS
+  test_run_unit             \
+    -u 'libpath: constants' \
+    'fn_bs_lpts_constants'  \
+      "$@"
+
+  #-------------------------------------
+  #  `path_basename`
+  test_run_unit                 \
+    -u 'libpath: path_basename' \
+    'fn_bs_lpts_path_basename'  \
+      "$@"
+
+  #-------------------------------------
+  #  `path_dirname`
+  test_run_unit                \
+    -u 'libpath: path_dirname' \
+    'fn_bs_lpts_path_dirname'  \
+      "$@"
+
+  #-------------------------------------
+  #  `path_pwd`
+  test_run_unit            \
+    -u 'libpath: path_pwd' \
+    'fn_bs_lpts_path_pwd'  \
+      "$@"
+
+  #-------------------------------------
+  #  `path_serial`
+  test_run_unit               \
+    -u 'libpath: path_serial' \
+    'fn_bs_lpts_path_serial'  \
+      "$@"
+
+  #-------------------------------------
+  #  `path_size`
+  test_run_unit             \
+    -u 'libpath: path_size' \
+    'fn_bs_lpts_path_size'  \
+      "$@"
+
+  #-------------------------------------
+  #  `path_owner`
+  test_run_unit              \
+    -u 'libpath: path_owner' \
+    'fn_bs_lpts_path_owner'  \
+      "$@"
+
+  #-------------------------------------
+  #  `path_mode`
+  test_run_unit             \
+    -u 'libpath: path_mode' \
+    'fn_bs_lpts_path_mode'  \
+      "$@"
+
+  #-------------------------------------
+  #  `path_mktemp`
+  test_run_unit               \
+    -u 'libpath: path_mktemp' \
+    'fn_bs_lpts_path_mktemp'  \
+      "$@"
+
+  #-------------------------------------
+  #  `path_mktmp`
+  test_run_unit               \
+    -u 'libpath: path_mktmp'  \
+    'fn_bs_lpts_path_mktmp'   \
+      "$@"
+}
+
+################################################################################
+################################################################################
+#  TESTWRAPPER Values & Commands
+################################################################################
+################################################################################
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  FRIENDLY NAME
+BS_TEST_NAME='libpath/success'
+export BS_TEST_NAME
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  NUMBER OF AVAILABLE CONFIGURATIONS
+BS_TEST_CONFIG_COUNT=5
+export BS_TEST_CONFIG_COUNT
+
+#_______________________________________________________________________________
+#  test_set_config
+#  ---------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_set_config() { ## cSpell:Ignore BS_TRC_
+  BS_TRC_Config=${1:?'[libpath::success::test_run_config]: Error: expected a configuration index'}
+
+  #---------------------------------------------------------
+  case ${BS_LIBPATH_CONFIG_NO_MKTEMP:+1} in
+  1) unset BS_LIBPATH_CONFIG_NO_MKTEMP ;;
+  esac
+
+  case ${BS_LIBPATH_CONFIG_PREFER_HEXDUMP:+1} in
+  1) unset BS_LIBPATH_CONFIG_PREFER_HEXDUMP ;;
+  esac
+  case ${BETTER_SCRIPTS_CONFIG_PREFER_HEXDUMP:+1} in
+  1) unset BETTER_SCRIPTS_CONFIG_PREFER_HEXDUMP ;;
+  esac
+
+  case ${BS_LIBPATH_CONFIG_RANDOM_SOURCE:+1} in
+  1) unset BS_LIBPATH_CONFIG_RANDOM_SOURCE ;;
+  esac
+  case ${BETTER_SCRIPTS_CONFIG_RANDOM_SOURCE:+1} in
+  1) unset BETTER_SCRIPTS_CONFIG_RANDOM_SOURCE ;;
+  esac
+  #---------------------------------------------------------
+
+  #---------------------------------------------------------
+  #  Set Configuration Accordingly
+  case ${BS_TRC_Config} in
+    #...................................
+    #  CONFIG: DEFAULT
+    1) test_print_config_info 'Config: DEFAULT' ;;
+
+    #...................................
+    #  CONFIG: NO MKTEMP
+    2)  BS_LIBPATH_CONFIG_NO_MKTEMP=1
+        export BS_LIBPATH_CONFIG_NO_MKTEMP
+
+        test_print_config_info 'Config: NO_MKTEMP' ;;
+
+    #...................................
+    #  CONFIG: PREFER HEXDUMP
+    3)  BS_LIBPATH_CONFIG_NO_MKTEMP=1
+        export BS_LIBPATH_CONFIG_NO_MKTEMP
+        BETTER_SCRIPTS_CONFIG_PREFER_HEXDUMP=1
+        export BETTER_SCRIPTS_CONFIG_PREFER_HEXDUMP
+
+        test_print_config_info                 \
+          'Config: NO_MKTEMP + PREFER_HEXDUMP' \
+          'Type:   NORMAL USAGE'               ;;
+
+    #...................................
+    #  CONFIG: RANDOM SOURCE
+    4)  BS_LIBPATH_CONFIG_NO_MKTEMP=1
+        export BS_LIBPATH_CONFIG_NO_MKTEMP
+        BS_LIBPATH_CONFIG_RANDOM_SOURCE='/dev/random'
+        export BS_LIBPATH_CONFIG_RANDOM_SOURCE
+
+        test_print_config_info                \
+          'Config: NO_MKTEMP + RANDOM_SOURCE' \
+          'Type:   NORMAL USAGE'              ;;
+
+    #...................................
+    #  CONFIG: `awk`
+    5)  BS_LIBPATH_CONFIG_NO_MKTEMP=1
+        export BS_LIBPATH_CONFIG_NO_MKTEMP
+        BS_LIBPATH_CONFIG_RANDOM_SOURCE='awk'
+        export BS_LIBPATH_CONFIG_RANDOM_SOURCE
+
+        test_print_config_info                    \
+          'Config: NO_MKTEMP + RANDOM_SOURCE=awk' \
+          'Type:   NORMAL USAGE'                  ;;
+
+    #...................................
+    #  CONFIG: UNKNOWN
+    *)  return 1 ;;
+  esac
+}
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#  NUMBER OF AVAILABLE CONFIGURATIONS
+BS_TEST_PLATFORM_CONFIG_COUNT=0
+export BS_TEST_PLATFORM_CONFIG_COUNT
+
+#_______________________________________________________________________________
+#  test_set_platform_config
+#  ---------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_set_platform_config() { ## cSpell:Ignore BS_TRC_
+  BS_TRC_PlatformConfig=${1:?'[libpath::success::test_run_config]: Error: expected a configuration index'}
+
+  #---------------------------------------------------------
+  # Not tested:
+  #   BS_LIBPATH_CONFIG_EXTENDED_FILE_MODE_FORMAT
+  #   - this is entirely platform specific and can not
+  #     be meaningfully tested outside those platforms
+  #     (e.g. setting the wrong mode for the platform
+  #      will cause tests to fail incorrectly).
+  #---------------------------------------------------------
+
+  #---------------------------------------------------------
+  #  Set Configuration Accordingly
+  case ${BS_TRC_PlatformConfig} in
+    #...................................
+    #
+    0) ;;
+
+    #...................................
+    #  CONFIG: UNKNOWN
+    *)  return 1 ;;
+  esac
+}
+
+#_______________________________________________________________________________
+#  test_check_config
+#  ---------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_check_config() { ## cSpell:Ignore BS_TCC_
+  #---------------------------------------------------------
+  #  Get Library File
+  BS_TCC_Library=${1:?'[libpath::success::test_check_config]: Error: expected a library to source'}
+  shift
+
+  return
+}
+
+#_______________________________________________________________________________
+#  test_run_all
+#  ------------
+#
+#  Run tests for a specific library configuration.
+#
+#  NOTE: Preference based variables will be unset or set to specific values.
+#        Variables required for platform workarounds will _not_ be changed if
+#        currently set, but _may_ be set otherwise - this ensures platforms
+#        that require workarounds don't try to use other code paths.
+#_______________________________________________________________________________
+test_run_all() { ## cSpell:Ignore BS_TRC_
+  #---------------------------------------------------------
+  #  Get Library File
+  BS_TRC_Library=${1:?'[libpath::success::test_run_config]: Error: expected a library to source'}
+  shift
+
+  #---------------------------------------------------------
+  test_print_config_info 'Type: NORMAL USAGE'
+  #---------------------------------------------------------
+
+  #---------------------------------------------------------
+  # Source the tool
+  # shellcheck source=SCRIPTDIR/../../libpath.sh
+  . "${BS_TRC_Library:?}" || return $?
+  #---------------------------------------------------------
+
+  #---------------------------------------------------------
+  #  Run the tests
+  fn_bs_lpts_run_units ${1+"$@"}
+  #---------------------------------------------------------
+}
+
+############################ DOCUMENTATION CONTINUED ###########################
+#. <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+#.
+#. ## VERSIONS
+#.
+#. v1.0.0       - First Release
+#.
+################################################################################
+
+################################################################################
+################################################################################
+# END
+################################################################################
+################################################################################

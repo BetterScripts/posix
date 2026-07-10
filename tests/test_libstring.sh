@@ -3,10 +3,10 @@
 #################################### LICENSE ###################################
 #******************************************************************************#
 #*                                                                            *#
-#* BetterScripts 'libgetargs' Test Runner: Run all 'libgetargs' tests.        *#
+#* BetterScripts 'libstring' Test Runner: Run all 'libstring' tests.          *#
 #*                                                                            *#
-#* Copyright (c) 2022-2026 BetterScripts ( better.scripts@proton.me,          *#
-#*                         https://github.com/BetterScripts )                 *#
+#* Copyright (c) 2026 BetterScripts ( better.scripts@proton.me,               *#
+#*                                    https://github.com/BetterScripts )      *#
 #*                                                                            *#
 #* This file is part of the BetterScripts `shtoolkit` (aka _the suite_).      *#
 #*                                                                            *#
@@ -37,7 +37,7 @@
 ################################################################################
 
 ################################################################################
-## cSpell:Ignore testrunner testwrapper libgetargs
+## cSpell:Ignore testrunner testwrapper libstring
 ################################################################################
 
 #===============================================================================
@@ -94,14 +94,12 @@ fi
 # Run the script
 #===============================================================================
 #===============================================================================
-exec "${BS_TEST_RUNNER__Script}" --tool 'libgetargs.sh' ${1+"$@"}
+exec "${BS_TEST_RUNNER__Script}" --tool 'libstring.sh' ${1+"$@"}
 
 ############################ DOCUMENTATION CONTINUED ###########################
 #. <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 #.
 #. ## VERSIONS
-#.
-#. v1.1.0       - \[NEW] Added version information.
 #.
 #. v1.0.0       - First Release
 #.

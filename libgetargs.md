@@ -4,7 +4,7 @@
 <!-- ########################### DO NOT EDIT! ########################### -->
 <!-- #################################################################### -->
 
-# LIBGETARGS
+# `libgetargs.sh`
 
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
@@ -190,11 +190,12 @@ can be found with these variables.
 
 - Enable/\[Disable] matching an unrecognized OPTION as an OPERAND.
 - Overrides [`BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED`](#bs_libgetargs_config_allow_unmatched).
-- If `VARIABLE` **is not** specified: implies `--interleaved`; **all** unrecognized ARGUMENTs
-  will be treated as OPERANDs. Using an OPERAND type other than `[+]` is not likely to be useful.
-- If `VARIABLE` **is** specified: implies `--strict`; unrecognized ARGUMENTs before `--` are
-  stored in `VARIABLE`, while ARGUMENTs following `--` are treated as normal OPERANDs. This mode
-  can _not_ be set using
+- If `VARIABLE` **is not** specified: implies `--interleaved`; **all**
+  unrecognized ARGUMENTs will be treated as OPERANDs. Using an OPERAND type
+  other than `[+]` is not likely to be useful.
+- If `VARIABLE` **is** specified: implies `--strict`; unrecognized ARGUMENTs
+  before `--` are stored in `VARIABLE`, while ARGUMENTs following `--` are
+  treated as normal OPERANDs. This mode can _not_ be set using
   [`BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED`](#bs_libgetargs_config_allow_unmatched).
 
 _NOTES_
@@ -490,10 +491,10 @@ follow the VARIABLE to which the text applies.
 
 Formatting for `<HELP-TEXT>` will _not_ be retained:
 
- - whitespace _after_ the `#` (`<number-sign>`) will be removed
- - after a `\n` (`<newline>`) any whitespace _before_ the `#`
-   (`<number-sign>`) will be removed
- - additional whitespace may be removed to facilitate text wrapping
+- whitespace _after_ the `#` (`<number-sign>`) will be removed
+- after a `\n` (`<newline>`) any whitespace _before_ the `#`
+  (`<number-sign>`) will be removed
+- additional whitespace may be removed to facilitate text wrapping
 
 _CONFIGURATION_
 <!-- ------- -->
@@ -565,11 +566,10 @@ receives.
   signal to the caller that auto-help was triggered and, in general, should
   _not_ be propagated any further (i.e. normally `--help` is a successful
   operation).
-- An unexpected exit status from an external command will be propagated to
-  the caller. (This is unlikely to occur, and would normally indicate a
-  command that is not _POSIX.1_ compliant.)
-- Otherwise the exit status is one of values taken from
-  [FreeBSD `SYSEXITS(3)`][sysexits]:
+- An exit status that is _NOT_ `0` (`<zero>`) from an external command will
+  be propagated to the caller where relevant (and possible).
+- Exit status' not covered by any of the above use values as described in
+  [FreeBSD `SYSEXITS(3)`][sysexits] - including:
   - `EX_USAGE` for invalid SPECIFICATION usage
     (e.g. a missing OPTION-ARGUMENT)
   - `EX_CONFIG` for an invalid SPECIFICATION configuration
@@ -577,6 +577,7 @@ receives.
   - `EX_DATAERR` for invalid user ARGUMENTs (e.g. an OPTION that is meant to
     be should be set once - i.e. of type `[:]` - is set twice), this is the
     only error exit status normally generated for user ARGUMENT errors.
+- Exit status is configuration agnostic.
 
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
@@ -591,18 +592,18 @@ set manually to force specific configurations.
 In additional to these, there are a number of variables that are set by the
 library to convey information outside of command invocation.
 
-If unset, some variables will take an initial value from a _BetterScripts_
-_POSIX Suite_ wide variable, these allow the same configuration to be used by
-all libraries in the suite.
+If unset, some variables will take an initial value from a common `shtoolkit`
+variable applicable to all libraries, these allow the same configuration to
+be used across libraries more easily.
 
 After the library has been sourced, external commands must not set library
-environment variables that are classified as CONSTANT. Variables may use
+environment variables that are classified as _CONSTANT_. Variables may use
 the `readonly` command to enforce this.
 
 **_If not otherwise specified, an `<unset>` variable is equivalent to the_**
 **_default value._**
 
-_For more details see the common suite [documentation](./README.MD#environment)._
+_For more details see the `shtoolkit` general [documentation](./README.MD#environment)._
 
 <!-- ------------------------------------------------ -->
 
@@ -613,459 +614,14 @@ _For more details see the common suite [documentation](./README.MD#environment).
 #### `BS_LIBGETARGS_CONFIG_NO_Z_SHELL_SETOPT`
 
 - Suite:    [`BETTER_SCRIPTS_CONFIG_NO_Z_SHELL_SETOPT`](./README.MD#better_scripts_config_no_z_shell_setopt)
-- Type:     FLAG
-- Class:    CONSTANT
+- Type:     _FLAG_
+- Class:    _CONSTANT_
 - Default:  \<automatic>
 - \[Disable]/Enable using `setopt` in _Z Shell_ to ensure
   _POSIX.1_ like behavior.
-- _OFF_: Use `setopt` to set the appropriate options.
-- _ON_: Don't use `setopt`, even in _Z Shell_.
 - Automatically enabled if _Z Shell_ is detected.
 - Any use of `setopt` is scoped as tightly as possible
-  and should not affect other commands.
-- _Z Shell_ has some defaults that cause non-standard
-  behavior, however also provides `setopt` which can be
-  tightly scoped to set options when required without
-  impacting other platforms.
-
----------------------------------------------------------
-
-#### `BS_LIBGETARGS_CONFIG_NO_EXPR_EXIT_STATUS`
-
-- Suite:    [`BETTER_SCRIPTS_CONFIG_NO_EXPR_EXIT_STATUS`](./README.MD#better_scripts_config_no_expr_exit_status)
-- Type:     FLAG
-- Class:    CONSTANT
-- Default:  \<automatic>
-- \[Disable]/Enable ignoring `expr` exit status to
-  indicate a match was made.
-- _OFF_: Use `expr` exit status to determine if a match
-  was made.
-- _ON_: Use a workaround to determine if a match was
-  made. (This requires a sub-shell and is therefore far
-  slower.)
-- Some versions of `expr` do not always properly set the
-  exit status, making it impossible to determine if a
-  match was actually made.
-
----------------------------------------------------------
-
-#### `BS_LIBGETARGS_CONFIG_NO_EXPR_NESTED_CAPTURES`
-
-- Suite:    [`BETTER_SCRIPTS_CONFIG_NO_EXPR_NESTED_CAPTURES`](./README.MD#better_scripts_config_no_expr_nested_captures)
-- Type:     FLAG
-- Class:    CONSTANT
-- Default:  \<automatic>
-- Disable/\[Enable] using `expr` for any
-  ["Basic Regular Expression" (_BRE_)][posix_bre] that
-  includes nested captures.
-- _OFF_: Use `expr` for a _BRE_ that includes nested
-  captures.
-- _ON_: Any _BRE_ that uses nested captures will not
-  be used with `expr`, but will use a case specific
-  work-around.
-- Some versions of `expr` do not work well with or do not
-  support nested captures.
-
-<!-- ------------------------------------------------ -->
-
-### USER PREFERENCE (OVERRIDABLE)
-
-Configuration that CAN be overridden by OPTIONs.
-
----------------------------------------------------------
-
-#### `BS_LIBGETARGS_CONFIG_ALLOW_ABBREVIATIONS`
-
-- Type:     FLAG
-- Class:    VARIABLE
-- Default:  _ON_
-- Override: `--[no-]abbreviations`
-- \[Enable]/Disable LONG-OPTION abbreviations.
-- _ON_: any LONG-OPTION matches if the name is a
-  prefix of an OPTION-CONFIG name (e.g. `--debug` and
-  `--deb` will both match `debug`).
-- _OFF_: abbreviations are disabled and long options
-  must match exactly.
-- MAY cause unexpected results if combined with
-  [`BS_LIBGETARGS_CONFIG_ALLOW_AMBIGUOUS`](#bs_libgetargs_config_allow_ambiguous).
-
----------------------------------------------------------
-
-#### `BS_LIBGETARGS_CONFIG_ALLOW_AMBIGUOUS`
-
-- Type:     FLAG
-- Class:    VARIABLE
-- Default:  _OFF_
-- Override: `--[no-]ambiguous`
-- \[Enable]/Disable detection of ambiguous user OPTIONs.
-- _OFF_: any ambiguous OPTION is an error.
-- _ON_: all OPTIONs use the first match found - this WILL
-  mask some OPTION-CONFIG errors.
-- OPTIONs are ambiguous when multiple OPTIONs have the
-  same name or, if abbreviations are enabled, when
-  an abbreviation matches multiple OPTIONs.
-- If abbreviations are also enabled (see
-  [`BS_LIBGETARGS_CONFIG_ALLOW_ABBREVIATIONS`](#bs_libgetargs_config_allow_abbreviations))
-  there is a high chance of incorrectly matching OPTIONs.
-- _Has a measurable impact on performance._
-  Prefer **_ON_** for performance.
-
----------------------------------------------------------
-
-#### `BS_LIBGETARGS_CONFIG_CHECK_CONFIG`
-
-- Type:     FLAG
-- Class:    VARIABLE
-- Default:  _OFF_
-- Override: `--[no-]check-config`
-- Enable/\[Disable] performing basic checks on
-  OPTION-CONFIG and OPERAND-CONFIG before processing.
-- _OFF_: don't do any additional checks.
-- _ON_: preform extra checks to ensure that OPTION-CONFIG
-  and OPERAND-CONFIG match the required specification.
-- The currently available checks are relatively basic but
-  will catch errors that MAY otherwise be missed, however
-  some of these may be benign.
-- _MAY have a performance impact._
-  Prefer **_OFF_** for performance.
-
----------------------------------------------------------
-
-#### `BS_LIBGETARGS_CONFIG_FATAL_ERRORS`
-
-- Suite:    [`BETTER_SCRIPTS_CONFIG_FATAL_ERRORS`](./README.MD#better_scripts_config_fatal_errors)
-- Type:     FLAG
-- Class:    VARIABLE
-- Default:  _OFF_
-- Enable/\[Disable] causing library errors to terminate
-  the current (sub-)shell.
-- _OFF_: errors stop any further processing, and cause a
-  non-zero exit status, but do not cause an exception.
-- _ON_: any library error will cause an "unset variable"
-  shell exception using the
-  [`${parameter:?[word]}`][posix_param_expansion]
-  parameter expansion, where `word` is set to an error
-  message that _should_ be displayed by the shell (this
-  message is NOT suppressed by
-  [`BS_LIBGETARGS_CONFIG_QUIET_ERRORS`](#bs_libgetargs_config_quiet_errors)).
-- Both the library version of this option and the
-  suite version can be modified between command
-  invocations and will affect the next command.
-
----------------------------------------------------------
-
-#### `BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS`
-
-- Type:     FLAG
-- Class:    VARIABLE
-- Default:  _OFF_
-- Override: `--[no-]interleaved`, `--[no-]mixed`
-- Enable/\[Disable] allowing matching OPTIONs _after_ an
-  OPERAND is matched.
-- _OFF_: all OPTIONs (and associated OPTION-ARGUMENTs)
-  MUST appear before the first OPERAND; i.e., the first
-  ARGUMENT that does NOT start with `-` (`<hyphen>`)
-  and is NOT an OPTION-ARGUMENT causes ALL remaining
-  OPTIONs to be assumed to be OPERANDs _even if they
-  start with `-` (`<hyphen>`)_.
-- _ON_: an ARGUMENT that does NOT start with `-`
-  (`<hyphen>`) and is NOT an OPTION-ARGUMENT is assumed
-  to be an OPERAND, but following ARGUMENTs continue to
-  be checked for OPTIONs.
-- In either mode the special ARGUMENT `--` stops OPTION
-  processing and any remaining ARGUMENTs are treated as
-  OPERANDs
-- Implied by
-  [`BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED`](#bs_libgetargs_config_allow_unmatched)
-- Mutually exclusive with
-  [`BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`](#bs_libgetargs_config_strict_operands)
-
----------------------------------------------------------
-
-#### `BS_LIBGETARGS_CONFIG_ALLOW_POSIX_LONG`
-
-- Type:     FLAG
-- Class:    VARIABLE
-- Default:  _OFF_
-- Override: `--[no-]posix-long`
-- Enable/\[Disable] matching LONG-OPTIONs with a single
-  preceding `-` (`<hyphen>`) character instead of the
-  normally required two.
-- _OFF_: LONG-OPTIONs require the prefix `--`
-- _ON_: any multi-character OPTION following a single
-  `-` (`<hyphen>`) is checked to see if it matches
-  a LONG-OPTION before checking if it is a
-  COMPOUND-OPTION, meaning matching COMPOUND-OPTIONs is
-  slower.
-- _Has a measurable impact on performance._
-  Prefer **_OFF_** for performance.
-
----------------------------------------------------------
-
-#### `BS_LIBGETARGS_CONFIG_QUIET_ERRORS`
-
-- Suite:    [`BETTER_SCRIPTS_CONFIG_QUIET_ERRORS`](./README.MD#better_scripts_config_quiet_errors)
-- Type:     FLAG
-- Class:    VARIABLE
-- Default:  _OFF_
-- \[Enable]/Disable library error message output.
-- _OFF_: error messages will be written to `STDERR` as:
-  `[<ID>]: ERROR: <MESSAGE>` (where `<ID>` is
-  set using the `--id` OPTION).
-- _ON_: library error messages will be suppressed.
-- The most recent error message is always available in
-  [`BS_LIBGETARGS_LAST_ERROR`](#bs_libgetargs_last_error)
-  even when error output is suppressed.
-- Both the library version of this option and the
-  suite version can be modified between command
-  invocations and will affect the next command.
-- Does NOT affect errors from non-library commands, which
-  _may_ still produce output.
-
----------------------------------------------------------
-
-#### `BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`
-
-- Type:     FLAG
-- Class:    VARIABLE
-- Default:  _OFF_
-- Override: `--[no-]strict`, `--[no-]separated`
-- Enable/\[Disable] requiring the use of `--` to separate
-  OPTIONs from OPERANDs.
-- _OFF_: the first ARGUMENT that is not and OPTION or an
-  OPTION-ARGUMENT is an OPERAND and causes all further
-  ARGUMENTs to be OPERANDs.
-- _ON_: an ARGUMENT that is exactly `--` must be present
-  after _all_ OPTIONs and before _any_ OPERANDs.
-- If this is enabled (_ON_), then optional
-  OPTION-ARGUMENTS can be specified using the ARGUMENT
-  _following_ the OPTION (in addition to the normal
-  formats).
-- Can help detect some usage errors.
-- Mutually exclusive with
-  [`BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS`](#bs_libgetargs_config_interleaved_operands).
-
----------------------------------------------------------
-
-#### `BS_LIBGETARGS_CONFIG_ALLOW_UNSAFE_OPTIONS`
-
-- Type:     FLAG
-- Class:    VARIABLE
-- Default:  _OFF_
-- Override: `--[no-]unsafe`
-- \[Enable]/Disable escaping OPTION characters
-  to avoid any erroneous results when matching with
-  regular expressions. Characters in the supported set
-  for OPTION-NAMEs `[[:alnum:]_-]` do not need this
-  processing, while characters outside this range
-  MAY (e.g. `.` (`<period>`) is problematic).
-- _OFF_: OPTION-NAMEs have all characters made safe for
-  use in a regular expression.
-- _ON_: OPTION-NAMEs are used as is and may match
-  incorrectly if they contain specific characters.
-- This affects the OPTIONs being processed and NOT those
-  in the OPTION-CONFIG.
-- MAY have a performance impact.
-  Prefer **_ON_** for performance.
-
----------------------------------------------------------
-
-#### `BS_LIBGETARGS_CONFIG_AUTO_UNSET`
-
-- Type:     FLAG
-- Class:    VARIABLE
-- Default:  _OFF_
-- Override: `--[no-]unset`
-- Enable/\[Disable] automatic unsetting of all
-  VARIABLES named in OPTION-CONFIG and OPERAND-CONFIG.
-- _ON_: every variable specified in OPTION-CONFIG and
-  OPERAND-CONFIG is automatically unset before ARGUMENTs
-  are processed.
-- _OFF_: variables need to be set to a known value or it
-  will not be possible to correctly determine what
-  OPTIONs have been matched.
-- Normally desirable to have enabled, but using it MAY
-  have performance issues, and it can not be used
-  alongside default values for variables (i.e. values set
-  before `getargs` is invoked).
-- MAY have a performance impact.
-  Prefer **_OFF_** for performance.
-
----------------------------------------------------------
-
-#### `BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED`
-
-- Type:     FLAG
-- Class:    VARIABLE
-- Default:  _OFF_
-- Override: `--[no-]unmatched`, `--unmatched=<VARIABLE>`
-- Enable/\[Disable] matching an unrecognized OPTION as an
-  OPERAND.
-- _OFF_: any unrecognized OPTION is an error.
-- _ON_: any unrecognized OPTION is treated as an OPERAND.
-- Useful for commands where most arguments are not used,
-  but instead forwarded to another command, where having
-  this enabled significantly reduces code and isolates
-  the command from changes in the arguments accepted by
-  the target command.
-- In either mode the special ARGUMENT `--` stops OPTION
-  processing and any remaining ARGUMENTs are treated as
-  OPERANDs.
-- Although still permitted, there is no practical way to
-  support the normal OPERAND processing when this is
-  enabled; the only OPERAND-CONFIG that is useful will
-  be one containing a single `[+]` type. If other
-  OPERANDs are required, these must be manually extracted
-  from the resulting array.
-- If using a VALIDATOR, any unmatched values will be
-  sent to the VALIDATOR as OPERANDs.
-- `--unmatched=<VARIABLE>` provides functionality that is
-  beyond that available using this variable.
-- Implies
-  [`BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS`](#bs_libgetargs_config_interleaved_operands).
-- Mutually exclusive with
-  [`BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`](#bs_libgetargs_config_strict_operands).
-
-<!-- ------------------------------------------------ -->
-
-### USER PREFERENCE
-
-Configuration that can NOT be overridden by OPTIONs.
-
----------------------------------------------------------
-
-#### `BS_LIBGETARGS_CONFIG_TRUE_VALUE`
-
-- Type:     TEXT
-- Class:    VARIABLE
-- Default:  `true`
-- Value used as `true` for options with the type
-  negatable SWITCH-OPTION (i.e. `[~]`).
-- The value given to a negatable SWITCH-OPTION variable
-  when the ARGUMENT was specified without an OPTION-TAG.
-- Also one of the values accepted as an OPTION-TAG for
-  negatable SWITCH-OPTIONs.
-- Can be null.
-- SHOULD differ from
-  [`BS_LIBGETARGS_CONFIG_FALSE_VALUE`](#bs_libgetargs_config_false_value)
-  however this is NOT enforced.
-- A negatable SWITCH-OPTION _only_ accepts the value here
-  or the value from
-  [`BS_LIBGETARGS_CONFIG_FALSE_VALUE`](#bs_libgetargs_config_false_value)
-  as an OPTION-TAG.
-
----------------------------------------------------------
-
-#### `BS_LIBGETARGS_CONFIG_FALSE_VALUE`
-
-- Type:     TEXT
-- Class:    VARIABLE
-- Default:  `false`
-- Value used as `false` for options with the type
-  negatable SWITCH-OPTION (i.e. `[~]`).
-- This value can be specified as an OPTION-TAG for the
-  OPTION in which case the OPTION variable will receive
-  this value.
-- Can be null.
-- SHOULD differ from
-  [`BS_LIBGETARGS_CONFIG_TRUE_VALUE`](#bs_libgetargs_config_true_value)
-  however this is NOT enforced.
-- A negatable SWITCH-OPTION _only_ accepts the value here
-  or the value from
-  [`BS_LIBGETARGS_CONFIG_TRUE_VALUE`](#bs_libgetargs_config_true_value)
-  as an OPTION-TAG.
-
----------------------------------------------------------
-
-#### `BS_LIBGETARGS_CONFIG_OPTIONAL_VALUE`
-
-- Type:     TEXT
-- Class:    VARIABLE
-- Default:  \<unset>
-- The value an OPTION variable receives if it takes an
-  optional OPTION-ARGUMENT and no OPTION-ARGUMENT was
-  specified.
-- It is not possible to set a value here that could not
-  have also been set as the OPTION-ARGUMENT for the
-  OPTION, e.g., the default of \<unset> is the same value
-  as would occur if the OPTION-ARGUMENT was an empty
-  string.
-- It is highly recommended that this be set to a more
-  useful value if optional OPTION-ARGUMENTs are used.
-
-<!-- ------------------------------------------------ -->
-
-### AUTO-HELP CONFIGURATION
-
-Configuration related only to [AUTO-HELP](#auto-help)
-mode.
-
----------------------------------------------------------
-
-#### `BS_LIBGETARGS_CONFIG_HELP_WRAP_COLUMNS`
-
-- Type:     TEXT
-- Class:    VARIABLE
-- Default:  Value from the `COLUMNS` environment variable
-            or `80` if that variable is not set.
-- Specifies the maximum width of the generated help text,
-  any lines longer than this will be wrapped.
-- May be set to any numeric value greater than `8`,
-  although small values will lead to illegible output.
-- If set to the empty string (aka null), wrapping is
-  disabled.
-- If set to an invalid value, the default value is used.
-- Help text uses an indent of `8` characters which counts
-  towards the length of lines for the purposes of
-  wrapping.
-
----------------------------------------------------------
-
-#### `BS_LIBGETARGS_CONFIG_HELP_MULTI_OPTION`
-
-- Type:     TEXT
-- Class:    VARIABLE
-- Default:  `May be specified multiple times.`
-- A string added to help for OPTIONs of the `[+]` type.
-- Used to indicate the OPTION can be specified more than
-  once.
-- If set to the empty string (aka null), no text is
-  added.
-- WILL cause errors if it contains any `\n` (`<newline>`)
-  characters.
-
----------------------------------------------------------
-
-#### `BS_LIBGETARGS_CONFIG_HELP_MULTI_OPERAND`
-
-- Type:     TEXT
-- Class:    VARIABLE
-- Default:  `May be specified multiple times.`
-- A string added to help for OPERANDs of the `[+]` type.
-- Used to indicate the OPERAND can be specified more than
-  once.
-- If set to the empty string (aka null), no text is
-  added.
-- WILL cause errors if it contains any `\n` (`<newline>`)
-  characters.
-
----------------------------------------------------------
-
-#### `BS_LIBGETARGS_CONFIG_HELP_ALTERNATIVE_OPERAND`
-
-- Type:     TEXT
-- Class:    VARIABLE
-- Default:  `Alternative to <OPTION>.`
-- A string added to help for an OPERAND if there is an
-  OPTION that provides the same purpose. (i.e. only
-  OPERANDs of the type `[^]` or `[+]`).
-- The literal string `<OPTION>` is replaced with one of
-  the OPTION-NAMEs for the OPTION that can alternatively
-  be used.
-- If set to the empty string (aka null), no text is
-  added.
-- WILL cause errors if it contains any `\n` (`<newline>`)
-  characters.
+  and SHOULD not affect other commands.
 
 <!-- ------------------------------------------------ -->
 
@@ -1133,7 +689,7 @@ Variables that convey library information.
 - Full version combining
   [`BS_LIBGETARGS_VERSION_MAJOR`](#bs_libgetargs_version_major),
   [`BS_LIBGETARGS_VERSION_MINOR`](#bs_libgetargs_version_minor),
-  [`BS_LIBARRAY_VERSION_PATCH`](#bs_libgetargs_version_patch),
+  [`BS_LIBGETARGS_VERSION_PATCH`](#bs_libgetargs_version_patch),
   and
   [`BS_LIBGETARGS_VERSION_RELEASE`](#bs_libgetargs_version_release)
   as a formatted string.
@@ -1144,6 +700,430 @@ Variables that convey library information.
   should precede the version number.)
 - This value is output when the `--version` OPTION is
   used.
+
+---------------------------------------------------------
+
+#### `BS_LIBGETARGS_LAST_ERROR`
+
+- Stores the error message of the most recent error.
+- ONLY valid immediately following a command for which
+  the exit status is not `0` (`<zero>`).
+- Available even when error output is suppressed.
+
+---------------------------------------------------------
+
+#### `BS_LIBGETARGS_SOURCED`
+
+- Set (and non-null) once the library has been sourced.
+- Dependant scripts can query if this variable is set to
+  determine if this file has been sourced.
+
+<!-- ------------------------------------------------ -->
+
+### USER PREFERENCE (OVERRIDABLE)
+
+Configuration that CAN be overridden by OPTIONs.
+
+---------------------------------------------------------
+
+#### `BS_LIBGETARGS_CONFIG_ALLOW_ABBREVIATIONS`
+
+- Type:     _FLAG_
+- Class:    _VARIABLE_
+- Default:  _ON_
+- Override: `--[no-]abbreviations`
+- \[Enable]/Disable LONG-OPTION abbreviations.
+- _ON_: any LONG-OPTION matches if the name is a
+  prefix of an OPTION-CONFIG name (e.g. `--debug` and
+  `--deb` will both match `debug`).
+- _OFF_: abbreviations are disabled and long options
+  must match exactly.
+- MAY cause unexpected results if combined with
+  [`BS_LIBGETARGS_CONFIG_ALLOW_AMBIGUOUS`](#bs_libgetargs_config_allow_ambiguous).
+
+---------------------------------------------------------
+
+#### `BS_LIBGETARGS_CONFIG_ALLOW_AMBIGUOUS`
+
+- Type:     _FLAG_
+- Class:    _VARIABLE_
+- Default:  _OFF_
+- Override: `--[no-]ambiguous`
+- \[Enable]/Disable detection of ambiguous user OPTIONs.
+- _OFF_: any ambiguous OPTION is an error.
+- _ON_: all OPTIONs use the first match found - this WILL
+  mask some OPTION-CONFIG errors.
+- OPTIONs are ambiguous when multiple OPTIONs have the
+  same name or, if abbreviations are enabled, when
+  an abbreviation matches multiple OPTIONs.
+- If abbreviations are also enabled (see
+  [`BS_LIBGETARGS_CONFIG_ALLOW_ABBREVIATIONS`](#bs_libgetargs_config_allow_abbreviations))
+  there is a high chance of incorrectly matching OPTIONs.
+- _Has a measurable impact on performance._
+  Prefer **_ON_** for performance.
+
+---------------------------------------------------------
+
+#### `BS_LIBGETARGS_CONFIG_CHECK_CONFIG`
+
+- Type:     _FLAG_
+- Class:    _VARIABLE_
+- Default:  _OFF_
+- Override: `--[no-]check-config`
+- Enable/\[Disable] performing basic checks on
+  OPTION-CONFIG and OPERAND-CONFIG before processing.
+- _OFF_: don't do any additional checks.
+- _ON_: preform extra checks to ensure that OPTION-CONFIG
+  and OPERAND-CONFIG match the required specification.
+- The currently available checks are relatively basic but
+  will catch errors that MAY otherwise be missed, however
+  some of these may be benign.
+- _MAY have a performance impact._
+  Prefer **_OFF_** for performance.
+
+---------------------------------------------------------
+
+#### `BS_LIBGETARGS_CONFIG_FATAL_ERRORS`
+
+- Suite:    [`BETTER_SCRIPTS_CONFIG_FATAL_ERRORS`](./README.MD#better_scripts_config_fatal_errors)
+- Type:     _FLAG_
+- Class:    _VARIABLE_
+- Default:  _OFF_
+- Enable/\[Disable] causing library errors to terminate
+  the current (sub-)shell.
+- _OFF_: errors stop any further processing, and cause a
+  non-zero exit status, but do not cause an exception.
+- _ON_: any library error will cause an "unset variable"
+  shell exception using the
+  [`${parameter:?[word]}`][posix_param_expansion]
+  parameter expansion, where `word` is set to an error
+  message that _should_ be displayed by the shell (this
+  message is NOT suppressed by
+  [`BS_LIBGETARGS_CONFIG_QUIET_ERRORS`](#bs_libgetargs_config_quiet_errors)).
+- Both the library version of this option and the
+  suite version can be modified between command
+  invocations and will affect the next command.
+
+---------------------------------------------------------
+
+#### `BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS`
+
+- Type:     _FLAG_
+- Class:    _VARIABLE_
+- Default:  _OFF_
+- Override: `--[no-]interleaved`, `--[no-]mixed`
+- Enable/\[Disable] allowing matching OPTIONs _after_ an
+  OPERAND is matched.
+- _OFF_: all OPTIONs (and associated OPTION-ARGUMENTs)
+  MUST appear before the first OPERAND; i.e., the first
+  ARGUMENT that does NOT start with `-` (`<hyphen>`)
+  and is NOT an OPTION-ARGUMENT causes ALL remaining
+  OPTIONs to be assumed to be OPERANDs _even if they
+  start with `-` (`<hyphen>`)_.
+- _ON_: an ARGUMENT that does NOT start with `-`
+  (`<hyphen>`) and is NOT an OPTION-ARGUMENT is assumed
+  to be an OPERAND, but following ARGUMENTs continue to
+  be checked for OPTIONs.
+- In either mode the special ARGUMENT `--` stops OPTION
+  processing and any remaining ARGUMENTs are treated as
+  OPERANDs
+- Implied by
+  [`BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED`](#bs_libgetargs_config_allow_unmatched)
+- Mutually exclusive with
+  [`BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`](#bs_libgetargs_config_strict_operands)
+
+---------------------------------------------------------
+
+#### `BS_LIBGETARGS_CONFIG_ALLOW_POSIX_LONG`
+
+- Type:     _FLAG_
+- Class:    _VARIABLE_
+- Default:  _OFF_
+- Override: `--[no-]posix-long`
+- Enable/\[Disable] matching LONG-OPTIONs with a single
+  preceding `-` (`<hyphen>`) character instead of the
+  normally required two.
+- _OFF_: LONG-OPTIONs require the prefix `--`
+- _ON_: any multi-character OPTION following a single
+  `-` (`<hyphen>`) is checked to see if it matches
+  a LONG-OPTION before checking if it is a
+  COMPOUND-OPTION, meaning matching COMPOUND-OPTIONs is
+  slower.
+- _Has a measurable impact on performance._
+  Prefer **_OFF_** for performance.
+
+---------------------------------------------------------
+
+#### `BS_LIBGETARGS_CONFIG_QUIET_ERRORS`
+
+- Suite:    [`BETTER_SCRIPTS_CONFIG_QUIET_ERRORS`](./README.MD#better_scripts_config_quiet_errors)
+- Type:     _FLAG_
+- Class:    _VARIABLE_
+- Default:  _OFF_
+- \[Enable]/Disable library error message output.
+- _OFF_: error messages will be written to `STDERR` as:
+  `[<ID>]: ERROR: <MESSAGE>` (where `<ID>` is
+  set using the `--name` OPTION).
+- _ON_: library error messages will be suppressed.
+- The most recent error message is always available in
+  [`BS_LIBGETARGS_LAST_ERROR`](#bs_libgetargs_last_error)
+  even when error output is suppressed.
+- Both the library version of this option and the
+  suite version can be modified between command
+  invocations and will affect the next command.
+- Does NOT affect errors from non-library commands, which
+  _may_ still produce output.
+
+---------------------------------------------------------
+
+#### `BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`
+
+- Type:     _FLAG_
+- Class:    _VARIABLE_
+- Default:  _OFF_
+- Override: `--[no-]strict`, `--[no-]separated`
+- Enable/\[Disable] requiring the use of `--` to separate
+  OPTIONs from OPERANDs.
+- _OFF_: the first ARGUMENT that is not an OPTION or an
+  OPTION-ARGUMENT is an OPERAND and causes all further
+  ARGUMENTs to be OPERANDs.
+- _ON_: an ARGUMENT that is exactly `--` must be present
+  after _all_ OPTIONs and before _any_ OPERANDs.
+- If this is enabled (_ON_), then optional
+  OPTION-ARGUMENTS can be specified using the ARGUMENT
+  _following_ the OPTION (in addition to the normal
+  formats).
+- Can help detect some usage errors.
+- Mutually exclusive with
+  [`BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS`](#bs_libgetargs_config_interleaved_operands)
+  and
+  [`BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED`](#bs_libgetargs_config_allow_unmatched).
+
+---------------------------------------------------------
+
+#### `BS_LIBGETARGS_CONFIG_ALLOW_UNSAFE_OPTIONS`
+
+- Type:     _FLAG_
+- Class:    _VARIABLE_
+- Default:  _OFF_
+- Override: `--[no-]unsafe`
+- \[Enable]/Disable escaping OPTION characters
+  to avoid any erroneous results when matching with
+  regular expressions. Characters in the supported set
+  for OPTION-NAMEs `[[:alnum:]_-]` do not need this
+  processing, while characters outside this range
+  MAY (e.g. `.` (`<period>`) is problematic).
+- _OFF_: OPTION-NAMEs have all characters made safe for
+  use in a regular expression.
+- _ON_: OPTION-NAMEs are used as is and may match
+  incorrectly if they contain specific characters.
+- This affects the OPTIONs being processed and NOT those
+  in the OPTION-CONFIG.
+- MAY have a performance impact.
+  Prefer **_ON_** for performance.
+
+---------------------------------------------------------
+
+#### `BS_LIBGETARGS_CONFIG_AUTO_UNSET`
+
+- Type:     _FLAG_
+- Class:    _VARIABLE_
+- Default:  _OFF_
+- Override: `--[no-]unset`
+- Enable/\[Disable] automatic unsetting of all
+  VARIABLES named in OPTION-CONFIG and OPERAND-CONFIG.
+- _ON_: every variable specified in OPTION-CONFIG and
+  OPERAND-CONFIG is automatically unset before ARGUMENTs
+  are processed.
+- _OFF_: variables need to be set to a known value or it
+  will not be possible to correctly determine what
+  OPTIONs have been matched.
+- Normally desirable to have enabled, but using it MAY
+  have performance issues, and it can not be used
+  alongside default values for variables (i.e. values set
+  before `getargs` is invoked).
+- MAY have a performance impact.
+  Prefer **_OFF_** for performance.
+
+---------------------------------------------------------
+
+#### `BS_LIBGETARGS_CONFIG_ALLOW_UNMATCHED`
+
+- Type:     _FLAG_
+- Class:    _VARIABLE_
+- Default:  _OFF_
+- Override: `--[no-]unmatched`, `--unmatched=<VARIABLE>`
+- Enable/\[Disable] matching an unrecognized OPTION as an
+  OPERAND.
+- _OFF_: any unrecognized OPTION is an error.
+- _ON_: any unrecognized OPTION is treated as an OPERAND.
+- Useful for commands where most arguments are not used,
+  but instead forwarded to another command, where having
+  this enabled significantly reduces code and isolates
+  the command from changes in the arguments accepted by
+  the target command.
+- In either mode the special ARGUMENT `--` stops OPTION
+  processing and any remaining ARGUMENTs are treated as
+  OPERANDs.
+- Although still permitted, there is no practical way to
+  support the normal OPERAND processing when this is
+  enabled; the only OPERAND-CONFIG that is useful will
+  be one containing a single `[+]` type. If other
+  OPERANDs are required, these must be manually extracted
+  from the resulting array.
+- If using a VALIDATOR, any unmatched values will be
+  sent to the VALIDATOR as OPERANDs.
+- `--unmatched=<VARIABLE>` provides functionality that is
+  beyond that available using this variable.
+- Implies
+  [`BS_LIBGETARGS_CONFIG_INTERLEAVED_OPERANDS`](#bs_libgetargs_config_interleaved_operands).
+- Mutually exclusive with
+  [`BS_LIBGETARGS_CONFIG_STRICT_OPERANDS`](#bs_libgetargs_config_strict_operands).
+
+<!-- ------------------------------------------------ -->
+
+### USER PREFERENCE
+
+Configuration that can NOT be overridden by OPTIONs.
+
+---------------------------------------------------------
+
+#### `BS_LIBGETARGS_CONFIG_TRUE_VALUE`
+
+- Type:     _TEXT_
+- Class:    _VARIABLE_
+- Default:  `true`
+- Value used as `true` for options with the type
+  negatable SWITCH-OPTION (i.e. `[~]`).
+- The value given to a negatable SWITCH-OPTION variable
+  when the ARGUMENT was specified without an OPTION-TAG.
+- Also one of the values accepted as an OPTION-TAG for
+  negatable SWITCH-OPTIONs.
+- Can be null.
+- SHOULD differ from
+  [`BS_LIBGETARGS_CONFIG_FALSE_VALUE`](#bs_libgetargs_config_false_value)
+  however this is NOT enforced.
+- A negatable SWITCH-OPTION _only_ accepts the value here
+  or the value from
+  [`BS_LIBGETARGS_CONFIG_FALSE_VALUE`](#bs_libgetargs_config_false_value)
+  as an OPTION-TAG.
+
+---------------------------------------------------------
+
+#### `BS_LIBGETARGS_CONFIG_FALSE_VALUE`
+
+- Type:     _TEXT_
+- Class:    _VARIABLE_
+- Default:  `false`
+- Value used as `false` for options with the type
+  negatable SWITCH-OPTION (i.e. `[~]`).
+- This value can be specified as an OPTION-TAG for the
+  OPTION in which case the OPTION variable will receive
+  this value.
+- Can be null.
+- SHOULD differ from
+  [`BS_LIBGETARGS_CONFIG_TRUE_VALUE`](#bs_libgetargs_config_true_value)
+  however this is NOT enforced.
+- A negatable SWITCH-OPTION _only_ accepts the value here
+  or the value from
+  [`BS_LIBGETARGS_CONFIG_TRUE_VALUE`](#bs_libgetargs_config_true_value)
+  as an OPTION-TAG.
+
+---------------------------------------------------------
+
+#### `BS_LIBGETARGS_CONFIG_OPTIONAL_VALUE`
+
+- Type:     _TEXT_
+- Class:    _VARIABLE_
+- Default:  \<unset>
+- The value an OPTION variable receives if it takes an
+  optional OPTION-ARGUMENT and no OPTION-ARGUMENT was
+  specified.
+- It is not possible to set a value here that could not
+  have also been set as the OPTION-ARGUMENT for the
+  OPTION, e.g., the default of \<unset> is the same value
+  as would occur if the OPTION-ARGUMENT was an empty
+  string.
+- It is highly recommended that this be set to a more
+  useful value if optional OPTION-ARGUMENTs are used.
+
+<!-- ------------------------------------------------ -->
+
+### AUTO-HELP CONFIGURATION
+
+Configuration related only to [AUTO-HELP](#auto-help)
+mode.
+
+---------------------------------------------------------
+
+#### `BS_LIBGETARGS_CONFIG_HELP_WRAP_COLUMNS`
+
+- Type:     _TEXT_
+- Class:    _VARIABLE_
+- Default:  Value from the `COLUMNS` environment variable
+            or `80` if that variable is not set.
+- Specifies the maximum width of the generated help text,
+  any lines longer than this will be wrapped.
+- May be set to any numeric value greater than `8`,
+  although small values will lead to illegible output.
+- If set to the empty string (aka null), wrapping is
+  disabled.
+- If set to an invalid value, the default value is used.
+- Help text uses an indent of `8` characters which counts
+  towards the length of lines for the purposes of
+  wrapping.
+
+---------------------------------------------------------
+
+#### `BS_LIBGETARGS_CONFIG_HELP_MULTI_OPTION`
+
+- Type:     _TEXT_
+- Class:    _VARIABLE_
+- Default:  `May be specified multiple times.`
+- A string added to help for OPTIONs of the `[+]` type.
+- Used to indicate the OPTION can be specified more than
+  once.
+- If set to the empty string (aka null), no text is
+  added.
+- WILL cause errors if it contains any `\n` (`<newline>`)
+  characters.
+
+---------------------------------------------------------
+
+#### `BS_LIBGETARGS_CONFIG_HELP_MULTI_OPERAND`
+
+- Type:     _TEXT_
+- Class:    _VARIABLE_
+- Default:  `May be specified multiple times.`
+- A string added to help for OPERANDs of the `[+]` type.
+- Used to indicate the OPERAND can be specified more than
+  once.
+- If set to the empty string (aka null), no text is
+  added.
+- WILL cause errors if it contains any `\n` (`<newline>`)
+  characters.
+
+---------------------------------------------------------
+
+#### `BS_LIBGETARGS_CONFIG_HELP_ALTERNATIVE_OPERAND`
+
+- Type:     _TEXT_
+- Class:    _VARIABLE_
+- Default:  `Alternative to <OPTION>.`
+- A string added to help for an OPERAND if there is an
+  OPTION that provides the same purpose. (i.e. only
+  OPERANDs of the type `[^]` or `[+]`).
+- The literal string `<OPTION>` is replaced with one of
+  the OPTION-NAMEs for the OPTION that can alternatively
+  be used.
+- If set to the empty string (aka null), no text is
+  added.
+- WILL cause errors if it contains any `\n` (`<newline>`)
+  characters.
+
+<!-- ------------------------------------------------ -->
+
+### EXTERNAL CONSTANTS
 
 ---------------------------------------------------------
 
@@ -1195,23 +1175,6 @@ Variables that convey library information.
   matched as an OPERAND.
 - Implies the VALUE parameter MUST be a valid OPERAND.
 - See [`getargs_validate_option_value`](#getargs_validate_option_value),
-
----------------------------------------------------------
-
-#### `BS_LIBGETARGS_LAST_ERROR`
-
-- Stores the error message of the most recent error.
-- ONLY valid immediately following a command for which
-  the exit status is not `0` (`<zero>`).
-- Available even when error output is suppressed.
-
----------------------------------------------------------
-
-#### `BS_LIBGETARGS_SOURCED`
-
-- Set (and non-null) once the library has been sourced.
-- Dependant scripts can query if this variable is set to
-  determine if this file has been sourced.
 
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
@@ -1318,7 +1281,7 @@ _ARGUMENTS_
 `OPTION` \[in]
 
 - The OPTION-NAME to use for each element in `VALUES`.
-- Each element in `VALUES` will become and
+- Each element in `VALUES` will become an
   OPTION-ARGUMENT for `OPTION`.
 - A trailing `=` (`<equals>`) will cause the
   OPTION-ARGUMENT to be made an AGGREGATE-OPTION-ARGUMENT.
@@ -1343,6 +1306,7 @@ _NOTES_
   values can be used directly with `[+]` type OPTIONs by using an
   OPTION-TAG.
 
+                in `word`.
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
 ## STANDARDS
@@ -1352,7 +1316,7 @@ _NOTES_
 - [Semantic Versioning v2.0.0][semver].
 - [Inclusive Naming Initiative][inclusivenaming].
 
-_For more details see the common suite [documentation](./README.MD#standards)._
+_For more details see the `shtoolkit` general [documentation](./README.MD#standards)._
 
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
@@ -1542,14 +1506,24 @@ implementation of utilities like `sed`, or `grep` used can have a measurable
 impact.
 
 The configuration of `getargs` can also make a difference. The biggest single
-change is to allow ambiguous options, which will use `expr` (or rarely `sed`)
-rather than `grep`, resulting in improved performance. Disabling other
+change is to allow ambiguous options: this lets the `sed` OPTION-matching
+script quit after the first match, rather than scanning for every match to
+detect ambiguity, resulting in improved performance. Disabling other
 options where they are noted to have a performance impact will also help
 (though to a lesser extent). Additionally, setting config using the provided
 [environment variables](#environment) rather than passing as options to
 `getargs` options, can make minor improvements.
 
-_For more details see the common suite [documentation](./README.MD#performance)._
+_For more details see the `shtoolkit` general [documentation](./README.MD#performance)._
+
+<!-- ------------------------------------------------ -->
+
+### PRIOR ART
+
+There are a number of tools available to aid argument processing for shell scripts
+is enormous and continuously growing. Despite this, before the creation of
+`getargs`, the only options found suffered from significant issues, e.g.
+poorly documented, non-portable, etc.
 
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
@@ -1564,7 +1538,7 @@ Importantly, the command line length limit imposes a limit on the combined
 length of _both_ the SPECIFICATION _and_ the ARGUMENTs to process, and may
 be a particular issue where [AUTO-HELP](#auto-help) is used.
 
-_For more details see the common suite [documentation](./README.MD#caveats)._
+_For more details see the `shtoolkit` general [documentation](./README.MD#caveats)._
 
 <!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
@@ -1611,7 +1585,17 @@ A `chmod` like utility providing additional options:
 The following example is adapted from
 [the Wikipedia page for `getopts`](<https://wikipedia.org/wiki/Getopts#Examples>)
 and is implemented for `getopts`, `getopt` and `getargs`
-to provide a comparison between the available tools.
+to provide a comparison between the available
+tools.[^printf_format_omitted]
+
+[^printf_format_omitted]: The original uses
+                          `printf '%q '` to quote output
+                          output but this is omitted here
+                          as there is no such format
+                          character in _POSIX_ and it is
+                          used for code that does not
+                          usefully contribute to the
+                          comparison as a whole.
 
 ---------------------------------------------------------
 
@@ -1641,7 +1625,7 @@ to provide a comparison between the available tools.
 
     if ((VERBOSE > 2)); then
       printf '%s\n' 'Non-option arguments:'
-      printf '%q ' "${remaining[@]]}"
+      printf '%s ' "${remaining[@]}"
     fi
 
     if ((VERBOSE > 1)); then
@@ -1688,7 +1672,7 @@ to provide a comparison between the available tools.
 
     if ((VERBOSE > 2)); then
       printf '%s\n' 'Non-option arguments:'
-      printf '%q ' "${remaining[@]]}"
+      printf '%s ' "${remaining[@]}"
     fi
 
     if ((VERBOSE > 1)); then
@@ -1701,7 +1685,6 @@ to provide a comparison between the available tools.
     fi
 
     save_webpage "https://${LANG}.wikipedia.org/wiki/${ARTICLE}"
-    </pre>
 
 ---------------------------------------------------------
 
@@ -1722,17 +1705,17 @@ to provide a comparison between the available tools.
     - "${VERBOSE:=0}"
     - "${LANG:=en}"
 
-    if ((VERBOSE > 2)); then
+    if [ "$VERBOSE" -gt 2 ]; then
        printf '%s\n' 'Non-option arguments:'
-       printf '%q ' "$@"
+       printf '%s ' "$@"
     fi
 
-    if ((VERBOSE > 1)); then
+    if [ "$VERBOSE" -gt 1 ]; then
        printf 'Downloading %s:%s\n' "$LANG" "$ARTICLE"
     fi
 
-    if [[ ! $ARTICLE ]]; then
-       printf '%s\n' "No articles!" \>&2
+    if [ -z "$ARTICLE" ]; then
+       printf '%s\n' "No articles!">&2
        exit 1
     fi
 
@@ -1758,32 +1741,36 @@ to provide a comparison between the available tools.
     - "${VERBOSE:=0}"
     - "${LANG:=en}"
 
-    if ((VERBOSE > 2)); then
+    if [ "$VERBOSE" -gt 2 ]; then
        printf '%s\n' 'Non-option arguments:'
-       printf '%q ' "$@"
+       printf '%s ' "$@"
     fi
 
-    if ((VERBOSE > 1)); then
+    if [ "$VERBOSE" -gt 1 ]; then
        printf 'Downloading %s:%s\n' "$LANG" "$ARTICLE"
     fi
 
-    if [[ ! $ARTICLE ]]; then
-       printf '%s\n' "No articles!" \>&2
+    if [ -z "$ARTICLE" ]; then
+       printf '%s\n' "No articles!">&2
        exit 1
     fi
 
     save_webpage "https://${LANG}.wikipedia.org/wiki/${ARTICLE}"
 
-<!-- -------------------------------------------------------------------- -->
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 <!-- REFERENCES -->
-<!-- -------------------------------------------------------------------- -->
+<!-- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
 
 [markdown]:                  <https://daringfireball.net/projects/markdown/syntax>                                                "Markdown: Syntax [daringfireball.net]"
 [commonmark]:                <https://commonmark.org/>                                                                            "CommonMark [spec.commonmark.org]"
 [commonmark_spec]:           <https://spec.commonmark.org/current/>                                                               "CommonMark Spec (current) [spec.commonmark.org]"
 
 [posix]:                     <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition>                                       "POSIX.1-2008 \[pubs.opengroup.org\]"
-[posix_2017]:                <https://pubs.opengroup.org/onlinepubs/9699919799>                                                   "POSIX.1-2017 \[pubs.opengroup.org\]"
+[posix_2013]:                <https://pubs.opengroup.org/onlinepubs/9699919799.2013edition>                                       "POSIX.1-2013 \[pubs.opengroup.org\]"
+[posix_2016]:                <https://pubs.opengroup.org/onlinepubs/9699919799.2016edition>                                       "POSIX.1-2016 \[pubs.opengroup.org\]"
+[posix_2018]:                <https://pubs.opengroup.org/onlinepubs/9699919799.2018edition>                                       "POSIX.1-2018 \[pubs.opengroup.org\]"
+[posix_2024]:                <https://pubs.opengroup.org/onlinepubs/9799919799.2024edition>                                       "POSIX.1-2024 \[pubs.opengroup.org\]"
+
 [posix_bre]:                 <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap09.html#tag_09_03>     "Basic Regular Expression \[pubs.opengroup.org\]"
 [posix_ere]:                 <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap09.html#tag_09_04>     "Extended Regular Expression \[pubs.opengroup.org\]"
 [posix_re_bracket_exp]:      <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap09.html#tag_09_03_05>  "RE Bracket Expression \[pubs.opengroup.org\]"
@@ -1791,8 +1778,12 @@ to provide a comparison between the available tools.
 [posix_getopts]:             <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/utilities/getopts.html>                "getopts \[pubs.opengroup.org\]"
 [posix_utility_conventions]: <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap12.html>               "POSIX: Utility Conventions \[pubs.opengroup.org\]"
 [posix_variable]:            <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap03.html#tag_03_230>    "Definitions: Name \[pubs.opengroup.org\]"
+[posix_execl]:               <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/functions/execl.html>                  "execl \[pubs.opengroup.org\]"
+[posix_chars]:               <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/basedefs/V1_chap06.html#tag_06_01>     "Portable Character Set \[pubs.opengroup.org\]"
+[posix_glob]:                <https://pubs.opengroup.org/onlinepubs/9699919799.2008edition/utilities/V3_chap02.html#tag_18_13>    "Pattern Matching Notation \[pubs.opengroup.org\]"
 
 [sysexits]:                  <https://www.freebsd.org/cgi/man.cgi?sysexits(3)>                                                    "FreeBSD SYSEXITS(3) \[freebsd.org\]"
+
 [semver]:                    <https://semver.org/>                                                                                "Semantic Versioning \[semver.org\]"
 
 [util_linux]:                <https://git.kernel.org/pub/scm/utils/util-linux/util-linux.git/about/>                              "util-linux (about) \[git.kernel.org\]"
@@ -1801,5 +1792,10 @@ to provide a comparison between the available tools.
 
 [man_page]:                  <https://wikipedia.org/wiki/Man_page>                                                                "man page \[wikipedia.org\]"
 
-[autoconf_portable]:         <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Portable-Shell.html>           "autoconf: Portable Shell Programming \[gnu.org\]"
+[autoconf_portable]:         <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Portable-Shell.html>                  "autoconf: Portable Shell Programming \[gnu.org\]"
+[autoconf_awk]:              <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Limitations-of-Usual-Tools.html#awk>  "autoconf: Limitations of Usual Tools \[gnu.org\]"
+[autoconf_sed]:              <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Limitations-of-Usual-Tools.html#sed>  "autoconf: Limitations of Usual Tools \[gnu.org\]"
+[autoconf_grep]:             <https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/html_node/Limitations-of-Usual-Tools.html#grep> "autoconf: Limitations of Usual Tools \[gnu.org\]"
+
+[inclusivenaming]:           <https://inclusivenaming.org/>                                                                       "Inclusive Naming Initiative \[inclusivenaming.org\]"
 
